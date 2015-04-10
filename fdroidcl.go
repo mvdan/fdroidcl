@@ -103,8 +103,6 @@ func (app *App) WriteDetailed(w io.Writer) {
 
 const indexName = "index.jar"
 
-var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
-
 func updateIndex() {
 	url := fmt.Sprintf("%s/%s", *repoURL, indexName)
 	resp, err := http.Get(url)
@@ -159,11 +157,24 @@ func loadApps() map[string]App {
 	return apps
 }
 
+var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
+
+func init() {
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Available commands:")
+		fmt.Fprintln(os.Stderr, "   update        Updates the index")
+		fmt.Fprintln(os.Stderr, "   list          lists all available apps")
+		fmt.Fprintln(os.Stderr, "   show <appid>  Shows detailed info of an app")
+	}
+}
+
 func main() {
 	flag.Parse()
 	if flag.NArg() == 0 {
 		flag.Usage()
-		return
+		os.Exit(2)
 	}
 
 	cmd := flag.Args()[0]
@@ -187,6 +198,8 @@ func main() {
 			app.WriteDetailed(os.Stdout)
 		}
 	default:
-		log.Fatalf("Unrecognised command '%s'", cmd)
+		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmd)
+		flag.Usage()
+		os.Exit(2)
 	}
 }
