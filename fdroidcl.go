@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 )
 
 type Repo struct {
@@ -91,7 +92,7 @@ func (app *App) WriteDetailed(w io.Writer) {
 	if app.Tracker != "" {
 		p("Tracker          :", "%s", app.Tracker)
 	}
-	// p("Description     :", "%s", app.Desc) TODO: html, 80 column wrapping
+	// p("Description     :", "%s", app.Desc) // TODO: parse html, 80 column wrapping
 	fmt.Println()
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
@@ -158,6 +159,36 @@ func loadApps() map[string]App {
 	return apps
 }
 
+func appMatches(fields []string, terms []string) bool {
+	for _, field := range fields {
+		for _, term := range terms {
+			if !strings.Contains(field, term) {
+				goto next
+			}
+		}
+		return true
+	next:
+	}
+	return false
+}
+
+func filterAppsSearch(apps *map[string]App, terms []string) {
+	for _, term := range terms {
+		term = strings.ToLower(term)
+	}
+	for appID, app := range *apps {
+		fields := []string{
+			strings.ToLower(app.ID),
+			strings.ToLower(app.Name),
+			strings.ToLower(app.Summary),
+			// strings.ToLower(app.Desc), // TODO remove html
+		}
+		if !appMatches(fields, terms) {
+			delete(*apps, appID)
+		}
+	}
+}
+
 type AppList []App
 
 func (al AppList) Len() int           { return len(al) }
@@ -180,9 +211,10 @@ func init() {
 		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Available commands:")
-		fmt.Fprintln(os.Stderr, "   update        Updates the index")
-		fmt.Fprintln(os.Stderr, "   list          lists all available apps")
-		fmt.Fprintln(os.Stderr, "   show <appid>  Shows detailed info of an app")
+		fmt.Fprintln(os.Stderr, "   update         Update the index")
+		fmt.Fprintln(os.Stderr, "   list           List all available apps")
+		fmt.Fprintln(os.Stderr, "   search <query> Search available apps")
+		fmt.Fprintln(os.Stderr, "   show <appid>   Show detailed info of an app")
 	}
 }
 
@@ -201,6 +233,12 @@ func main() {
 		updateIndex()
 	case "list":
 		apps := loadApps()
+		for _, app := range sortedApps(apps) {
+			app.WriteShort(os.Stdout)
+		}
+	case "search":
+		apps := loadApps()
+		filterAppsSearch(&apps, args)
 		for _, app := range sortedApps(apps) {
 			app.WriteShort(os.Stdout)
 		}

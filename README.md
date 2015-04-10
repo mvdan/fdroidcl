@@ -13,11 +13,11 @@ makes sense such as `update`, `show`, `install` and `remove`.
  * Single repo support
  * Update the index
  * List all apps
+ * Search by keywords
  * Show details of an app
 
 ### Missing features
 
- * Searching
  * Multi-repo support
  * Interaction with a device
    - Probably via the command `adb`
