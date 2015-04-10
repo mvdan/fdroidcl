@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 )
 
 type Repo struct {
@@ -157,6 +158,21 @@ func loadApps() map[string]App {
 	return apps
 }
 
+type AppList []App
+
+func (al AppList) Len() int           { return len(al) }
+func (al AppList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al AppList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+
+func sortedApps(apps map[string]App) []App {
+	list := make(AppList, 0, len(apps))
+	for appID := range apps {
+		list = append(list, apps[appID])
+	}
+	sort.Sort(list)
+	return list
+}
+
 var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
 
 func init() {
@@ -185,7 +201,7 @@ func main() {
 		updateIndex()
 	case "list":
 		apps := loadApps()
-		for _, app := range apps {
+		for _, app := range sortedApps(apps) {
 			app.WriteShort(os.Stdout)
 		}
 	case "show":
