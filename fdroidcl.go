@@ -44,10 +44,10 @@ type Apk struct {
 	MinSdk  int    `xml:"sdkver"`
 }
 
-func Form(f, str string) string { return fmt.Sprintf("\033[%sm%s\033[0m", f, str) }
-func Bold(str string) string    { return Form("1", str) }
-func Green(str string) string   { return Form("1;32", str) }
-func Purple(str string) string  { return Form("1;35", str) }
+func form(f, str string) string { return fmt.Sprintf("\033[%sm%s\033[0m", f, str) }
+func bold(str string) string    { return form("1", str) }
+func green(str string) string   { return form("1;32", str) }
+func purple(str string) string  { return form("1;35", str) }
 
 func (app *App) prepareData() {
 	for _, apk := range app.Apks {
@@ -58,18 +58,18 @@ func (app *App) prepareData() {
 	}
 }
 
-func (app *App) WriteShort(w io.Writer) {
-	fmt.Fprintf(w, "%s %s %s\n", Bold(app.Name),
-		Purple(app.ID), Green(app.CurApk.VName))
+func (app *App) writeShort(w io.Writer) {
+	fmt.Fprintf(w, "%s %s %s\n", bold(app.Name),
+		purple(app.ID), green(app.CurApk.VName))
 	fmt.Fprintf(w, "    %s\n", app.Summary)
 }
 
-func (app *App) WriteDetailed(w io.Writer) {
+func (app *App) writeDetailed(w io.Writer) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
-			fmt.Fprintln(w, Bold(title))
+			fmt.Fprintln(w, bold(title))
 		} else {
-			fmt.Fprintf(w, "%s %s\n", Bold(title), fmt.Sprintf(format, args...))
+			fmt.Fprintf(w, "%s %s\n", bold(title), fmt.Sprintf(format, args...))
 		}
 	}
 	p("Name             :", "%s", app.Name)
@@ -186,14 +186,14 @@ func filterAppsSearch(apps *map[string]App, terms []string) {
 	}
 }
 
-type AppList []App
+type appList []App
 
-func (al AppList) Len() int           { return len(al) }
-func (al AppList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al AppList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+func (al appList) Len() int           { return len(al) }
+func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
 func sortedApps(apps map[string]App) []App {
-	list := make(AppList, 0, len(apps))
+	list := make(appList, 0, len(apps))
 	for appID := range apps {
 		list = append(list, apps[appID])
 	}
@@ -234,13 +234,13 @@ func main() {
 	case "list":
 		apps := loadApps()
 		for _, app := range sortedApps(apps) {
-			app.WriteShort(os.Stdout)
+			app.writeShort(os.Stdout)
 		}
 	case "search":
 		apps := loadApps()
 		filterAppsSearch(&apps, args)
 		for _, app := range sortedApps(apps) {
-			app.WriteShort(os.Stdout)
+			app.writeShort(os.Stdout)
 		}
 	case "show":
 		apps := loadApps()
@@ -249,7 +249,7 @@ func main() {
 			if !e {
 				log.Fatalf("Could not find app with ID '%s'", appID)
 			}
-			app.WriteDetailed(os.Stdout)
+			app.writeDetailed(os.Stdout)
 		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmd)
