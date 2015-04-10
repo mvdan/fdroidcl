@@ -28,16 +28,18 @@ makes sense such as `update`, `show`, `install` and `remove`.
    - Fetch installed applications
    - Should use a `sync` command if always fetching the data above is slow
    - Install, update and remove applications
+ * Interaction with multiple devices at once via ADB:
+   - Transfer apps and their data from one device to another
  * Apk caching
 
 ### Advantages over the Android client
 
  * Faster to use command line interface
  * Ability to batch install/update/remove without root nor system privileges
- * Interact between multiple Android devices:
-   - Transfer apps and their data from one device to another
+ * Handle multiple Android devices
 
 ### Android client features this will never have
 
  * "Update available" notifications
+ * Run on Android with a user interface
  * Swap apps over WiFi or Bluetooth and local repos
