@@ -16,11 +16,8 @@ import (
 )
 
 type Repo struct {
-	Info RepoInfo `xml:"repo"`
-	Apps []App    `xml:"application"`
+	Apps []App `xml:"application"`
 }
-
-type RepoInfo struct{}
 
 type App struct {
 	Name    string `xml:"name"`
@@ -43,6 +40,8 @@ type Apk struct {
 	VCode   uint   `xml:"versioncode"`
 	ApkName string `xml:"apkname"`
 	SrcName string `xml:"srcname"`
+	Size    int    `xml:"size"`
+	MinSdk  int    `xml:"sdkver"`
 }
 
 func Form(f, str string) string { return fmt.Sprintf("\033[%sm%s\033[0m", f, str) }
@@ -68,25 +67,38 @@ func (app *App) WriteShort(w io.Writer) {
 
 func (app *App) WriteDetailed(w io.Writer) {
 	p := func(title string, format string, args ...interface{}) {
-		fmt.Fprintf(w, "%s %s", Bold(title), fmt.Sprintf(format, args...))
+		if format == "" {
+			fmt.Fprintln(w, Bold(title))
+		} else {
+			fmt.Fprintf(w, "%s %s\n", Bold(title), fmt.Sprintf(format, args...))
+		}
 	}
-	p("Name            :", "%s\n", app.Name)
-	p("Current Version :", "%s (%d)\n", app.CurApk.VName, app.CurApk.VCode)
-	p("Summary         :", "%s\n", app.Summary)
-	p("License         :", "%s\n", app.License)
+	p("Name             :", "%s", app.Name)
+	p("Summary          :", "%s", app.Summary)
+	p("Current Version  :", "%s (%d)", app.CurApk.VName, app.CurApk.VCode)
+	p("Upstream Version :", "%s (%d)", app.CVName, app.CVCode)
+	p("License          :", "%s", app.License)
 	if app.Categs != "" {
-		p("Categories      :", "%s\n", app.Categs)
+		p("Categories       :", "%s", app.Categs)
 	}
 	if app.Website != "" {
-		p("Website         :", "%s\n", app.Website)
+		p("Website          :", "%s", app.Website)
 	}
 	if app.Source != "" {
-		p("Source          :", "%s\n", app.Source)
+		p("Source           :", "%s", app.Source)
 	}
 	if app.Tracker != "" {
-		p("Tracker         :", "%s\n", app.Tracker)
+		p("Tracker          :", "%s", app.Tracker)
 	}
-	// p("Description     :", "\n%s\n", app.Desc) TODO: html, 80 column wrapping
+	// p("Description     :", "%s", app.Desc) TODO: html, 80 column wrapping
+	fmt.Println()
+	p("Available Versions :", "")
+	for _, apk := range app.Apks {
+		fmt.Println()
+		p("    Name   :", "%s (%d)", apk.VName, apk.VCode)
+		p("    Size   :", "%d", apk.Size)
+		p("    MinSdk :", "%d", apk.MinSdk)
+	}
 }
 
 const indexName = "index.jar"
