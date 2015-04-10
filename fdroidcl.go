@@ -17,10 +17,12 @@ import (
 	"strings"
 )
 
+// Repo is an F-Droid repository holding apps and apks
 type Repo struct {
 	Apps []App `xml:"application"`
 }
 
+// App is an Android application
 type App struct {
 	Name    string `xml:"name"`
 	ID      string `xml:"id"`
@@ -37,6 +39,7 @@ type App struct {
 	CurApk  *Apk
 }
 
+// Apk is an Android package
 type Apk struct {
 	VName   string `xml:"version"`
 	VCode   uint   `xml:"versioncode"`
