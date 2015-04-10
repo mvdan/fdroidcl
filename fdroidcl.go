@@ -40,8 +40,6 @@ type App struct {
 type Apk struct {
 	VName   string `xml:"version"`
 	VCode   uint   `xml:"versioncode"`
-	ApkName string `xml:"apkname"`
-	SrcName string `xml:"srcname"`
 	Size    int    `xml:"size"`
 	MinSdk  int    `xml:"sdkver"`
 }
@@ -49,7 +47,6 @@ type Apk struct {
 func Form(f, str string) string { return fmt.Sprintf("\033[%sm%s\033[0m", f, str) }
 func Bold(str string) string    { return Form("1", str) }
 func Green(str string) string   { return Form("1;32", str) }
-func Blue(str string) string    { return Form("1;34", str) }
 func Purple(str string) string  { return Form("1;35", str) }
 
 func (app *App) prepareData() {
