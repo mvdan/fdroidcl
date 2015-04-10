@@ -23,18 +23,19 @@ type Repo struct {
 type RepoInfo struct{}
 
 type App struct {
-	Name       string `xml:"name"`
-	ID         string `xml:"id"`
-	Summary    string `xml:"summary"`
-	License    string `xml:"license"`
-	Categories string `xml:"categories"`
-	CVName     string `xml:"marketversion"`
-	CVCode     uint   `xml:"marketvercode"`
-	Web        string `xml:"web"`
-	Source     string `xml:"source"`
-	Tracker    string `xml:"tracker"`
-	Apks       []Apk  `xml:"package"`
-	CurApk     *Apk
+	Name    string `xml:"name"`
+	ID      string `xml:"id"`
+	Summary string `xml:"summary"`
+	Desc    string `xml:"desc"`
+	License string `xml:"license"`
+	Categs  string `xml:"categories"`
+	CVName  string `xml:"marketversion"`
+	CVCode  uint   `xml:"marketvercode"`
+	Website string `xml:"web"`
+	Source  string `xml:"source"`
+	Tracker string `xml:"tracker"`
+	Apks    []Apk  `xml:"package"`
+	CurApk  *Apk
 }
 
 type Apk struct {
@@ -50,21 +51,42 @@ func Green(str string) string   { return Form("1;32", str) }
 func Blue(str string) string    { return Form("1;34", str) }
 func Purple(str string) string  { return Form("1;35", str) }
 
-func (app *App) Version() string {
-	if app.CurApk == nil {
-		for _, apk := range app.Apks {
-			app.CurApk = &apk
-			if app.CVCode >= apk.VCode {
-				break
-			}
+func (app *App) prepareData() {
+	for _, apk := range app.Apks {
+		app.CurApk = &apk
+		if app.CVCode >= apk.VCode {
+			break
 		}
 	}
-	return Green(app.CurApk.VName)
 }
 
-func (app *App) WriteSummary(w io.Writer) {
-	fmt.Fprintf(w, "%s %s %s\n", Bold(app.Name), Purple(app.ID), app.Version())
+func (app *App) WriteShort(w io.Writer) {
+	fmt.Fprintf(w, "%s %s %s\n", Bold(app.Name),
+		Purple(app.ID), Green(app.CurApk.VName))
 	fmt.Fprintf(w, "    %s\n", app.Summary)
+}
+
+func (app *App) WriteDetailed(w io.Writer) {
+	p := func(title string, format string, args ...interface{}) {
+		fmt.Fprintf(w, "%s %s", Bold(title), fmt.Sprintf(format, args...))
+	}
+	p("Name            :", "%s\n", app.Name)
+	p("Current Version :", "%s (%d)\n", app.CurApk.VName, app.CurApk.VCode)
+	p("Summary         :", "%s\n", app.Summary)
+	p("License         :", "%s\n", app.License)
+	if app.Categs != "" {
+		p("Categories      :", "%s\n", app.Categs)
+	}
+	if app.Website != "" {
+		p("Website         :", "%s\n", app.Website)
+	}
+	if app.Source != "" {
+		p("Source          :", "%s\n", app.Source)
+	}
+	if app.Tracker != "" {
+		p("Tracker         :", "%s\n", app.Tracker)
+	}
+	// p("Description     :", "\n%s\n", app.Desc) TODO: html, 80 column wrapping
 }
 
 const indexName = "index.jar"
@@ -119,6 +141,7 @@ func loadApps() map[string]App {
 
 	for i := range repo.Apps {
 		app := repo.Apps[i]
+		app.prepareData()
 		apps[app.ID] = app
 	}
 	return apps
@@ -140,7 +163,7 @@ func main() {
 	case "list":
 		apps := loadApps()
 		for _, app := range apps {
-			app.WriteSummary(os.Stdout)
+			app.WriteShort(os.Stdout)
 		}
 	case "show":
 		apps := loadApps()
@@ -149,7 +172,7 @@ func main() {
 			if !e {
 				log.Fatalf("Could not find app with ID '%s'", appID)
 			}
-			app.WriteSummary(os.Stdout)
+			app.WriteDetailed(os.Stdout)
 		}
 	default:
 		log.Fatalf("Unrecognised command '%s'", cmd)
