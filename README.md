@@ -1,10 +1,11 @@
 # fdroidcl
 
-F-Droid desktop client.
+[F-Droid](https://f-droid.org/) desktop client.
 
-This is **not** a replacement for the Android client. While the Android client
-integrates with the system with regular update checks and notifications, this
-is a command line client that talks to connected devices via ADB.
+This is **not** a replacement for the [Android client](https://gitlab.com/fdroid/fdroidclient).
+While the Android client integrates with the system with regular update checks
+and notifications, this is a command line client that talks to connected
+devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
 For simplicity, it tries to follow the `apt-get`/`apt-cache` commands where it
 makes sense such as `update`, `show`, `install` and `remove`.
