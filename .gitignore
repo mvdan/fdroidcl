@@ -1,0 +1,6 @@
+# Output binary
+fdroidcl
+
+# Indexes
+*.xml
+*.jar
