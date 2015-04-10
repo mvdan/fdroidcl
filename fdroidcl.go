@@ -208,13 +208,16 @@ var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
-		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Available commands:")
-		fmt.Fprintln(os.Stderr, "   update         Update the index")
-		fmt.Fprintln(os.Stderr, "   list           List all available apps")
-		fmt.Fprintln(os.Stderr, "   search <query> Search available apps")
-		fmt.Fprintln(os.Stderr, "   show <appid>   Show detailed info of an app")
+		p := func(args ...interface{}) {
+			fmt.Fprintln(os.Stderr, args...)
+		}
+		p("Usage: fdroidcl [-h] <command> [<args>]")
+		p()
+		p("Available commands:")
+		p("   update           Update the index")
+		p("   list             List all available apps")
+		p("   search <term...> Search available apps")
+		p("   show <appid..>   Show detailed info of an app")
 	}
 }
 
