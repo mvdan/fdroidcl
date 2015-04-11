@@ -57,7 +57,7 @@ func (app *App) prepareData() {
 }
 
 func (app *App) writeShort(w io.Writer) {
-	fmt.Fprintf(w, "%s %s %s\n", app.ID, app.Name, app.CurApk.VName)
+	fmt.Fprintf(w, "%s | %s %s\n", app.ID, app.Name, app.CurApk.VName)
 	fmt.Fprintf(w, "    %s\n", app.Summary)
 }
 
