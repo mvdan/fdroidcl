@@ -103,11 +103,11 @@ func (app *App) writeDetailed(w io.Writer) {
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
 		fmt.Println()
-		p("    Name     :", "%s (%d)", apk.VName, apk.VCode)
-		p("    Size     :", "%d", apk.Size)
-		p("    MinSdk   :", "%d", apk.MinSdk)
+		p("    Name   :", "%s (%d)", apk.VName, apk.VCode)
+		p("    Size   :", "%d", apk.Size)
+		p("    MinSdk :", "%d", apk.MinSdk)
 		if apk.ABIs != nil {
-			p("    ABIs     :", "%s", strings.Join(apk.ABIs, ", "))
+			p("    ABIs   :", "%s", strings.Join(apk.ABIs, ", "))
 		}
 	}
 }
