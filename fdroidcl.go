@@ -220,13 +220,13 @@ func init() {
 		p := func(args ...interface{}) {
 			fmt.Fprintln(os.Stderr, args...)
 		}
-		p("Usage: fdroidcl [-h] <command> [<args>]")
+		p("Usage: fdroidcl [-h] [-r <repo address>] <command> [<args>]")
 		p()
 		p("Available commands:")
 		p("   update           Update the index")
 		p("   list             List all available apps")
 		p("   search <term...> Search available apps")
-		p("   show <appid..>   Show detailed info of an app")
+		p("   show <appid...>   Show detailed info of an app")
 	}
 }
 
