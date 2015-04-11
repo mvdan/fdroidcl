@@ -24,8 +24,8 @@ type Repo struct {
 
 // App is an Android application
 type App struct {
-	Name    string `xml:"name"`
 	ID      string `xml:"id"`
+	Name    string `xml:"name"`
 	Summary string `xml:"summary"`
 	Desc    string `xml:"desc"`
 	License string `xml:"license"`
@@ -47,11 +47,6 @@ type Apk struct {
 	MinSdk  int    `xml:"sdkver"`
 }
 
-func form(f, str string) string { return fmt.Sprintf("\033[%sm%s\033[0m", f, str) }
-func bold(str string) string    { return form("1", str) }
-func green(str string) string   { return form("1;32", str) }
-func purple(str string) string  { return form("1;35", str) }
-
 func (app *App) prepareData() {
 	for _, apk := range app.Apks {
 		app.CurApk = &apk
@@ -62,17 +57,16 @@ func (app *App) prepareData() {
 }
 
 func (app *App) writeShort(w io.Writer) {
-	fmt.Fprintf(w, "%s %s %s\n", bold(app.Name),
-		purple(app.ID), green(app.CurApk.VName))
+	fmt.Fprintf(w, "%s %s %s\n", app.ID, app.Name, app.CurApk.VName)
 	fmt.Fprintf(w, "    %s\n", app.Summary)
 }
 
 func (app *App) writeDetailed(w io.Writer) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
-			fmt.Fprintln(w, bold(title))
+			fmt.Fprintln(w, title)
 		} else {
-			fmt.Fprintf(w, "%s %s\n", bold(title), fmt.Sprintf(format, args...))
+			fmt.Fprintf(w, "%s %s\n", title, fmt.Sprintf(format, args...))
 		}
 	}
 	p("Name             :", "%s", app.Name)
