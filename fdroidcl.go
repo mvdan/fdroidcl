@@ -22,29 +22,40 @@ type Repo struct {
 	Apps []App `xml:"application"`
 }
 
+type CommaList []string
+
+func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var content string
+	if err := d.DecodeElement(&content, &start); err != nil {
+		return err
+	}
+	*cl = strings.Split(content, ",")
+	return nil
+}
+
 // App is an Android application
 type App struct {
-	ID      string `xml:"id"`
-	Name    string `xml:"name"`
-	Summary string `xml:"summary"`
-	Desc    string `xml:"desc"`
-	License string `xml:"license"`
-	Categs  string `xml:"categories"`
-	CVName  string `xml:"marketversion"`
-	CVCode  uint   `xml:"marketvercode"`
-	Website string `xml:"web"`
-	Source  string `xml:"source"`
-	Tracker string `xml:"tracker"`
-	Apks    []Apk  `xml:"package"`
+	ID      string    `xml:"id"`
+	Name    string    `xml:"name"`
+	Summary string    `xml:"summary"`
+	Desc    string    `xml:"desc"`
+	License string    `xml:"license"`
+	Categs  CommaList `xml:"categories"`
+	CVName  string    `xml:"marketversion"`
+	CVCode  uint      `xml:"marketvercode"`
+	Website string    `xml:"web"`
+	Source  string    `xml:"source"`
+	Tracker string    `xml:"tracker"`
+	Apks    []Apk     `xml:"package"`
 	CurApk  *Apk
 }
 
 // Apk is an Android package
 type Apk struct {
-	VName   string `xml:"version"`
-	VCode   uint   `xml:"versioncode"`
-	Size    int    `xml:"size"`
-	MinSdk  int    `xml:"sdkver"`
+	VName  string `xml:"version"`
+	VCode  uint   `xml:"versioncode"`
+	Size   int    `xml:"size"`
+	MinSdk int    `xml:"sdkver"`
 }
 
 func (app *App) prepareData() {
@@ -74,8 +85,8 @@ func (app *App) writeDetailed(w io.Writer) {
 	p("Current Version  :", "%s (%d)", app.CurApk.VName, app.CurApk.VCode)
 	p("Upstream Version :", "%s (%d)", app.CVName, app.CVCode)
 	p("License          :", "%s", app.License)
-	if app.Categs != "" {
-		p("Categories       :", "%s", app.Categs)
+	if app.Categs != nil {
+		p("Categories       :", "%s", strings.Join(app.Categs, ", "))
 	}
 	if app.Website != "" {
 		p("Website          :", "%s", app.Website)
