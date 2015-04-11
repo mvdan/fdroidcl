@@ -52,10 +52,11 @@ type App struct {
 
 // Apk is an Android package
 type Apk struct {
-	VName  string `xml:"version"`
-	VCode  uint   `xml:"versioncode"`
-	Size   int    `xml:"size"`
-	MinSdk int    `xml:"sdkver"`
+	VName  string    `xml:"version"`
+	VCode  uint      `xml:"versioncode"`
+	Size   int       `xml:"size"`
+	MinSdk int       `xml:"sdkver"`
+	ABIs   CommaList `xml:"nativecode"`
 }
 
 func (app *App) prepareData() {
@@ -102,9 +103,12 @@ func (app *App) writeDetailed(w io.Writer) {
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
 		fmt.Println()
-		p("    Name   :", "%s (%d)", apk.VName, apk.VCode)
-		p("    Size   :", "%d", apk.Size)
-		p("    MinSdk :", "%d", apk.MinSdk)
+		p("    Name     :", "%s (%d)", apk.VName, apk.VCode)
+		p("    Size     :", "%d", apk.Size)
+		p("    MinSdk   :", "%d", apk.MinSdk)
+		if apk.ABIs != nil {
+			p("    ABIs     :", "%s", strings.Join(apk.ABIs, ", "))
+		}
 	}
 }
 
