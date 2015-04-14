@@ -56,6 +56,7 @@ type Apk struct {
 	VCode  uint      `xml:"versioncode"`
 	Size   int       `xml:"size"`
 	MinSdk int       `xml:"sdkver"`
+	MaxSdk int       `xml:"maxsdkver"`
 	ABIs   CommaList `xml:"nativecode"`
 }
 
@@ -106,6 +107,9 @@ func (app *App) writeDetailed(w io.Writer) {
 		p("    Name   :", "%s (%d)", apk.VName, apk.VCode)
 		p("    Size   :", "%d", apk.Size)
 		p("    MinSdk :", "%d", apk.MinSdk)
+		if apk.MaxSdk > 0 {
+			p("    MaxSdk :", "%d", apk.MaxSdk)
+		}
 		if apk.ABIs != nil {
 			p("    ABIs   :", "%s", strings.Join(apk.ABIs, ", "))
 		}
