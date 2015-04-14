@@ -41,13 +41,21 @@ type App struct {
 	Desc    string    `xml:"desc"`
 	License string    `xml:"license"`
 	Categs  CommaList `xml:"categories"`
-	CVName  string    `xml:"marketversion"`
-	CVCode  uint      `xml:"marketvercode"`
-	Website string    `xml:"web"`
-	Source  string    `xml:"source"`
-	Tracker string    `xml:"tracker"`
-	Apks    []Apk     `xml:"package"`
-	CurApk  *Apk
+
+	Website  string `xml:"web"`
+	Source   string `xml:"source"`
+	Tracker  string `xml:"tracker"`
+	Donate   string `xml:"donate"`
+	Bitcoin  string `xml:"bitcoin"`
+	Litecoin string `xml:"litecoin"`
+	Dogecoin string `xml:"dogecoin"`
+	FlattrID string `xml:"flattr"`
+
+	Apks []Apk `xml:"package"`
+
+	CVName string `xml:"marketversion"`
+	CVCode uint   `xml:"marketvercode"`
+	CurApk *Apk
 }
 
 // Apk is an Android package
@@ -98,6 +106,21 @@ func (app *App) writeDetailed(w io.Writer) {
 	}
 	if app.Tracker != "" {
 		p("Tracker          :", "%s", app.Tracker)
+	}
+	if app.Donate != "" {
+		p("Donate           :", "%s", app.Donate)
+	}
+	if app.Bitcoin != "" {
+		p("Bitcoin          :", "bitcoin:%s", app.Bitcoin)
+	}
+	if app.Litecoin != "" {
+		p("Litecoin         :", "litecoin:%s", app.Litecoin)
+	}
+	if app.Dogecoin != "" {
+		p("Dogecoin         :", "dogecoin:%s", app.Dogecoin)
+	}
+	if app.FlattrID != "" {
+		p("Flattr           :", "https://flattr.com/thing/%s", app.FlattrID)
 	}
 	// p("Description     :", "%s", app.Desc) // TODO: parse html, 80 column wrapping
 	fmt.Println()
