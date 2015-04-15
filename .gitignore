@@ -4,3 +4,4 @@ fdroidcl
 # Indexes
 *.xml
 *.jar
+*-etag

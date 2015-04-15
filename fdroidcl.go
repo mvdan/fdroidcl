@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -140,21 +141,35 @@ func (app *App) writeDetailed(w io.Writer) {
 }
 
 const indexName = "index.jar"
+const etagName = "index.jar-etag"
 
 func updateIndex() {
+	etag, _ := ioutil.ReadFile(etagName)
 	url := fmt.Sprintf("%s/%s", *repoURL, indexName)
-	resp, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("If-None-Match", string(etag))
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Failed to fetch '%s': %s", url, err)
 	}
 	defer resp.Body.Close()
-	out, err := os.Create(indexName)
-	if err != nil {
-		log.Fatalf("Failed to create file '%s': %s", indexName, err)
+	if resp.StatusCode == http.StatusNotModified {
+		log.Printf("Repo index %s already up to date", *repoURL)
+		return
 	}
-	defer out.Close()
-	if _, err := io.Copy(out, resp.Body); err != nil {
-		log.Fatal(err)
+	log.Printf("Downloading index from %s", *repoURL)
+	jar, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Failed to fetch '%s': %s", url, err)
+	}
+	err = ioutil.WriteFile(indexName, jar, 0644)
+	err2 := ioutil.WriteFile(etagName, []byte(resp.Header["Etag"][0]), 0644)
+	if err != nil {
+		err2 = err
+	}
+	if err2 != nil {
+		log.Fatalf("Failed to save '%s': %s", url, err)
 	}
 }
 
