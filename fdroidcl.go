@@ -7,6 +7,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -140,36 +141,51 @@ func (app *App) writeDetailed(w io.Writer) {
 	}
 }
 
-const indexName = "index.jar"
-const etagName = "index.jar-etag"
+var ErrNotModified = errors.New("etag matches, file was not modified")
 
-func updateIndex() {
-	etag, _ := ioutil.ReadFile(etagName)
-	url := fmt.Sprintf("%s/%s", *repoURL, indexName)
+func downloadEtag(url, path string) error {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("If-None-Match", string(etag))
+
+	etagPath := path + "-etag"
+	if _, err := os.Stat(path); err == nil {
+		etag, _ := ioutil.ReadFile(etagPath)
+		req.Header.Add("If-None-Match", string(etag))
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Failed to fetch '%s': %s", url, err)
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotModified {
-		log.Printf("Repo index %s already up to date", *repoURL)
-		return
+		return ErrNotModified
 	}
-	log.Printf("Downloading index from %s", *repoURL)
 	jar, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to fetch '%s': %s", url, err)
+		return err
 	}
-	err = ioutil.WriteFile(indexName, jar, 0644)
-	err2 := ioutil.WriteFile(etagName, []byte(resp.Header["Etag"][0]), 0644)
+	err = ioutil.WriteFile(path, jar, 0644)
+	err2 := ioutil.WriteFile(etagPath, []byte(resp.Header["Etag"][0]), 0644)
 	if err != nil {
-		err2 = err
+		return err
 	}
 	if err2 != nil {
-		log.Fatalf("Failed to save '%s': %s", url, err)
+		return err2
+	}
+	return nil
+}
+
+const indexName = "index.jar"
+
+func updateIndex() {
+	url := fmt.Sprintf("%s/%s", *repoURL, indexName)
+	log.Printf("Downloading %s", url)
+	err := downloadEtag(url, indexName)
+	if err == ErrNotModified {
+		log.Printf("Index is already up to date")
+	} else if err != nil {
+		log.Fatalf("Could not update index: %s", err)
 	}
 }
 
