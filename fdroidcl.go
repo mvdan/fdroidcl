@@ -37,27 +37,24 @@ func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 
 // App is an Android application
 type App struct {
-	ID      string    `xml:"id"`
-	Name    string    `xml:"name"`
-	Summary string    `xml:"summary"`
-	Desc    string    `xml:"desc"`
-	License string    `xml:"license"`
-	Categs  CommaList `xml:"categories"`
-
-	Website  string `xml:"web"`
-	Source   string `xml:"source"`
-	Tracker  string `xml:"tracker"`
-	Donate   string `xml:"donate"`
-	Bitcoin  string `xml:"bitcoin"`
-	Litecoin string `xml:"litecoin"`
-	Dogecoin string `xml:"dogecoin"`
-	FlattrID string `xml:"flattr"`
-
-	Apks []Apk `xml:"package"`
-
-	CVName string `xml:"marketversion"`
-	CVCode uint   `xml:"marketvercode"`
-	CurApk *Apk
+	ID       string    `xml:"id"`
+	Name     string    `xml:"name"`
+	Summary  string    `xml:"summary"`
+	Desc     string    `xml:"desc"`
+	License  string    `xml:"license"`
+	Categs   CommaList `xml:"categories"`
+	Website  string    `xml:"web"`
+	Source   string    `xml:"source"`
+	Tracker  string    `xml:"tracker"`
+	Donate   string    `xml:"donate"`
+	Bitcoin  string    `xml:"bitcoin"`
+	Litecoin string    `xml:"litecoin"`
+	Dogecoin string    `xml:"dogecoin"`
+	FlattrID string    `xml:"flattr"`
+	Apks     []Apk     `xml:"package"`
+	CVName   string    `xml:"marketversion"`
+	CVCode   uint      `xml:"marketvercode"`
+	CurApk   *Apk
 }
 
 // Apk is an Android package
@@ -70,13 +67,88 @@ type Apk struct {
 	ABIs   CommaList `xml:"nativecode"`
 }
 
-func (app *App) prepareData() {
+func (app *App) calcCurApk() {
 	for _, apk := range app.Apks {
 		app.CurApk = &apk
 		if app.CVCode >= apk.VCode {
 			break
 		}
 	}
+}
+
+func (app *App) writeTextDesc(w io.Writer) {
+	reader := strings.NewReader(app.Desc)
+	decoder := xml.NewDecoder(reader)
+	firstParagraph := true
+	linePrefix := ""
+	colsUsed := 0
+	for {
+		token, err := decoder.Token()
+		if err == io.EOF || token == nil {
+			break
+		}
+		switch t := token.(type) {
+		case xml.StartElement:
+			switch t.Name.Local {
+			case "p":
+				if firstParagraph {
+					firstParagraph = false
+				} else {
+					fmt.Fprintln(w)
+				}
+				linePrefix = ""
+				colsUsed = 0
+			case "li":
+				fmt.Fprint(w, "\n *")
+				linePrefix = "   "
+				colsUsed = 0
+			}
+		case xml.EndElement:
+			switch t.Name.Local {
+			case "p":
+				fmt.Fprintln(w)
+			case "ul":
+				fmt.Fprintln(w)
+			case "ol":
+				fmt.Fprintln(w)
+			}
+		case xml.CharData:
+			left := string(t)
+			limit := 80 - len(linePrefix) - colsUsed
+			firstLine := true
+			for len(left) > limit {
+				last := 0
+				for i, c := range left {
+					if i >= limit {
+						break
+					}
+					if c == ' ' {
+						last = i
+					}
+				}
+				if firstLine {
+					firstLine = false
+					limit += colsUsed
+				} else {
+					fmt.Fprint(w, linePrefix)
+				}
+				fmt.Fprintln(w, left[:last])
+				left = left[last+1:]
+				colsUsed = 0
+			}
+			if firstLine {
+				firstLine = false
+			} else {
+				fmt.Fprint(w, linePrefix)
+			}
+			fmt.Fprint(w, left)
+			colsUsed += len(left)
+		}
+	}
+}
+
+func (app *App) prepareData() {
+	app.calcCurApk()
 }
 
 func (app *App) writeShort(w io.Writer) {
@@ -124,7 +196,10 @@ func (app *App) writeDetailed(w io.Writer) {
 	if app.FlattrID != "" {
 		p("Flattr           :", "https://flattr.com/thing/%s", app.FlattrID)
 	}
-	// p("Description     :", "%s", app.Desc) // TODO: parse html, 80 column wrapping
+	fmt.Println()
+	p("Description :", "")
+	fmt.Println()
+	app.writeTextDesc(w)
 	fmt.Println()
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
@@ -248,7 +323,7 @@ func filterAppsSearch(apps *map[string]App, terms []string) {
 			strings.ToLower(app.ID),
 			strings.ToLower(app.Name),
 			strings.ToLower(app.Summary),
-			// strings.ToLower(app.Desc), // TODO remove html
+			strings.ToLower(app.Desc),
 		}
 		if !appMatches(fields, terms) {
 			delete(*apps, appID)
