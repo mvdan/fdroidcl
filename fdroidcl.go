@@ -82,6 +82,8 @@ func (app *App) writeTextDesc(w io.Writer) {
 	firstParagraph := true
 	linePrefix := ""
 	colsUsed := 0
+	var links []string
+	linked := false
 	for {
 		token, err := decoder.Token()
 		if err == io.EOF || token == nil {
@@ -102,6 +104,14 @@ func (app *App) writeTextDesc(w io.Writer) {
 				fmt.Fprint(w, "\n *")
 				linePrefix = "   "
 				colsUsed = 0
+			case "a":
+				for _, attr := range t.Attr {
+					if attr.Name.Local == "href" {
+						links = append(links, attr.Value)
+						linked = true
+						break
+					}
+				}
 			}
 		case xml.EndElement:
 			switch t.Name.Local {
@@ -114,6 +124,10 @@ func (app *App) writeTextDesc(w io.Writer) {
 			}
 		case xml.CharData:
 			left := string(t)
+			if linked {
+				left += fmt.Sprintf("[%d]", len(links)-1)
+				linked = false
+			}
 			limit := 80 - len(linePrefix) - colsUsed
 			firstLine := true
 			for len(left) > limit {
@@ -143,6 +157,12 @@ func (app *App) writeTextDesc(w io.Writer) {
 			}
 			fmt.Fprint(w, left)
 			colsUsed += len(left)
+		}
+	}
+	if len(links) > 0 {
+		fmt.Fprintln(w)
+		for i, link := range links {
+			fmt.Fprintf(w, "[%d] %s\n", i, link)
 		}
 	}
 }
