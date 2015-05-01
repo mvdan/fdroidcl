@@ -6,6 +6,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -75,7 +76,13 @@ func init() {
 	}
 }
 
-const repoName = "index"
+func mustLoadApps(repoName string) map[string]fdroidcl.App {
+	apps, err := fdroidcl.LoadApps(repoName)
+	if err != nil {
+		log.Fatalf("Could not load apps: %v", err)
+	}
+	return apps
+}
 
 func main() {
 	flag.Parse()
@@ -87,32 +94,38 @@ func main() {
 	cmd := flag.Args()[0]
 	args := flag.Args()[1:]
 
+	repoName := "index"
+
 	switch cmd {
 	case "update":
-		fdroidcl.UpdateIndex(repoName, *repoURL)
+		err := fdroidcl.UpdateIndex(repoName, *repoURL)
+		if err == fdroidcl.ErrNotModified {
+			log.Print("Index up to date")
+		} else if err != nil {
+			log.Fatalf("Could not update index: %v", err)
+		}
 	case "list":
-		apps := fdroidcl.LoadApps(repoName)
+		apps := mustLoadApps(repoName)
 		for _, app := range sortedApps(apps) {
 			app.WriteShort(os.Stdout)
 		}
 	case "search":
-		apps := fdroidcl.LoadApps(repoName)
+		apps := mustLoadApps(repoName)
 		filterAppsSearch(&apps, args)
 		for _, app := range sortedApps(apps) {
 			app.WriteShort(os.Stdout)
 		}
 	case "show":
-		apps := fdroidcl.LoadApps(repoName)
+		apps := mustLoadApps(repoName)
 		for _, appID := range args {
 			app, e := apps[appID]
 			if !e {
-				fmt.Fprintf(os.Stderr, "Could not find app with ID '%s'", appID)
-				os.Exit(1)
+				log.Fatalf("Could not find app with ID '%s'", appID)
 			}
 			app.WriteDetailed(os.Stdout)
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmd)
+		log.Printf("Unrecognised command '%s'\n\n", cmd)
 		flag.Usage()
 		os.Exit(2)
 	}

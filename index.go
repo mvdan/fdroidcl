@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -273,23 +272,20 @@ func indexPath(repoName string) string {
 	return repoName + ".jar"
 }
 
-func UpdateIndex(repoName, repoURL string) {
+func UpdateIndex(repoName, repoURL string) error {
 	path := indexPath(repoName)
 	url := fmt.Sprintf("%s/%s", repoURL, path)
-	log.Printf("Downloading %s", url)
-	err := downloadEtag(url, path)
-	if err == ErrNotModified {
-		log.Printf("Index is already up to date")
-	} else if err != nil {
-		log.Fatalf("Could not update index: %s", err)
+	if err := downloadEtag(url, path); err != nil {
+		return err
 	}
+	return nil
 }
 
-func LoadApps(repoName string) map[string]App {
+func LoadApps(repoName string) (map[string]App, error) {
 	path := indexPath(repoName)
 	r, err := zip.OpenReader(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer r.Close()
 	buf := new(bytes.Buffer)
@@ -300,10 +296,10 @@ func LoadApps(repoName string) map[string]App {
 		}
 		rc, err := f.Open()
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		if _, err = io.Copy(buf, rc); err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		rc.Close()
 		break
@@ -311,7 +307,7 @@ func LoadApps(repoName string) map[string]App {
 
 	var repo Repo
 	if err := xml.Unmarshal(buf.Bytes(), &repo); err != nil {
-		log.Fatalf("Could not read xml: %s", err)
+		return nil, err
 	}
 	apps := make(map[string]App)
 
@@ -320,5 +316,5 @@ func LoadApps(repoName string) map[string]App {
 		app.prepareData()
 		apps[app.ID] = app
 	}
-	return apps
+	return apps, nil
 }
