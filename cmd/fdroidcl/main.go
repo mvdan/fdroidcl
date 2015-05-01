@@ -9,6 +9,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/mvdan/fdroidcl"
 )
 
 func appMatches(fields []string, terms []string) bool {
@@ -24,7 +26,7 @@ func appMatches(fields []string, terms []string) bool {
 	return false
 }
 
-func filterAppsSearch(apps *map[string]App, terms []string) {
+func filterAppsSearch(apps *map[string]fdroidcl.App, terms []string) {
 	for _, term := range terms {
 		term = strings.ToLower(term)
 	}
@@ -41,13 +43,13 @@ func filterAppsSearch(apps *map[string]App, terms []string) {
 	}
 }
 
-type appList []App
+type appList []fdroidcl.App
 
 func (al appList) Len() int           { return len(al) }
 func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
-func sortedApps(apps map[string]App) []App {
+func sortedApps(apps map[string]fdroidcl.App) []fdroidcl.App {
 	list := make(appList, 0, len(apps))
 	for appID := range apps {
 		list = append(list, apps[appID])
@@ -66,12 +68,14 @@ func init() {
 		p("Usage: fdroidcl [-h] [-r <repo address>] <command> [<args>]")
 		p()
 		p("Available commands:")
-		p("   update           Update the index")
-		p("   list             List all available apps")
-		p("   search <term...> Search available apps")
-		p("   show <appid...>   Show detailed info of an app")
+		p("   update             Update the index")
+		p("   list               List all available apps")
+		p("   search <term...>   Search available apps")
+		p("   show <appid...>    Show detailed info of an app")
 	}
 }
+
+const repoName = "index"
 
 func main() {
 	flag.Parse()
@@ -85,27 +89,27 @@ func main() {
 
 	switch cmd {
 	case "update":
-		updateIndex()
+		fdroidcl.UpdateIndex(repoName, *repoURL)
 	case "list":
-		apps := loadApps()
+		apps := fdroidcl.LoadApps(repoName)
 		for _, app := range sortedApps(apps) {
-			app.writeShort(os.Stdout)
+			app.WriteShort(os.Stdout)
 		}
 	case "search":
-		apps := loadApps()
+		apps := fdroidcl.LoadApps(repoName)
 		filterAppsSearch(&apps, args)
 		for _, app := range sortedApps(apps) {
-			app.writeShort(os.Stdout)
+			app.WriteShort(os.Stdout)
 		}
 	case "show":
-		apps := loadApps()
+		apps := fdroidcl.LoadApps(repoName)
 		for _, appID := range args {
 			app, e := apps[appID]
 			if !e {
 				fmt.Fprintf(os.Stderr, "Could not find app with ID '%s'", appID)
 				os.Exit(1)
 			}
-			app.writeDetailed(os.Stdout)
+			app.WriteDetailed(os.Stdout)
 		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmd)

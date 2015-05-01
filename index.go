@@ -1,7 +1,7 @@
 /* Copyright (c) 2015, Daniel Martí <mvdan@mvdan.cc> */
 /* See LICENSE for licensing information */
 
-package main
+package fdroidcl
 
 import (
 	"archive/zip"
@@ -169,12 +169,12 @@ func (app *App) prepareData() {
 	app.calcCurApk()
 }
 
-func (app *App) writeShort(w io.Writer) {
+func (app *App) WriteShort(w io.Writer) {
 	fmt.Fprintf(w, "%s | %s %s\n", app.ID, app.Name, app.CurApk.VName)
 	fmt.Fprintf(w, "    %s\n", app.Summary)
 }
 
-func (app *App) writeDetailed(w io.Writer) {
+func (app *App) WriteDetailed(w io.Writer) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
 			fmt.Fprintln(w, title)
@@ -269,12 +269,15 @@ func downloadEtag(url, path string) error {
 	return nil
 }
 
-const indexName = "index.jar"
+func indexPath(repoName string) string {
+	return repoName + ".jar"
+}
 
-func updateIndex() {
-	url := fmt.Sprintf("%s/%s", *repoURL, indexName)
+func UpdateIndex(repoName, repoURL string) {
+	path := indexPath(repoName)
+	url := fmt.Sprintf("%s/%s", repoURL, path)
 	log.Printf("Downloading %s", url)
-	err := downloadEtag(url, indexName)
+	err := downloadEtag(url, path)
 	if err == ErrNotModified {
 		log.Printf("Index is already up to date")
 	} else if err != nil {
@@ -282,8 +285,9 @@ func updateIndex() {
 	}
 }
 
-func loadApps() map[string]App {
-	r, err := zip.OpenReader(indexName)
+func LoadApps(repoName string) map[string]App {
+	path := indexPath(repoName)
+	r, err := zip.OpenReader(path)
 	if err != nil {
 		log.Fatal(err)
 	}

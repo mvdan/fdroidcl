@@ -1,5 +1,5 @@
-# Output binary
-fdroidcl
+# Binaries
+cmd/fdroidcl/fdroidcl
 
 # Indexes
 *.xml
