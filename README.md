@@ -20,7 +20,6 @@ makes sense such as `update`, `show`, `install` and `remove`.
 
 ### Missing features
 
- * Proper index update checking via ETag
  * Multi-repo support
  * Interaction with a device via ADB:
    - Probably relying on the installed command `adb`
