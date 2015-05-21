@@ -16,14 +16,14 @@ import (
 )
 
 func appMatches(fields []string, terms []string) bool {
+	fieldLoop:
 	for _, field := range fields {
 		for _, term := range terms {
 			if !strings.Contains(field, term) {
-				goto next
+				continue fieldLoop
 			}
 		}
 		return true
-	next:
 	}
 	return false
 }
