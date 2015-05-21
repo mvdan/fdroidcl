@@ -18,12 +18,17 @@ func StartServer() error {
 	return nil
 }
 
-type Device string
+type Device struct {
+	Id      string
+	Product string
+	Model   string
+	Device  string
+}
 
-var deviceRegex = regexp.MustCompile(`^(.+)\tdevice`)
+var deviceRegex = regexp.MustCompile(`^([^\s]+)\s+device\s+product:([^\s]+)\s+model:([^\s]+)\s+device:([^\s]+)`)
 
 func Devices() ([]Device, error) {
-	cmd := exec.Command("adb", "devices")
+	cmd := exec.Command("adb", "devices", "-l")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -39,8 +44,13 @@ func Devices() ([]Device, error) {
 		if len(m) < 2 {
 			continue
 		}
-		device := Device(m[1])
-		if device == "" {
+		device := Device{
+			Id:      m[1],
+			Product: m[2],
+			Model:   m[3],
+			Device:  m[4],
+		}
+		if device.Id == "" {
 			continue
 		}
 		devices = append(devices, device)

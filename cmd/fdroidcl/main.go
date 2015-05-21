@@ -16,7 +16,7 @@ import (
 )
 
 func appMatches(fields []string, terms []string) bool {
-	fieldLoop:
+fieldLoop:
 	for _, field := range fields {
 		for _, term := range terms {
 			if !strings.Contains(field, term) {
@@ -132,7 +132,7 @@ func main() {
 			log.Fatalf("Could not list devices: %v", err)
 		}
 		for _, device := range devices {
-			fmt.Println(device)
+			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
 		}
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)
