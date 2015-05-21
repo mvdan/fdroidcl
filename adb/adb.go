@@ -57,3 +57,16 @@ func Devices() ([]Device, error) {
 	}
 	return devices, nil
 }
+
+func (d Device) AdbCommand(args ...string) *exec.Cmd {
+	cmdArgs := append([]string{"-s", d.Id}, args...)
+	return exec.Command("adb", cmdArgs...)
+}
+
+func (d Device) Install(path string) error {
+	cmd := d.AdbCommand("install", path)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return nil
+}
