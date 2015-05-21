@@ -70,3 +70,11 @@ func (d Device) Install(path string) error {
 	}
 	return nil
 }
+
+func (d Device) Uninstall(pkg string) error {
+	cmd := d.AdbCommand("uninstall", pkg)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return nil
+}
