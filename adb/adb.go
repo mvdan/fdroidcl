@@ -4,7 +4,9 @@
 package adb
 
 import (
+	"bufio"
 	"os/exec"
+	"regexp"
 )
 
 func StartServer() error {
@@ -16,12 +18,32 @@ func StartServer() error {
 	return nil
 }
 
-func DeviceList() ([]string, error) {
+type Device string
+
+var deviceRegex = regexp.MustCompile(`^(.+)\tdevice`)
+
+func Devices() ([]Device, error) {
 	cmd := exec.Command("adb", "devices")
-	stdout, err := cmd.Output()
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
-	_ = stdout
-	return nil, nil
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	var devices []Device
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		m := deviceRegex.FindStringSubmatch(line)
+		if len(m) < 2 {
+			continue
+		}
+		device := Device(m[1])
+		if device == "" {
+			continue
+		}
+		devices = append(devices, device)
+	}
+	return devices, nil
 }

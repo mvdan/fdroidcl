@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
+	"github.com/mvdan/fdroidcl/adb"
 )
 
 func appMatches(fields []string, terms []string) bool {
@@ -73,6 +74,7 @@ func init() {
 		p("   list               List all available apps")
 		p("   search <term...>   Search available apps")
 		p("   show <appid...>    Show detailed info of an app")
+		p("   devices            List connected devices")
 	}
 }
 
@@ -123,6 +125,14 @@ func main() {
 				log.Fatalf("Could not find app with ID '%s'", appID)
 			}
 			app.WriteDetailed(os.Stdout)
+		}
+	case "devices":
+		devices, err := adb.Devices()
+		if err != nil {
+			log.Fatalf("Could not list devices: %v", err)
+		}
+		for _, device := range devices {
+			fmt.Println(device)
 		}
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)
