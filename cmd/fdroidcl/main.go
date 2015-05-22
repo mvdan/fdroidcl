@@ -219,12 +219,13 @@ func main() {
 		for _, appID := range args {
 			found[appID] = nil
 		}
-		for _, app := range index.Apps {
+		for i := range index.Apps {
+			app := &index.Apps[i]
 			_, e := found[app.ID]
 			if !e {
 				continue
 			}
-			found[app.ID] = &app
+			found[app.ID] = app
 		}
 		for _, appID := range args {
 			app, _ := found[appID]
