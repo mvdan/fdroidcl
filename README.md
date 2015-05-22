@@ -22,9 +22,7 @@ makes sense such as `update`, `show`, `install` and `remove`.
 
  * Multi-repo support
  * Interaction with a device via ADB:
-   - Probably relying on the installed command `adb`
    - Fetch device details (Android version, architecture, ...)
-   - Fetch installed applications
    - Should use a `sync` command if always fetching the data above is slow
    - Install, update and remove applications
  * Interaction with multiple devices at once via ADB:
