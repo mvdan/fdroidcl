@@ -5,7 +5,6 @@ package fdroidcl
 
 import (
 	"archive/zip"
-	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -231,32 +230,30 @@ func (al appList) Len() int           { return len(al) }
 func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
-func LoadIndex(repoName string) (*Index, error) {
-	path := indexPath(repoName)
-	r, err := zip.OpenReader(path)
+func LoadIndexJar(r io.ReaderAt, size int64) (*Index, error) {
+	reader, err := zip.NewReader(r, size)
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
-	buf := new(bytes.Buffer)
-
-	for _, f := range r.File {
+	var rc io.ReadCloser
+	for _, f := range reader.File {
 		if f.Name != "index.xml" {
 			continue
 		}
-		rc, err := f.Open()
+		rc, err = f.Open()
 		if err != nil {
 			return nil, err
 		}
-		if _, err = io.Copy(buf, rc); err != nil {
-			return nil, err
-		}
-		rc.Close()
 		break
 	}
+	defer rc.Close()
+	return LoadIndexXml(rc)
+}
 
+func LoadIndexXml(r io.Reader) (*Index, error) {
 	var index Index
-	if err := xml.Unmarshal(buf.Bytes(), &index); err != nil {
+	decoder := xml.NewDecoder(r)
+	if err := decoder.Decode(&index); err != nil {
 		return nil, err
 	}
 

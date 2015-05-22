@@ -157,10 +157,23 @@ func init() {
 	}
 }
 
+func indexPath(repoName string) string {
+	return repoName + ".jar"
+}
+
 func mustLoadIndex(repoName string) *fdroidcl.Index {
-	index, err := fdroidcl.LoadIndex(repoName)
+	path := indexPath(repoName)
+	f, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("Could not load apps: %v", err)
+		log.Fatalf("Could not open index file: %v", err)
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		log.Fatalf("Could not stat index file: %v", err)
+	}
+	index, err := fdroidcl.LoadIndexJar(f, stat.Size())
+	if err != nil {
+		log.Fatalf("Could not load index: %v", err)
 	}
 	return index
 }
