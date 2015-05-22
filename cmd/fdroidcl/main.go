@@ -28,11 +28,12 @@ fieldLoop:
 	return false
 }
 
-func filterAppsSearch(apps *map[string]fdroidcl.App, terms []string) {
+func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
 	for _, term := range terms {
 		term = strings.ToLower(term)
 	}
-	for appID, app := range *apps {
+	var result []fdroidcl.App
+	for _, app := range apps {
 		fields := []string{
 			strings.ToLower(app.ID),
 			strings.ToLower(app.Name),
@@ -40,21 +41,26 @@ func filterAppsSearch(apps *map[string]fdroidcl.App, terms []string) {
 			strings.ToLower(app.Desc),
 		}
 		if !appMatches(fields, terms) {
-			delete(*apps, appID)
+			continue
 		}
+		result = append(result, app)
 	}
+	return result
 }
 
-func filterAppsInstalled(apps *map[string]fdroidcl.App, installed []string) {
+func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App{
 	instMap := make(map[string]struct{}, len(installed))
 	for _, id := range installed {
 		instMap[id] = struct{}{}
 	}
-	for appID := range *apps {
-		if _, e := instMap[appID]; !e {
-			delete(*apps, appID)
+	var result []fdroidcl.App
+	for _, app := range apps {
+		if _, e := instMap[app.ID]; !e {
+			continue
 		}
+		result = append(result, app)
 	}
+	return result
 }
 
 type appList []fdroidcl.App
@@ -63,29 +69,21 @@ func (al appList) Len() int           { return len(al) }
 func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
-func sortedApps(apps map[string]fdroidcl.App) []fdroidcl.App {
-	list := make(appList, 0, len(apps))
-	for appID := range apps {
-		list = append(list, apps[appID])
-	}
-	sort.Sort(list)
-	return list
-}
-
 func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
 		app.Name, app.CurApk.VName)
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func printApps(apps map[string]fdroidcl.App) {
+func printApps(apps []fdroidcl.App) {
 	maxIDLen := 0
-	for appID := range apps {
-		if len(appID) > maxIDLen {
-			maxIDLen = len(appID)
+	for _, app := range apps {
+		if len(app.ID) > maxIDLen {
+			maxIDLen = len(app.ID)
 		}
 	}
-	for _, app := range sortedApps(apps) {
+	sort.Sort(appList(apps))
+	for _, app := range apps {
 		printApp(app, maxIDLen)
 	}
 }
@@ -167,12 +165,12 @@ func init() {
 	}
 }
 
-func mustLoadApps(repoName string) map[string]fdroidcl.App {
-	apps, err := fdroidcl.LoadApps(repoName)
+func mustLoadRepo(repoName string) *fdroidcl.Repo {
+	repo, err := fdroidcl.LoadRepo(repoName)
 	if err != nil {
 		log.Fatalf("Could not load apps: %v", err)
 	}
-	return apps
+	return repo
 }
 
 func mustInstalled(device adb.Device) []string {
@@ -218,20 +216,31 @@ func main() {
 			log.Fatalf("Could not update index: %v", err)
 		}
 	case "list":
-		apps := mustLoadApps(repoName)
-		printApps(apps)
+		repo := mustLoadRepo(repoName)
+		printApps(repo.Apps)
 	case "search":
-		apps := mustLoadApps(repoName)
-		filterAppsSearch(&apps, args)
+		repo := mustLoadRepo(repoName)
+		apps := filterAppsSearch(repo.Apps, args)
 		printApps(apps)
 	case "show":
-		apps := mustLoadApps(repoName)
+		repo := mustLoadRepo(repoName)
+		found := make(map[string]*fdroidcl.App, len(args))
 		for _, appID := range args {
-			app, e := apps[appID]
+			found[appID] = nil
+		}
+		for _, app := range repo.Apps {
+			_, e := found[app.ID]
+			if !e {
+				continue
+			}
+			found[app.ID] = &app
+		}
+		for _, appID := range args {
+			app, e := found[appID]
 			if !e {
 				log.Fatalf("Could not find app with ID '%s'", appID)
 			}
-			printAppDetailed(app)
+			printAppDetailed(*app)
 		}
 	case "devices":
 		devices, err := adb.Devices()
@@ -242,10 +251,10 @@ func main() {
 			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
 		}
 	case "installed":
-		apps := mustLoadApps(repoName)
+		repo := mustLoadRepo(repoName)
 		device := oneDevice()
 		installed := mustInstalled(device)
-		filterAppsInstalled(&apps, installed)
+		apps := filterAppsInstalled(repo.Apps, installed)
 		printApps(apps)
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)

@@ -216,7 +216,7 @@ func UpdateIndex(repoName, repoURL string) error {
 	return nil
 }
 
-func LoadApps(repoName string) (map[string]App, error) {
+func LoadRepo(repoName string) (*Repo, error) {
 	path := indexPath(repoName)
 	r, err := zip.OpenReader(path)
 	if err != nil {
@@ -244,12 +244,10 @@ func LoadApps(repoName string) (map[string]App, error) {
 	if err := xml.Unmarshal(buf.Bytes(), &repo); err != nil {
 		return nil, err
 	}
-	apps := make(map[string]App)
 
 	for i := range repo.Apps {
-		app := repo.Apps[i]
+		app := &repo.Apps[i]
 		app.prepareData()
-		apps[app.ID] = app
 	}
-	return apps, nil
+	return &repo, nil
 }
