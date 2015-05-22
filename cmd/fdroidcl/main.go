@@ -47,7 +47,7 @@ func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
 	return result
 }
 
-func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App{
+func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App {
 	instMap := make(map[string]struct{}, len(installed))
 	for _, id := range installed {
 		instMap[id] = struct{}{}
@@ -139,7 +139,6 @@ func printAppDetailed(app fdroidcl.App) {
 		}
 	}
 }
-
 
 var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
 

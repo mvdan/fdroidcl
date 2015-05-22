@@ -19,12 +19,12 @@ import (
 
 type Index struct {
 	Repo struct {
-		Name string `xml:"name,attr"`
-		PubKey string `xml:"pubkey,attr"`
-		Timestamp int `xml:"timestamp,attr"`
-		URL string `xml:"url,attr"`
-		Version int `xml:"version,attr"`
-		MaxAge int `xml:"maxage,attr"`
+		Name        string `xml:"name,attr"`
+		PubKey      string `xml:"pubkey,attr"`
+		Timestamp   int    `xml:"timestamp,attr"`
+		URL         string `xml:"url,attr"`
+		Version     int    `xml:"version,attr"`
+		MaxAge      int    `xml:"maxage,attr"`
 		Description string `xml:"description"`
 	} `xml:"repo"`
 	Apps []App `xml:"application"`
