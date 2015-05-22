@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
@@ -63,12 +62,6 @@ func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App
 	return result
 }
 
-type appList []fdroidcl.App
-
-func (al appList) Len() int           { return len(al) }
-func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
-
 func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
 		app.Name, app.CurApk.VName)
@@ -82,7 +75,6 @@ func printApps(apps []fdroidcl.App) {
 			maxIDLen = len(app.ID)
 		}
 	}
-	sort.Sort(appList(apps))
 	for _, app := range apps {
 		printApp(app, maxIDLen)
 	}

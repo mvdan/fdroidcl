@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -216,6 +217,12 @@ func UpdateIndex(repoName, repoURL string) error {
 	return nil
 }
 
+type appList []App
+
+func (al appList) Len() int           { return len(al) }
+func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+
 func LoadRepo(repoName string) (*Repo, error) {
 	path := indexPath(repoName)
 	r, err := zip.OpenReader(path)
@@ -244,6 +251,8 @@ func LoadRepo(repoName string) (*Repo, error) {
 	if err := xml.Unmarshal(buf.Bytes(), &repo); err != nil {
 		return nil, err
 	}
+
+	sort.Sort(appList(repo.Apps))
 
 	for i := range repo.Apps {
 		app := &repo.Apps[i]
