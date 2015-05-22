@@ -72,6 +72,24 @@ func sortedApps(apps map[string]fdroidcl.App) []fdroidcl.App {
 	return list
 }
 
+func printApp(app fdroidcl.App, IDLen int) {
+	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
+		app.Name, app.CurApk.VName)
+	fmt.Printf("    %s\n", app.Summary)
+}
+
+func printApps(apps map[string]fdroidcl.App) {
+	maxIDLen := 0
+	for appID := range apps {
+		if len(appID) > maxIDLen {
+			maxIDLen = len(appID)
+		}
+	}
+	for _, app := range sortedApps(apps) {
+		printApp(app, maxIDLen)
+	}
+}
+
 var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
 
 func init() {
@@ -139,15 +157,11 @@ func main() {
 		}
 	case "list":
 		apps := mustLoadApps(repoName)
-		for _, app := range sortedApps(apps) {
-			app.WriteShort(os.Stdout)
-		}
+		printApps(apps)
 	case "search":
 		apps := mustLoadApps(repoName)
 		filterAppsSearch(&apps, args)
-		for _, app := range sortedApps(apps) {
-			app.WriteShort(os.Stdout)
-		}
+		printApps(apps)
 	case "show":
 		apps := mustLoadApps(repoName)
 		for _, appID := range args {
@@ -170,9 +184,7 @@ func main() {
 		device := oneDevice()
 		installed := mustInstalled(device)
 		filterAppsInstalled(&apps, installed)
-		for _, app := range sortedApps(apps) {
-			app.WriteShort(os.Stdout)
-		}
+		printApps(apps)
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)
 		flag.Usage()

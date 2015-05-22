@@ -168,11 +168,6 @@ func (app *App) prepareData() {
 	app.calcCurApk()
 }
 
-func (app *App) WriteShort(w io.Writer) {
-	fmt.Fprintf(w, "%s | %s %s\n", app.ID, app.Name, app.CurApk.VName)
-	fmt.Fprintf(w, "    %s\n", app.Summary)
-}
-
 func (app *App) WriteDetailed(w io.Writer) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
