@@ -163,6 +163,7 @@ func init() {
 		fmt.Fprintln(os.Stderr, "   search <term...>   Search available apps")
 		fmt.Fprintln(os.Stderr, "   show <appid...>    Show detailed info of an app")
 		fmt.Fprintln(os.Stderr, "   devices            List connected devices")
+		fmt.Fprintln(os.Stderr, "   installed          List installed apps")
 	}
 }
 
