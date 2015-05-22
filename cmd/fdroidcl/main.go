@@ -45,6 +45,18 @@ func filterAppsSearch(apps *map[string]fdroidcl.App, terms []string) {
 	}
 }
 
+func filterAppsInstalled(apps *map[string]fdroidcl.App, installed []string) {
+	instMap := make(map[string]struct{}, len(installed))
+	for _, id := range installed {
+		instMap[id] = struct{}{}
+	}
+	for appID := range *apps {
+		if _, e := instMap[appID]; !e {
+			delete(*apps, appID)
+		}
+	}
+}
+
 type appList []fdroidcl.App
 
 func (al appList) Len() int           { return len(al) }
@@ -81,6 +93,28 @@ func mustLoadApps(repoName string) map[string]fdroidcl.App {
 		log.Fatalf("Could not load apps: %v", err)
 	}
 	return apps
+}
+
+func mustInstalled(device adb.Device) []string {
+	installed, err := device.Installed()
+	if err != nil {
+		log.Fatalf("Could not get installed packages: %v", err)
+	}
+	return installed
+}
+
+func oneDevice() adb.Device {
+	devices, err := adb.Devices()
+	if err != nil {
+		log.Fatalf("Could not get devices: %v", err)
+	}
+	if len(devices) == 0 {
+		log.Fatalf("No devices found")
+	}
+	if len(devices) > 1 {
+		log.Fatalf("Too many devices found")
+	}
+	return devices[0]
 }
 
 func main() {
@@ -126,10 +160,18 @@ func main() {
 	case "devices":
 		devices, err := adb.Devices()
 		if err != nil {
-			log.Fatalf("Could not list devices: %v", err)
+			log.Fatalf("Could not get devices: %v", err)
 		}
 		for _, device := range devices {
 			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
+		}
+	case "installed":
+		apps := mustLoadApps(repoName)
+		device := oneDevice()
+		installed := mustInstalled(device)
+		filterAppsInstalled(&apps, installed)
+		for _, app := range sortedApps(apps) {
+			app.WriteShort(os.Stdout)
 		}
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)
