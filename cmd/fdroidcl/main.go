@@ -228,10 +228,13 @@ func main() {
 			}
 			found[app.ID] = app
 		}
-		for _, appID := range args {
+		for i, appID := range args {
 			app, _ := found[appID]
 			if app == nil {
 				log.Fatalf("Could not find app with ID '%s'", appID)
+			}
+			if i > 0 {
+				fmt.Printf("\n--\n\n")
 			}
 			printAppDetailed(*app)
 		}
