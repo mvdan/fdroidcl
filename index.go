@@ -18,7 +18,6 @@ import (
 )
 
 type Index struct {
-	Apps []App `xml:"application"`
 	Repo struct {
 		Name string `xml:"name,attr"`
 		PubKey string `xml:"pubkey,attr"`
@@ -27,7 +26,8 @@ type Index struct {
 		Version int `xml:"version,attr"`
 		MaxAge int `xml:"maxage,attr"`
 		Description string `xml:"description"`
-	} `repo`
+	} `xml:"repo"`
+	Apps []App `xml:"application"`
 }
 
 type CommaList []string
