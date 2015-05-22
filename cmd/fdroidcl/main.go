@@ -88,6 +88,7 @@ func printAppDetailed(app fdroidcl.App) {
 			fmt.Printf("%s %s\n", title, fmt.Sprintf(format, args...))
 		}
 	}
+	p("Package          :", "%s", app.ID)
 	p("Name             :", "%s", app.Name)
 	p("Summary          :", "%s", app.Summary)
 	p("Current Version  :", "%s (%d)", app.CurApk.VName, app.CurApk.VCode)
