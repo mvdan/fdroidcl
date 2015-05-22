@@ -157,12 +157,12 @@ func init() {
 	}
 }
 
-func mustLoadRepo(repoName string) *fdroidcl.Repo {
-	repo, err := fdroidcl.LoadRepo(repoName)
+func mustLoadIndex(repoName string) *fdroidcl.Index {
+	index, err := fdroidcl.LoadIndex(repoName)
 	if err != nil {
 		log.Fatalf("Could not load apps: %v", err)
 	}
-	return repo
+	return index
 }
 
 func mustInstalled(device adb.Device) []string {
@@ -208,19 +208,19 @@ func main() {
 			log.Fatalf("Could not update index: %v", err)
 		}
 	case "list":
-		repo := mustLoadRepo(repoName)
-		printApps(repo.Apps)
+		index := mustLoadIndex(repoName)
+		printApps(index.Apps)
 	case "search":
-		repo := mustLoadRepo(repoName)
-		apps := filterAppsSearch(repo.Apps, args)
+		index := mustLoadIndex(repoName)
+		apps := filterAppsSearch(index.Apps, args)
 		printApps(apps)
 	case "show":
-		repo := mustLoadRepo(repoName)
+		index := mustLoadIndex(repoName)
 		found := make(map[string]*fdroidcl.App, len(args))
 		for _, appID := range args {
 			found[appID] = nil
 		}
-		for _, app := range repo.Apps {
+		for _, app := range index.Apps {
 			_, e := found[app.ID]
 			if !e {
 				continue
@@ -243,10 +243,10 @@ func main() {
 			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
 		}
 	case "installed":
-		repo := mustLoadRepo(repoName)
+		index := mustLoadIndex(repoName)
 		device := oneDevice()
 		installed := mustInstalled(device)
-		apps := filterAppsInstalled(repo.Apps, installed)
+		apps := filterAppsInstalled(index.Apps, installed)
 		printApps(apps)
 	default:
 		log.Printf("Unrecognised command '%s'\n\n", cmd)

@@ -17,9 +17,17 @@ import (
 	"strings"
 )
 
-// Repo is an F-Droid repository holding apps and apks
-type Repo struct {
+type Index struct {
 	Apps []App `xml:"application"`
+	Repo struct {
+		Name string `xml:"name,attr"`
+		PubKey string `xml:"pubkey,attr"`
+		Timestamp int `xml:"timestamp,attr"`
+		URL string `xml:"url,attr"`
+		Version int `xml:"version,attr"`
+		MaxAge int `xml:"maxage,attr"`
+		Description string `xml:"description"`
+	} `repo`
 }
 
 type CommaList []string
@@ -223,7 +231,7 @@ func (al appList) Len() int           { return len(al) }
 func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
-func LoadRepo(repoName string) (*Repo, error) {
+func LoadIndex(repoName string) (*Index, error) {
 	path := indexPath(repoName)
 	r, err := zip.OpenReader(path)
 	if err != nil {
@@ -247,16 +255,16 @@ func LoadRepo(repoName string) (*Repo, error) {
 		break
 	}
 
-	var repo Repo
-	if err := xml.Unmarshal(buf.Bytes(), &repo); err != nil {
+	var index Index
+	if err := xml.Unmarshal(buf.Bytes(), &index); err != nil {
 		return nil, err
 	}
 
-	sort.Sort(appList(repo.Apps))
+	sort.Sort(appList(index.Apps))
 
-	for i := range repo.Apps {
-		app := &repo.Apps[i]
+	for i := range index.Apps {
+		app := &index.Apps[i]
 		app.prepareData()
 	}
-	return &repo, nil
+	return &index, nil
 }
