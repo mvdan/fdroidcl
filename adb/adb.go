@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 func StartServer() error {
@@ -20,12 +21,13 @@ func StartServer() error {
 
 type Device struct {
 	Id      string
+	Usb     string
 	Product string
 	Model   string
 	Device  string
 }
 
-var deviceRegex = regexp.MustCompile(`^([^\s]+)\s+device\s+product:([^\s]+)\s+model:([^\s]+)\s+device:([^\s]+)`)
+var deviceRegex = regexp.MustCompile(`^([^\s]+)\s+device(.*)$`)
 
 func Devices() ([]Device, error) {
 	cmd := exec.Command("adb", "devices", "-l")
@@ -45,13 +47,24 @@ func Devices() ([]Device, error) {
 			continue
 		}
 		device := Device{
-			Id:      m[1],
-			Product: m[2],
-			Model:   m[3],
-			Device:  m[4],
+			Id: m[1],
 		}
-		if device.Id == "" {
-			continue
+		extras := m[2]
+		for _, extra := range strings.Split(extras, " ") {
+			sp := strings.SplitN(extra, ":", 2)
+			if len(sp) < 2 {
+				continue
+			}
+			switch sp[0] {
+			case "usb":
+				device.Usb = sp[1]
+			case "product":
+				device.Product = sp[1]
+			case "model":
+				device.Model = sp[1]
+			case "device":
+				device.Device = sp[1]
+			}
 		}
 		devices = append(devices, device)
 	}
