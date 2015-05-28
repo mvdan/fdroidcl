@@ -172,12 +172,6 @@ func (app *App) prepareData() {
 	app.calcCurApk()
 }
 
-type appList []App
-
-func (al appList) Len() int           { return len(al) }
-func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
-
 func LoadIndexJar(r io.ReaderAt, size int64) (*Index, error) {
 	reader, err := zip.NewReader(r, size)
 	if err != nil {
@@ -197,6 +191,12 @@ func LoadIndexJar(r io.ReaderAt, size int64) (*Index, error) {
 	defer rc.Close()
 	return LoadIndexXml(rc)
 }
+
+type appList []App
+
+func (al appList) Len() int           { return len(al) }
+func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
 func LoadIndexXml(r io.Reader) (*Index, error) {
 	var index Index
