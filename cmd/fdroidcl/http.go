@@ -40,11 +40,11 @@ func downloadEtag(url, path string) error {
 	if resp.StatusCode == http.StatusNotModified {
 		return errNotModified
 	}
-	jar, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, jar, 0644)
+	err = ioutil.WriteFile(path, body, 0644)
 	etag := respEtag(resp)
 	err2 := ioutil.WriteFile(etagPath, []byte(etag), 0644)
 	if err != nil {
