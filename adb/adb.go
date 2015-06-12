@@ -5,10 +5,25 @@ package adb
 
 import (
 	"bufio"
+	"fmt"
+	"net"
 	"os/exec"
 	"regexp"
 	"strings"
 )
+
+const (
+	port = 5037
+)
+
+func IsServerRunning() bool {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", port))
+        if err != nil {
+		return false
+        }
+	conn.Close()
+	return true
+}
 
 func StartServer() error {
 	cmd := exec.Command("adb", "start-server")

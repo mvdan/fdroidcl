@@ -187,6 +187,16 @@ func mustLoadIndex(repoName string) *fdroidcl.Index {
 	return index
 }
 
+func startAdbIfNeeded() {
+	if adb.IsServerRunning() {
+		return
+	}
+	log.Printf("Starting ADB server...")
+	if err := adb.StartServer(); err != nil {
+		log.Fatalf("Could not start ADB server: %v", err)
+	}
+}
+
 func mustInstalled(device adb.Device) []string {
 	installed, err := device.Installed()
 	if err != nil {
@@ -261,6 +271,7 @@ func main() {
 			printAppDetailed(*app)
 		}
 	case "devices":
+		startAdbIfNeeded()
 		devices, err := adb.Devices()
 		if err != nil {
 			log.Fatalf("Could not get devices: %v", err)
@@ -270,6 +281,7 @@ func main() {
 		}
 	case "installed":
 		index := mustLoadIndex(repoName)
+		startAdbIfNeeded()
 		device := oneDevice()
 		installed := mustInstalled(device)
 		apps := filterAppsInstalled(index.Apps, installed)
