@@ -109,6 +109,9 @@ func printAppDetailed(app fdroidcl.App) {
 	if app.Tracker != "" {
 		p("Tracker          :", "%s", app.Tracker)
 	}
+	if app.Changelog != "" {
+		p("Changelog        :", "%s", app.Changelog)
+	}
 	if app.Donate != "" {
 		p("Donate           :", "%s", app.Donate)
 	}

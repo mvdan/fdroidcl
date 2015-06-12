@@ -38,24 +38,25 @@ func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 
 // App is an Android application
 type App struct {
-	ID       string    `xml:"id"`
-	Name     string    `xml:"name"`
-	Summary  string    `xml:"summary"`
-	Desc     string    `xml:"desc"`
-	License  string    `xml:"license"`
-	Categs   CommaList `xml:"categories"`
-	Website  string    `xml:"web"`
-	Source   string    `xml:"source"`
-	Tracker  string    `xml:"tracker"`
-	Donate   string    `xml:"donate"`
-	Bitcoin  string    `xml:"bitcoin"`
-	Litecoin string    `xml:"litecoin"`
-	Dogecoin string    `xml:"dogecoin"`
-	FlattrID string    `xml:"flattr"`
-	Apks     []Apk     `xml:"package"`
-	CVName   string    `xml:"marketversion"`
-	CVCode   uint      `xml:"marketvercode"`
-	CurApk   *Apk
+	ID        string    `xml:"id"`
+	Name      string    `xml:"name"`
+	Summary   string    `xml:"summary"`
+	Desc      string    `xml:"desc"`
+	License   string    `xml:"license"`
+	Categs    CommaList `xml:"categories"`
+	Website   string    `xml:"web"`
+	Source    string    `xml:"source"`
+	Tracker   string    `xml:"tracker"`
+	Changelog string    `xml:"changelog"`
+	Donate    string    `xml:"donate"`
+	Bitcoin   string    `xml:"bitcoin"`
+	Litecoin  string    `xml:"litecoin"`
+	Dogecoin  string    `xml:"dogecoin"`
+	FlattrID  string    `xml:"flattr"`
+	Apks      []Apk     `xml:"package"`
+	CVName    string    `xml:"marketversion"`
+	CVCode    uint      `xml:"marketvercode"`
+	CurApk    *Apk
 }
 
 // Apk is an Android package
