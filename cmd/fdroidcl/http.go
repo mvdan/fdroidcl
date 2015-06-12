@@ -6,13 +6,23 @@ package main
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
 
 var errNotModified = errors.New("etag matches, file was not modified")
 
+func respEtag(resp *http.Response) string {
+	etags, e := resp.Header["Etag"]
+	if !e || len(etags) == 0 {
+		return ""
+	}
+	return etags[0]
+}
+
 func downloadEtag(url, path string) error {
+	log.Printf("Downloading %s", url)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -35,7 +45,8 @@ func downloadEtag(url, path string) error {
 		return err
 	}
 	err = ioutil.WriteFile(path, jar, 0644)
-	err2 := ioutil.WriteFile(etagPath, []byte(resp.Header["Etag"][0]), 0644)
+	etag := respEtag(resp)
+	err2 := ioutil.WriteFile(etagPath, []byte(etag), 0644)
 	if err != nil {
 		return err
 	}
