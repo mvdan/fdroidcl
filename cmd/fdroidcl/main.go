@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/mvdan/appdir"
 
 	"github.com/mvdan/fdroidcl"
 	"github.com/mvdan/fdroidcl/adb"
@@ -157,22 +160,34 @@ func init() {
 	}
 }
 
+func appSubdir(appdir string) string {
+	p := filepath.Join(appdir, "fdroidcl")
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.Fatalf("Could not create app dir: %v", err)
+	}
+	return p
+}
+
 func indexPath(repoName string) string {
-	return repoName + ".jar"
+	cache, err := appdir.Cache()
+	if err != nil {
+		log.Fatalf("Could not determine cache dir: %v", err)
+	}
+	return filepath.Join(appSubdir(cache), repoName + ".jar")
 }
 
 func updateIndex(repoName, repoURL string) error {
-	path := indexPath(repoName)
-	url := fmt.Sprintf("%s/%s", repoURL, path)
-	if err := downloadEtag(url, path); err != nil {
+	p := indexPath(repoName)
+	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
+	if err := downloadEtag(url, p); err != nil {
 		return err
 	}
 	return nil
 }
 
 func mustLoadIndex(repoName string) *fdroidcl.Index {
-	path := indexPath(repoName)
-	f, err := os.Open(path)
+	p := indexPath(repoName)
+	f, err := os.Open(p)
 	if err != nil {
 		log.Fatalf("Could not open index file: %v", err)
 	}
