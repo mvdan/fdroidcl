@@ -4,6 +4,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -147,11 +148,9 @@ func printAppDetailed(app fdroidcl.App) {
 	}
 }
 
-var repoURL = flag.String("r", "https://f-droid.org/repo", "repository address")
-
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] [-r <repo address>] <command> [<args>]")
+		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Available commands:")
 		fmt.Fprintln(os.Stderr, "   update             Update the index")
@@ -171,7 +170,7 @@ func appSubdir(appdir string) string {
 	return p
 }
 
-func indexPath(repoName string) string {
+func indexPath(name string) string {
 	cache, err := appdir.Cache()
 	if err != nil {
 		log.Fatalf("Could not determine cache dir: %v", err)
@@ -179,7 +178,7 @@ func indexPath(repoName string) string {
 	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
-func updateIndex(repoName, repoURL string) error {
+func updateIndex() error {
 	p := indexPath(repoName)
 	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
 	if err := downloadEtag(url, p); err != nil {
@@ -188,7 +187,7 @@ func updateIndex(repoName, repoURL string) error {
 	return nil
 }
 
-func mustLoadIndex(repoName string) *fdroidcl.Index {
+func mustLoadIndex() *fdroidcl.Index {
 	p := indexPath(repoName)
 	f, err := os.Open(p)
 	if err != nil {
@@ -198,7 +197,11 @@ func mustLoadIndex(repoName string) *fdroidcl.Index {
 	if err != nil {
 		log.Fatalf("Could not stat index file: %v", err)
 	}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size())
+	pubkey, err := hex.DecodeString(repoPubkey)
+	if err != nil {
+		log.Fatalf("Could not decode public key: %v", err)
+	}
+	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), pubkey)
 	if err != nil {
 		log.Fatalf("Could not load index: %v", err)
 	}
@@ -247,25 +250,23 @@ func main() {
 	cmd := flag.Args()[0]
 	args := flag.Args()[1:]
 
-	repoName := "index"
-
 	switch cmd {
 	case "update":
-		err := updateIndex(repoName, *repoURL)
+		err := updateIndex()
 		if err == errNotModified {
 			log.Print("Index up to date")
 		} else if err != nil {
 			log.Fatalf("Could not update index: %v", err)
 		}
 	case "list":
-		index := mustLoadIndex(repoName)
+		index := mustLoadIndex()
 		printApps(index.Apps)
 	case "search":
-		index := mustLoadIndex(repoName)
+		index := mustLoadIndex()
 		apps := filterAppsSearch(index.Apps, args)
 		printApps(apps)
 	case "show":
-		index := mustLoadIndex(repoName)
+		index := mustLoadIndex()
 		found := make(map[string]*fdroidcl.App, len(args))
 		for _, appID := range args {
 			found[appID] = nil
@@ -298,7 +299,7 @@ func main() {
 			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
 		}
 	case "installed":
-		index := mustLoadIndex(repoName)
+		index := mustLoadIndex()
 		startAdbIfNeeded()
 		device := oneDevice()
 		installed := mustInstalled(device)
