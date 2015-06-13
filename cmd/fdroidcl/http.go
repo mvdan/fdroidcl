@@ -5,6 +5,7 @@ package main
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -40,13 +41,12 @@ func downloadEtag(url, path string) error {
 	if resp.StatusCode == http.StatusNotModified {
 		return errNotModified
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, body, 0644)
-	etag := respEtag(resp)
-	err2 := ioutil.WriteFile(etagPath, []byte(etag), 0644)
+	_, err = io.Copy(f, resp.Body)
+	err2 := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644)
 	if err != nil {
 		return err
 	}
