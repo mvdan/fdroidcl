@@ -21,6 +21,7 @@ makes sense such as `update`, `show`, `install` and `remove`.
 ### Missing features
 
  * Index verification via jar signature
+   - Cannot be currently done since MD5WithRSA is unimplemented
  * Apk verification via checksum
  * Multi-repo support
  * Interaction with a device via ADB:
