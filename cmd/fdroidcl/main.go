@@ -176,7 +176,7 @@ func indexPath(repoName string) string {
 	if err != nil {
 		log.Fatalf("Could not determine cache dir: %v", err)
 	}
-	return filepath.Join(appSubdir(cache), repoName + ".jar")
+	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
 func updateIndex(repoName, repoURL string) error {
