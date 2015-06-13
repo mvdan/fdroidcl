@@ -18,9 +18,9 @@ const (
 
 func IsServerRunning() bool {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", port))
-        if err != nil {
+	if err != nil {
 		return false
-        }
+	}
 	conn.Close()
 	return true
 }
