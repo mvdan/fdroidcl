@@ -20,6 +20,8 @@ makes sense such as `update`, `show`, `install` and `remove`.
 
 ### Missing features
 
+ * Index verification via jar signature
+ * Apk verification via checksum
  * Multi-repo support
  * Interaction with a device via ADB:
    - Fetch device details (Android version, architecture, ...)
