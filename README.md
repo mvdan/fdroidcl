@@ -33,12 +33,13 @@ makes sense such as `update`, `show`, `install` and `remove`.
 
 ### Advantages over the Android client
 
- * Faster to use command line interface
- * Ability to batch install/update/remove without root nor system privileges
+ * Command line interface
+ * Batch install/update/remove apps without root nor system privileges
  * Handle multiple Android devices
 
-### Android client features this will never have
+### What it will never do
 
- * "Update available" notifications
- * Run on Android with a user interface
- * Swap apps over WiFi or Bluetooth and local repos
+ * Run as a daemon, e.g. periodic index updates
+ * Graphical user interface
+ * Act as an F-Droid server
+ * Swap apps with devices running the Android client
