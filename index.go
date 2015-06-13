@@ -4,7 +4,6 @@
 package fdroidcl
 
 import (
-	"archive/zip"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -171,26 +170,6 @@ func (app *App) TextDesc(w io.Writer) {
 
 func (app *App) prepareData() {
 	app.calcCurApk()
-}
-
-func LoadIndexJar(r io.ReaderAt, size int64) (*Index, error) {
-	reader, err := zip.NewReader(r, size)
-	if err != nil {
-		return nil, err
-	}
-	var rc io.ReadCloser
-	for _, f := range reader.File {
-		if f.Name != "index.xml" {
-			continue
-		}
-		rc, err = f.Open()
-		if err != nil {
-			return nil, err
-		}
-		break
-	}
-	defer rc.Close()
-	return LoadIndexXml(rc)
 }
 
 type appList []App
