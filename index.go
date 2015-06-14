@@ -60,12 +60,22 @@ type App struct {
 
 // Apk is an Android package
 type Apk struct {
-	VName  string    `xml:"version"`
-	VCode  uint      `xml:"versioncode"`
-	Size   int       `xml:"size"`
-	MinSdk int       `xml:"sdkver"`
-	MaxSdk int       `xml:"maxsdkver"`
-	ABIs   CommaList `xml:"nativecode"`
+	VName   string    `xml:"version"`
+	VCode   uint      `xml:"versioncode"`
+	Size    int       `xml:"size"`
+	MinSdk  int       `xml:"sdkver"`
+	MaxSdk  int       `xml:"maxsdkver"`
+	ABIs    CommaList `xml:"nativecode"`
+	ApkName string    `xml:"apkname"`
+	SrcName string    `xml:"srcname"`
+	Sig     string    `xml:"sig"`
+	Added   string    `xml:"added"`
+	Perms   CommaList `xml:"permissions"`
+	Feats   CommaList `xml:"features"`
+	Hash    []struct {
+		Type string `xml:"type,attr"`
+		Data string
+	} `xml:"hash"`
 }
 
 func (app *App) calcCurApk() {
