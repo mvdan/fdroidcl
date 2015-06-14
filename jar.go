@@ -24,15 +24,15 @@ var (
 
 func verifySignature(pubkey []byte, sig io.Reader) error {
 	/*
-	sigBytes, err := ioutil.ReadAll(sig)
-	if err != nil {
-		return err
-	}
-	cert, err := x509.ParseCertificate(pubkey)
-	if err != nil {
-		return err
-	}
-	return cert.CheckSignature(x509.MD5WithRSA, ...)
+		sigBytes, err := ioutil.ReadAll(sig)
+		if err != nil {
+			return err
+		}
+		cert, err := x509.ParseCertificate(pubkey)
+		if err != nil {
+			return err
+		}
+		return cert.CheckSignature(x509.MD5WithRSA, ...)
 	*/
 	return nil // MD5WithRSA is currently unimplemented
 }
