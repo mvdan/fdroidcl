@@ -4,6 +4,7 @@
 package fdroidcl
 
 import (
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -33,6 +34,18 @@ func (cl *commaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	}
 	*cl = strings.Split(content, ",")
 	return nil
+}
+
+type hexVal []byte
+
+func (hv *hexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var content string
+	var err error
+	if err = d.DecodeElement(&content, &start); err != nil {
+		return err
+	}
+	*hv, err = hex.DecodeString(content)
+	return err
 }
 
 // App is an Android application
@@ -68,7 +81,7 @@ type Apk struct {
 	ABIs    commaList `xml:"nativecode"`
 	ApkName string    `xml:"apkname"`
 	SrcName string    `xml:"srcname"`
-	Sig     string    `xml:"sig"`
+	Sig     hexVal    `xml:"sig"`
 	Added   string    `xml:"added"`
 	Perms   commaList `xml:"permissions"`
 	Feats   commaList `xml:"features"`
