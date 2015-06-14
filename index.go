@@ -10,6 +10,7 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"time"
 )
 
 type Index struct {
@@ -76,6 +77,20 @@ type Hash struct {
 	Data hexVal `xml:",chardata"`
 }
 
+type dateVal struct {
+	time.Time
+}
+
+func (dv *dateVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var content string
+	if err := d.DecodeElement(&content, &start); err != nil {
+		return err
+	}
+	t, err := time.Parse("2006-01-02", content)
+	*dv = dateVal{t}
+	return err
+}
+
 // Apk is an Android package
 type Apk struct {
 	VName   string    `xml:"version"`
@@ -87,7 +102,7 @@ type Apk struct {
 	ApkName string    `xml:"apkname"`
 	SrcName string    `xml:"srcname"`
 	Sig     hexVal    `xml:"sig"`
-	Added   string    `xml:"added"`
+	Added   dateVal   `xml:"added"`
 	Perms   commaList `xml:"permissions"`
 	Feats   commaList `xml:"features"`
 	Hashes  []Hash    `xml:"hash"`
