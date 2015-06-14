@@ -24,9 +24,9 @@ type Index struct {
 	Apps []App `xml:"application"`
 }
 
-type CommaList []string
+type commaList []string
 
-func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (cl *commaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
 	if err := d.DecodeElement(&content, &start); err != nil {
 		return err
@@ -42,7 +42,7 @@ type App struct {
 	Summary   string    `xml:"summary"`
 	Desc      string    `xml:"desc"`
 	License   string    `xml:"license"`
-	Categs    CommaList `xml:"categories"`
+	Categs    commaList `xml:"categories"`
 	Website   string    `xml:"web"`
 	Source    string    `xml:"source"`
 	Tracker   string    `xml:"tracker"`
@@ -65,13 +65,13 @@ type Apk struct {
 	Size    int64     `xml:"size"`
 	MinSdk  int       `xml:"sdkver"`
 	MaxSdk  int       `xml:"maxsdkver"`
-	ABIs    CommaList `xml:"nativecode"`
+	ABIs    commaList `xml:"nativecode"`
 	ApkName string    `xml:"apkname"`
 	SrcName string    `xml:"srcname"`
 	Sig     string    `xml:"sig"`
 	Added   string    `xml:"added"`
-	Perms   CommaList `xml:"permissions"`
-	Feats   CommaList `xml:"features"`
+	Perms   commaList `xml:"permissions"`
+	Feats   commaList `xml:"features"`
 	Hash    []struct {
 		Type string `xml:"type,attr"`
 		Data string
