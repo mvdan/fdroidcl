@@ -71,6 +71,11 @@ type App struct {
 	CurApk    *Apk
 }
 
+type Hash struct {
+	Type string `xml:"type,attr"`
+	Data hexVal `xml:",chardata"`
+}
+
 // Apk is an Android package
 type Apk struct {
 	VName   string    `xml:"version"`
@@ -85,10 +90,7 @@ type Apk struct {
 	Added   string    `xml:"added"`
 	Perms   commaList `xml:"permissions"`
 	Feats   commaList `xml:"features"`
-	Hash    []struct {
-		Type string `xml:"type,attr"`
-		Data string
-	} `xml:"hash"`
+	Hashes  []Hash    `xml:"hash"`
 }
 
 func (app *App) calcCurApk() {
