@@ -4,15 +4,12 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 )
-
-var errNotModified = errors.New("etag matches, file was not modified")
 
 func respEtag(resp *http.Response) string {
 	etags, e := resp.Header["Etag"]
@@ -23,7 +20,7 @@ func respEtag(resp *http.Response) string {
 }
 
 func downloadEtag(url, path string) error {
-	log.Printf("Downloading %s", url)
+	fmt.Printf("Downloading %s...", url)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -39,7 +36,8 @@ func downloadEtag(url, path string) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotModified {
-		return errNotModified
+		fmt.Println(" not modified")
+		return nil
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
@@ -53,5 +51,6 @@ func downloadEtag(url, path string) error {
 	if err2 != nil {
 		return err2
 	}
+	fmt.Println(" done")
 	return nil
 }

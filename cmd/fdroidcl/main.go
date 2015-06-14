@@ -179,9 +179,8 @@ func indexPath(name string) string {
 }
 
 func updateIndex() error {
-	p := indexPath(repoName)
 	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
-	if err := downloadEtag(url, p); err != nil {
+	if err := downloadEtag(url, indexPath(repoName)); err != nil {
 		return err
 	}
 	return nil
@@ -252,10 +251,7 @@ func main() {
 
 	switch cmd {
 	case "update":
-		err := updateIndex()
-		if err == errNotModified {
-			log.Print("Index up to date")
-		} else if err != nil {
+		if err := updateIndex(); err != nil {
 			log.Fatalf("Could not update index: %v", err)
 		}
 	case "list":
