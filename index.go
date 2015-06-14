@@ -62,7 +62,7 @@ type App struct {
 type Apk struct {
 	VName   string    `xml:"version"`
 	VCode   int       `xml:"versioncode"`
-	Size    int       `xml:"size"`
+	Size    int64     `xml:"size"`
 	MinSdk  int       `xml:"sdkver"`
 	MaxSdk  int       `xml:"maxsdkver"`
 	ABIs    CommaList `xml:"nativecode"`
