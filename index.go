@@ -54,14 +54,14 @@ type App struct {
 	FlattrID  string    `xml:"flattr"`
 	Apks      []Apk     `xml:"package"`
 	CVName    string    `xml:"marketversion"`
-	CVCode    uint      `xml:"marketvercode"`
+	CVCode    int       `xml:"marketvercode"`
 	CurApk    *Apk
 }
 
 // Apk is an Android package
 type Apk struct {
 	VName   string    `xml:"version"`
-	VCode   uint      `xml:"versioncode"`
+	VCode   int       `xml:"versioncode"`
 	Size    int       `xml:"size"`
 	MinSdk  int       `xml:"sdkver"`
 	MaxSdk  int       `xml:"maxsdkver"`
