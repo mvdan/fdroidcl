@@ -6,6 +6,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+
+	"github.com/mvdan/appdir"
 )
 
 var cmdUpdate = &Command{
@@ -29,4 +33,20 @@ func updateIndex() error {
 		return err
 	}
 	return nil
+}
+
+func indexPath(name string) string {
+	cache, err := appdir.Cache()
+	if err != nil {
+		log.Fatalf("Could not determine cache dir: %v", err)
+	}
+	return filepath.Join(appSubdir(cache), repoName+".jar")
+}
+
+func appSubdir(appdir string) string {
+	p := filepath.Join(appdir, "fdroidcl")
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.Fatalf("Could not create app dir: %v", err)
+	}
+	return p
 }

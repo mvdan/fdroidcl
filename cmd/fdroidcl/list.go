@@ -5,8 +5,10 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/mvdan/fdroidcl"
 )
@@ -56,4 +58,10 @@ func printApps(apps []fdroidcl.App) {
 	for _, app := range apps {
 		printApp(app, maxIDLen)
 	}
+}
+
+func printApp(app fdroidcl.App, IDLen int) {
+	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
+		app.Name, app.CurApk.VName)
+	fmt.Printf("    %s\n", app.Summary)
 }
