@@ -4,7 +4,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -166,37 +165,6 @@ func indexPath(name string) string {
 	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
-func mustLoadIndex() *fdroidcl.Index {
-	p := indexPath(repoName)
-	f, err := os.Open(p)
-	if err != nil {
-		log.Fatalf("Could not open index file: %v", err)
-	}
-	stat, err := f.Stat()
-	if err != nil {
-		log.Fatalf("Could not stat index file: %v", err)
-	}
-	pubkey, err := hex.DecodeString(repoPubkey)
-	if err != nil {
-		log.Fatalf("Could not decode public key: %v", err)
-	}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), pubkey)
-	if err != nil {
-		log.Fatalf("Could not load index: %v", err)
-	}
-	return index
-}
-
-func startAdbIfNeeded() {
-	if adb.IsServerRunning() {
-		return
-	}
-	log.Printf("Starting ADB server...")
-	if err := adb.StartServer(); err != nil {
-		log.Fatalf("Could not start ADB server: %v", err)
-	}
-}
-
 func mustInstalled(device adb.Device) []string {
 	installed, err := device.Installed()
 	if err != nil {
@@ -244,12 +212,12 @@ var commands = []*Command{
 
 func main() {
 	flag.Parse()
-	if flag.NArg() == 0 {
+	args := flag.Args()
+
+	if len(args) < 1 {
 		flag.Usage()
 		os.Exit(2)
 	}
-
-	args := flag.Args()
 
 	for _, cmd := range commands {
 		if cmd.Name != args[0] {
@@ -291,15 +259,6 @@ func main() {
 				fmt.Printf("\n--\n\n")
 			}
 			printAppDetailed(*app)
-		}
-	case "devices":
-		startAdbIfNeeded()
-		devices, err := adb.Devices()
-		if err != nil {
-			log.Fatalf("Could not get devices: %v", err)
-		}
-		for _, device := range devices {
-			fmt.Printf("%s - %s (%s)\n", device.Id, device.Model, device.Product)
 		}
 	case "installed":
 		index := mustLoadIndex()
