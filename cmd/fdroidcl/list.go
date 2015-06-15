@@ -28,6 +28,7 @@ func runList(args []string) {
 }
 
 func mustLoadIndex() *fdroidcl.Index {
+	repoPubkey := ""
 	p := indexPath(repoName)
 	f, err := os.Open(p)
 	if err != nil {
