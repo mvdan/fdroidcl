@@ -72,18 +72,6 @@ func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func printApps(apps []fdroidcl.App) {
-	maxIDLen := 0
-	for _, app := range apps {
-		if len(app.ID) > maxIDLen {
-			maxIDLen = len(app.ID)
-		}
-	}
-	for _, app := range apps {
-		printApp(app, maxIDLen)
-	}
-}
-
 func printAppDetailed(app fdroidcl.App) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
@@ -178,14 +166,6 @@ func indexPath(name string) string {
 	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
-func updateIndex() error {
-	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
-	if err := downloadEtag(url, indexPath(repoName)); err != nil {
-		return err
-	}
-	return nil
-}
-
 func mustLoadIndex() *fdroidcl.Index {
 	p := indexPath(repoName)
 	f, err := os.Open(p)
@@ -239,6 +219,29 @@ func oneDevice() adb.Device {
 	return devices[0]
 }
 
+// A Command is an implementation of a go command
+// like go build or go fix.
+type Command struct {
+	// Run runs the command.
+	// The args are the arguments after the command name.
+	Run func(args []string)
+
+	// Name of the command.
+	Name string
+
+	// Short is the short description.
+	Short string
+
+	// Flag is a set of flags specific to this command.
+	Flag flag.FlagSet
+}
+
+// Commands lists the available commands.
+var commands = []*Command{
+	cmdUpdate,
+	cmdList,
+}
+
 func main() {
 	flag.Parse()
 	if flag.NArg() == 0 {
@@ -246,22 +249,26 @@ func main() {
 		os.Exit(2)
 	}
 
-	cmd := flag.Args()[0]
-	args := flag.Args()[1:]
+	args := flag.Args()
 
-	switch cmd {
-	case "update":
-		if err := updateIndex(); err != nil {
-			log.Fatalf("Could not update index: %v", err)
+	for _, cmd := range commands {
+		if cmd.Name != args[0] {
+			continue
 		}
-	case "list":
-		index := mustLoadIndex()
-		printApps(index.Apps)
+		cmd.Flag.Parse(args[1:])
+		args = cmd.Flag.Args()
+		cmd.Run(args)
+		os.Exit(0)
+	}
+
+	switch args[0] {
 	case "search":
+		args = args[1:]
 		index := mustLoadIndex()
 		apps := filterAppsSearch(index.Apps, args)
 		printApps(apps)
 	case "show":
+		args = args[1:]
 		index := mustLoadIndex()
 		found := make(map[string]*fdroidcl.App, len(args))
 		for _, appID := range args {
@@ -302,7 +309,7 @@ func main() {
 		apps := filterAppsInstalled(index.Apps, installed)
 		printApps(apps)
 	default:
-		log.Printf("Unrecognised command '%s'\n\n", cmd)
+		log.Printf("Unrecognised command '%s'\n\n", args[0])
 		flag.Usage()
 		os.Exit(2)
 	}
