@@ -21,24 +21,26 @@ func init() {
 	cmdShow.Run = runShow
 }
 
-func runShow(args []string) {
+func findApps(ids []string) []*fdroidcl.App {
 	index := mustLoadIndex()
-	found := make(map[string]*fdroidcl.App, len(args))
-	for _, appID := range args {
-		found[appID] = nil
-	}
+	apps := make(map[string]*fdroidcl.App, len(index.Apps))
 	for i := range index.Apps {
 		app := &index.Apps[i]
-		_, e := found[app.ID]
-		if !e {
-			continue
-		}
-		found[app.ID] = app
+		apps[app.ID] = app
 	}
-	for i, appID := range args {
-		app, _ := found[appID]
+	result := make([]*fdroidcl.App, len(ids))
+	for i, id := range ids {
+		app, _ := apps[id]
+		result[i] = app
+	}
+	return result
+}
+
+func runShow(args []string) {
+	apps := findApps(args)
+	for i, app := range apps {
 		if app == nil {
-			log.Fatalf("Could not find app with ID '%s'", appID)
+			log.Fatalf("Could not find app with ID '%s'", args[i])
 		}
 		if i > 0 {
 			fmt.Printf("\n--\n\n")
