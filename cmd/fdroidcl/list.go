@@ -4,7 +4,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -28,7 +27,6 @@ func runList(args []string) {
 }
 
 func mustLoadIndex() *fdroidcl.Index {
-	repoPubkey := ""
 	p := indexPath(repoName)
 	f, err := os.Open(p)
 	if err != nil {
@@ -38,11 +36,11 @@ func mustLoadIndex() *fdroidcl.Index {
 	if err != nil {
 		log.Fatalf("Could not stat index file: %v", err)
 	}
-	pubkey, err := hex.DecodeString(repoPubkey)
-	if err != nil {
-		log.Fatalf("Could not decode public key: %v", err)
-	}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), pubkey)
+	//pubkey, err := hex.DecodeString(repoPubkey)
+	//if err != nil {
+		//log.Fatalf("Could not decode public key: %v", err)
+	//}
+	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
 	if err != nil {
 		log.Fatalf("Could not load index: %v", err)
 	}
