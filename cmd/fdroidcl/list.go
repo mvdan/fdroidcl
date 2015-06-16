@@ -38,7 +38,7 @@ func mustLoadIndex() *fdroidcl.Index {
 	}
 	//pubkey, err := hex.DecodeString(repoPubkey)
 	//if err != nil {
-		//log.Fatalf("Could not decode public key: %v", err)
+	//	log.Fatalf("Could not decode public key: %v", err)
 	//}
 	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
 	if err != nil {
