@@ -37,12 +37,12 @@ func init() {
 		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Available commands:")
-		fmt.Fprintln(os.Stderr, "   update             Update the index")
-		fmt.Fprintln(os.Stderr, "   list               List all available apps")
-		fmt.Fprintln(os.Stderr, "   search <term...>   Search available apps")
-		fmt.Fprintln(os.Stderr, "   show <appid...>    Show detailed info of an app")
-		fmt.Fprintln(os.Stderr, "   devices            List connected devices")
-		fmt.Fprintln(os.Stderr, "   installed          List installed apps")
+		fmt.Fprintln(os.Stderr, "   update              Update the index")
+		fmt.Fprintln(os.Stderr, "   list                List all available apps")
+		fmt.Fprintln(os.Stderr, "   search <regexp...>  Search available apps")
+		fmt.Fprintln(os.Stderr, "   show <appid...>     Show detailed info of an app")
+		fmt.Fprintln(os.Stderr, "   devices             List connected devices")
+		fmt.Fprintln(os.Stderr, "   installed           List installed apps")
 	}
 }
 

@@ -4,6 +4,7 @@
 package main
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
@@ -25,8 +26,9 @@ func runSearch(args []string) {
 }
 
 func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
-	for _, term := range terms {
-		term = strings.ToLower(term)
+	regexes := make([]*regexp.Regexp, len(terms))
+	for i, term := range terms {
+		regexes[i] = regexp.MustCompile(term)
 	}
 	var result []fdroidcl.App
 	for _, app := range apps {
@@ -36,7 +38,7 @@ func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
 			strings.ToLower(app.Summary),
 			strings.ToLower(app.Desc),
 		}
-		if !appMatches(fields, terms) {
+		if !appMatches(fields, regexes) {
 			continue
 		}
 		result = append(result, app)
@@ -44,11 +46,11 @@ func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
 	return result
 }
 
-func appMatches(fields []string, terms []string) bool {
+func appMatches(fields []string, regexes []*regexp.Regexp) bool {
 fieldLoop:
 	for _, field := range fields {
-		for _, term := range terms {
-			if !strings.Contains(field, term) {
+		for _, regex := range regexes {
+			if !regex.MatchString(field) {
 				continue fieldLoop
 			}
 		}
