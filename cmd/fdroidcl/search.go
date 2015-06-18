@@ -5,10 +5,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
+	"github.com/mvdan/fdroidcl/adb"
 )
 
 var cmdSearch = &Command{
@@ -17,7 +19,8 @@ var cmdSearch = &Command{
 }
 
 var (
-	quiet = cmdSearch.Flag.Bool("q", false, "Show package name only")
+	quiet     = cmdSearch.Flag.Bool("q", false, "Show package name only")
+	installed = cmdSearch.Flag.Bool("i", false, "Filter installed packages")
 )
 
 func init() {
@@ -27,6 +30,11 @@ func init() {
 func runSearch(args []string) {
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
+	if *installed {
+		device := oneDevice()
+		installed := mustInstalled(device)
+		apps = filterAppsInstalled(apps, installed)
+	}
 	if *quiet {
 		for _, app := range apps {
 			fmt.Println(app.ID)
@@ -86,4 +94,27 @@ func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
 		app.Name, app.CurApk.VName)
 	fmt.Printf("    %s\n", app.Summary)
+}
+
+func mustInstalled(device adb.Device) []string {
+	installed, err := device.Installed()
+	if err != nil {
+		log.Fatalf("Could not get installed packages: %v", err)
+	}
+	return installed
+}
+
+func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App {
+	instMap := make(map[string]struct{}, len(installed))
+	for _, id := range installed {
+		instMap[id] = struct{}{}
+	}
+	var result []fdroidcl.App
+	for _, app := range apps {
+		if _, e := instMap[app.ID]; !e {
+			continue
+		}
+		result = append(result, app)
+	}
+	return result
 }

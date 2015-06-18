@@ -81,7 +81,6 @@ var commands = []*Command{
 	cmdSearch,
 	cmdShow,
 	cmdDevices,
-	cmdInstalled,
 }
 
 func main() {

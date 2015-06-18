@@ -13,11 +13,9 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 	search <regexp...>  Search available apps
 	show <appid...>     Show detailed info about an app
 	devices             List connected devices
-	installed           List installed apps
 
 ### Missing commands
 
-	updates             List apps to update
 	install <appid...>  Install an app
 	upgrade <appid...>  Upgrade an app
 	remove <appid...>   Remove an app
