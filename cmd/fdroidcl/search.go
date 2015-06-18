@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -15,6 +16,10 @@ var cmdSearch = &Command{
 	Short: "Search available apps",
 }
 
+var (
+	quiet = cmdSearch.Flag.Bool("q", false, "Show package name only")
+)
+
 func init() {
 	cmdSearch.Run = runSearch
 }
@@ -22,7 +27,13 @@ func init() {
 func runSearch(args []string) {
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
-	printApps(apps)
+	if *quiet {
+		for _, app := range apps {
+			fmt.Println(app.ID)
+		}
+	} else {
+		printApps(apps)
+	}
 }
 
 func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
