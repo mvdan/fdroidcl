@@ -59,15 +59,18 @@ func (c *Command) Usage() {
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: fdroidcl [-h] <command> [<args>]")
-		fmt.Fprintln(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Available commands:")
-		fmt.Fprintln(os.Stderr, "   update              Update the index")
-		fmt.Fprintln(os.Stderr, "   list                List all available apps")
-		fmt.Fprintln(os.Stderr, "   search <regexp...>  Search available apps")
-		fmt.Fprintln(os.Stderr, "   show <appid...>     Show detailed info of an app")
-		fmt.Fprintln(os.Stderr, "   devices             List connected devices")
-		fmt.Fprintln(os.Stderr, "   installed           List installed apps")
+		fmt.Fprintf(os.Stderr, "Usage: %s [-h] <command> [<args>]\n\n", cmdName)
+		fmt.Fprintf(os.Stderr, "Available commands:\n")
+		maxUsageLen := 0
+		for _, c := range commands {
+			if len(c.UsageLine) > maxUsageLen {
+				maxUsageLen = len(c.UsageLine)
+			}
+		}
+		for _, c := range commands {
+			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
+				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
+		}
 	}
 }
 
