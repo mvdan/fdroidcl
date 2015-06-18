@@ -26,6 +26,8 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
    - Cannot be currently done since MD5WithRSA is unimplemented
  * Multi-repo support
  * Interaction with multiple devices at once
+ * Do multiple tasks at once, for example:
+   - Load the index and query installed packages via ADB
 
 ### Advantages over the Android client
 
