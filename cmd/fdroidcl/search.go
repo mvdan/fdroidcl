@@ -33,9 +33,11 @@ func runSearch(args []string) {
 		fmt.Println("-i is redundant if -u is specified")
 		cmdSearch.Flag.Usage()
 	}
-	device := oneDevice()
-	if device == nil && (*installed || *updates) {
-		log.Fatalf("Exactly one connected device is needed")
+	var device *adb.Device
+	if *installed || *updates {
+		device = mustOneDevice()
+	} else {
+		device = maybeOneDevice()
 	}
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
