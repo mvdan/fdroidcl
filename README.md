@@ -9,16 +9,16 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
 ### Commands
 
-	update              Update the index
-	search <regexp...>  Search available apps
-	show <appid...>     Show detailed info about an app
-	devices             List connected devices
+	update                Update the index
+	search <regexp...>    Search available apps
+	show <appid...>       Show detailed info about an app
+	devices               List connected devices
+	uninstall <appid...>  Uninstall an app
 
 ### Missing commands
 
 	install <appid...>  Install an app
 	upgrade <appid...>  Upgrade an app
-	remove <appid...>   Remove an app
 
 ### Missing features
 

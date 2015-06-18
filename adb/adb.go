@@ -5,7 +5,9 @@ package adb
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os/exec"
 	"regexp"
@@ -15,6 +17,11 @@ import (
 
 const (
 	port = 5037
+)
+
+var (
+	ErrInternalError = errors.New("internal error")
+	ErrUnknown       = errors.New("unknown error")
 )
 
 func IsServerRunning() bool {
@@ -32,7 +39,7 @@ func StartServer() error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return cmd.Wait()
 }
 
 type Device struct {
@@ -102,15 +109,35 @@ func (d *Device) Install(path string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return nil
+	return cmd.Wait()
+}
+
+func getLine(out io.ReadCloser) string {
+	scanner := bufio.NewScanner(out)
+	if !scanner.Scan() {
+		return ""
+	}
+	return scanner.Text()
 }
 
 func (d *Device) Uninstall(pkg string) error {
 	cmd := d.AdbCmd("uninstall", pkg)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return nil
+	line := getLine(stdout)
+	if line == "Success" {
+		return nil
+	}
+	switch line {
+	case "Failure [DELETE_FAILED_INTERNAL_ERROR]":
+		return ErrInternalError
+	}
+	return ErrUnknown
 }
 
 type Package struct {
