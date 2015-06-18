@@ -20,7 +20,8 @@ var cmdSearch = &Command{
 
 var (
 	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
-	installed = cmdSearch.Flag.Bool("i", false, "Filter installed packages")
+	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
+	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
 )
 
 func init() {
@@ -30,10 +31,19 @@ func init() {
 func runSearch(args []string) {
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
+	if *installed && *updates {
+		fmt.Println("-i and -u at the same time don't make sense")
+		cmdSearch.Flag.Usage()
+	}
 	if *installed {
 		device := oneDevice()
 		installed := mustInstalled(device)
 		apps = filterAppsInstalled(apps, installed)
+	}
+	if *updates {
+		device := oneDevice()
+		installed := mustInstalled(device)
+		apps = filterAppsUpdates(apps, installed)
 	}
 	if *quiet {
 		for _, app := range apps {
@@ -112,6 +122,26 @@ func filterAppsInstalled(apps []fdroidcl.App, installed []adb.Package) []fdroidc
 	var result []fdroidcl.App
 	for _, app := range apps {
 		if _, e := instMap[app.ID]; !e {
+			continue
+		}
+		result = append(result, app)
+	}
+	return result
+}
+
+func filterAppsUpdates(apps []fdroidcl.App, installed []adb.Package) []fdroidcl.App {
+	instMap := make(map[string]*adb.Package, len(installed))
+	for i := range installed {
+		p := &installed[i]
+		instMap[p.ID] = p
+	}
+	var result []fdroidcl.App
+	for _, app := range apps {
+		p, e := instMap[app.ID]
+		if !e {
+			continue
+		}
+		if p.VCode >= app.CurApk.VCode {
 			continue
 		}
 		result = append(result, app)
