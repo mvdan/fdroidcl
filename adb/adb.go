@@ -162,87 +162,87 @@ func (d *Device) Install(path string) error {
 	if line == "Success" {
 		return nil
 	}
-	code := line[len("Failure [") : len(line)-1]
+	code := line[len("Failure [INSTALL_") : len(line)-1]
 	switch code {
-	case "INSTALL_FAILED_ALREADY_EXISTS":
+	case "FAILED_ALREADY_EXISTS":
 		return ErrAlreadyExists
-	case "INSTALL_FAILED_INVALID_APK":
+	case "FAILED_INVALID_APK":
 		return ErrInvalidApk
-	case "INSTALL_FAILED_INVALID_URI":
+	case "FAILED_INVALID_URI":
 		return ErrInvalidUri
-	case "INSTALL_FAILED_INSUFFICIENT_STORAGE":
+	case "FAILED_INSUFFICIENT_STORAGE":
 		return ErrInsufficientStorage
-	case "INSTALL_FAILED_DUPLICATE_PACKAGE":
+	case "FAILED_DUPLICATE_PACKAGE":
 		return ErrDuplicatePackage
-	case "INSTALL_FAILED_NO_SHARED_USER":
+	case "FAILED_NO_SHARED_USER":
 		return ErrNoSharedUser
-	case "INSTALL_FAILED_UPDATE_INCOMPATIBLE":
+	case "FAILED_UPDATE_INCOMPATIBLE":
 		return ErrUpdateIncompatible
-	case "INSTALL_FAILED_SHARED_USER_INCOMPATIBLE":
+	case "FAILED_SHARED_USER_INCOMPATIBLE":
 		return ErrSharedUserIncompatible
-	case "INSTALL_FAILED_MISSING_SHARED_LIBRARY":
+	case "FAILED_MISSING_SHARED_LIBRARY":
 		return ErrMissingSharedLibrary
-	case "INSTALL_FAILED_REPLACE_COULDNT_DELETE":
+	case "FAILED_REPLACE_COULDNT_DELETE":
 		return ErrReplaceCouldntDelete
-	case "INSTALL_FAILED_DEXOPT":
+	case "FAILED_DEXOPT":
 		return ErrDexopt
-	case "INSTALL_FAILED_OLDER_SDK":
+	case "FAILED_OLDER_SDK":
 		return ErrOlderSdk
-	case "INSTALL_FAILED_CONFLICTING_PROVIDER":
+	case "FAILED_CONFLICTING_PROVIDER":
 		return ErrConflictingProvider
-	case "INSTALL_FAILED_NEWER_SDK":
+	case "FAILED_NEWER_SDK":
 		return ErrNewerSdk
-	case "INSTALL_FAILED_TEST_ONLY":
+	case "FAILED_TEST_ONLY":
 		return ErrTestOnly
-	case "INSTALL_FAILED_CPU_ABI_INCOMPATIBLE":
+	case "FAILED_CPU_ABI_INCOMPATIBLE":
 		return ErrCpuAbiIncompatible
-	case "INSTALL_FAILED_MISSING_FEATURE":
+	case "FAILED_MISSING_FEATURE":
 		return ErrMissingFeature
-	case "INSTALL_FAILED_CONTAINER_ERROR":
+	case "FAILED_CONTAINER_ERROR":
 		return ErrContainerError
-	case "INSTALL_FAILED_INVALID_INSTALL_LOCATION":
+	case "FAILED_INVALID_INSTALL_LOCATION":
 		return ErrInvalidInstallLocation
-	case "INSTALL_FAILED_MEDIA_UNAVAILABLE":
+	case "FAILED_MEDIA_UNAVAILABLE":
 		return ErrMediaUnavailable
-	case "INSTALL_FAILED_VERIFICATION_TIMEOUT":
+	case "FAILED_VERIFICATION_TIMEOUT":
 		return ErrVerificationTimeout
-	case "INSTALL_FAILED_VERIFICATION_FAILURE":
+	case "FAILED_VERIFICATION_FAILURE":
 		return ErrVerificationFailure
-	case "INSTALL_FAILED_PACKAGE_CHANGED":
+	case "FAILED_PACKAGE_CHANGED":
 		return ErrPackageChanged
-	case "INSTALL_FAILED_UID_CHANGED":
+	case "FAILED_UID_CHANGED":
 		return ErrUidChanged
-	case "INSTALL_FAILED_VERSION_DOWNGRADE":
+	case "FAILED_VERSION_DOWNGRADE":
 		return ErrVersionDowngrade
-	case "INSTALL_PARSE_FAILED_NOT_APK":
+	case "PARSE_FAILED_NOT_APK":
 		return ErrNotApk
-	case "INSTALL_PARSE_FAILED_BAD_MANIFEST":
+	case "PARSE_FAILED_BAD_MANIFEST":
 		return ErrBadManifest
-	case "INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION":
+	case "PARSE_FAILED_UNEXPECTED_EXCEPTION":
 		return ErrUnexpectedException
-	case "INSTALL_PARSE_FAILED_NO_CERTIFICATES":
+	case "PARSE_FAILED_NO_CERTIFICATES":
 		return ErrNoCertificates
-	case "INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES":
+	case "PARSE_FAILED_INCONSISTENT_CERTIFICATES":
 		return ErrInconsistentCertificates
-	case "INSTALL_PARSE_FAILED_CERTIFICATE_ENCODING":
+	case "PARSE_FAILED_CERTIFICATE_ENCODING":
 		return ErrCertificateEncoding
-	case "INSTALL_PARSE_FAILED_BAD_PACKAGE_NAME":
+	case "PARSE_FAILED_BAD_PACKAGE_NAME":
 		return ErrBadPackageName
-	case "INSTALL_PARSE_FAILED_BAD_SHARED_USER_ID":
+	case "PARSE_FAILED_BAD_SHARED_USER_ID":
 		return ErrBadSharedUserId
-	case "INSTALL_PARSE_FAILED_MANIFEST_MALFORMED":
+	case "PARSE_FAILED_MANIFEST_MALFORMED":
 		return ErrManifestMalformed
-	case "INSTALL_PARSE_FAILED_MANIFEST_EMPTY":
+	case "PARSE_FAILED_MANIFEST_EMPTY":
 		return ErrManifestEmpty
-	case "INSTALL_FAILED_INTERNAL_ERROR":
+	case "FAILED_INTERNAL_ERROR":
 		return ErrInternalError
-	case "INSTALL_FAILED_USER_RESTRICTED":
+	case "FAILED_USER_RESTRICTED":
 		return ErrUserRestricted
-	case "INSTALL_FAILED_DUPLICATE_PERMISSION":
+	case "FAILED_DUPLICATE_PERMISSION":
 		return ErrDuplicatePermission
-	case "INSTALL_FAILED_NO_MATCHING_ABIS":
+	case "FAILED_NO_MATCHING_ABIS":
 		return ErrNoMatchingAbis
-	case "INSTALL_FAILED_ABORTED":
+	case "FAILED_ABORTED":
 		return ErrAborted
 	}
 	return errors.New("unknown error: " + line)
@@ -269,17 +269,17 @@ func (d *Device) Uninstall(pkg string) error {
 	if line == "Success" {
 		return nil
 	}
-	code := line[len("Failure [") : len(line)-1]
+	code := line[len("Failure [DELETE_") : len(line)-1]
 	switch code {
-	case "DELETE_FAILED_INTERNAL_ERROR":
+	case "FAILED_INTERNAL_ERROR":
 		return ErrInternalError
-	case "DELETE_FAILED_DEVICE_POLICY_MANAGER":
+	case "FAILED_DEVICE_POLICY_MANAGER":
 		return ErrDevicePolicyManager
-	case "DELETE_FAILED_USER_RESTRICTED":
+	case "FAILED_USER_RESTRICTED":
 		return ErrUserRestricted
-	case "DELETE_FAILED_OWNER_BLOCKED":
+	case "FAILED_OWNER_BLOCKED":
 		return ErrOwnerBlocked
-	case "DELETE_FAILED_ABORTED":
+	case "FAILED_ABORTED":
 		return ErrAborted
 	}
 	return errors.New("unknown error: " + line)
