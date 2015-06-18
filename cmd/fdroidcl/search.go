@@ -19,7 +19,7 @@ var cmdSearch = &Command{
 }
 
 var (
-	quiet     = cmdSearch.Flag.Bool("q", false, "Show package name only")
+	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
 	installed = cmdSearch.Flag.Bool("i", false, "Filter installed packages")
 )
 
