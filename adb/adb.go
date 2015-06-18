@@ -125,7 +125,7 @@ var (
 	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
 )
 
-func (d Device) Installed() ([]Package, error) {
+func (d Device) Installed() (map[string]Package, error) {
 	cmd := d.AdbShell("dumpsys", "package", "packages")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -134,14 +134,20 @@ func (d Device) Installed() ([]Package, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	var packages []Package
+	packages := make(map[string]Package)
 	scanner := bufio.NewScanner(stdout)
-	var cur *Package
+	var cur Package
+	first := true
 	for scanner.Scan() {
 		l := scanner.Text()
 		if m := packageRegex.FindStringSubmatch(l); m != nil {
-			packages = append(packages, Package{ID: m[1]})
-			cur = &packages[len(packages)-1]
+			if first {
+				first = false
+			} else {
+				packages[cur.ID] = cur
+				cur = Package{}
+			}
+			cur.ID = m[1]
 		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
 			n, err := strconv.Atoi(m[1])
 			if err != nil {
@@ -151,6 +157,9 @@ func (d Device) Installed() ([]Package, error) {
 		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
 			cur.VName = m[1]
 		}
+	}
+	if !first {
+		packages[cur.ID] = cur
 	}
 	return packages, nil
 }
