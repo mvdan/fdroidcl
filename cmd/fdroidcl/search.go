@@ -96,7 +96,7 @@ func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func mustInstalled(device adb.Device) []string {
+func mustInstalled(device adb.Device) []adb.Package {
 	installed, err := device.Installed()
 	if err != nil {
 		log.Fatalf("Could not get installed packages: %v", err)
@@ -104,10 +104,10 @@ func mustInstalled(device adb.Device) []string {
 	return installed
 }
 
-func filterAppsInstalled(apps []fdroidcl.App, installed []string) []fdroidcl.App {
+func filterAppsInstalled(apps []fdroidcl.App, installed []adb.Package) []fdroidcl.App {
 	instMap := make(map[string]struct{}, len(installed))
-	for _, id := range installed {
-		instMap[id] = struct{}{}
+	for _, p := range installed {
+		instMap[p.ID] = struct{}{}
 	}
 	var result []fdroidcl.App
 	for _, app := range apps {

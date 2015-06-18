@@ -112,10 +112,17 @@ func (d Device) Uninstall(pkg string) error {
 	return nil
 }
 
-var packageRegex = regexp.MustCompile(`^package:([^\s]+)`)
+type Package struct {
+	ID    string
+	VName string
+	VCode int
 
-func (d Device) Installed() ([]string, error) {
-	cmd := d.AdbShell("pm", "list", "packages")
+}
+
+var packageRegex = regexp.MustCompile(`Package \[([^\s]+)\]`)
+
+func (d Device) Installed() ([]Package, error) {
+	cmd := d.AdbShell("dumpsys", "package", "packages")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -123,7 +130,7 @@ func (d Device) Installed() ([]string, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	var ids []string
+	var packages []Package
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -131,7 +138,10 @@ func (d Device) Installed() ([]string, error) {
 		if m == nil {
 			continue
 		}
-		ids = append(ids, m[1])
+		p := Package{
+			ID: m[1],
+		}
+		packages = append(packages, p)
 	}
-	return ids, nil
+	return packages, nil
 }
