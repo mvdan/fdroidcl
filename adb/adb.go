@@ -9,6 +9,7 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -114,12 +115,15 @@ func (d Device) Uninstall(pkg string) error {
 
 type Package struct {
 	ID    string
-	VName string
 	VCode int
-
+	VName string
 }
 
-var packageRegex = regexp.MustCompile(`Package \[([^\s]+)\]`)
+var (
+	packageRegex = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
+	verCodeRegex = regexp.MustCompile(`^    versionCode=([0-9]+)`)
+	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
+)
 
 func (d Device) Installed() ([]Package, error) {
 	cmd := d.AdbShell("dumpsys", "package", "packages")
@@ -132,16 +136,21 @@ func (d Device) Installed() ([]Package, error) {
 	}
 	var packages []Package
 	scanner := bufio.NewScanner(stdout)
+	var cur *Package
 	for scanner.Scan() {
-		line := scanner.Text()
-		m := packageRegex.FindStringSubmatch(line)
-		if m == nil {
-			continue
+		l := scanner.Text()
+		if m := packageRegex.FindStringSubmatch(l); m != nil {
+			packages = append(packages, Package{ID: m[1]})
+			cur = &packages[len(packages)-1]
+		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
+			n, err := strconv.Atoi(m[1])
+			if err != nil {
+				panic(err)
+			}
+			cur.VCode = n
+		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
+			cur.VName = m[1]
 		}
-		p := Package{
-			ID: m[1],
-		}
-		packages = append(packages, p)
 	}
 	return packages, nil
 }
