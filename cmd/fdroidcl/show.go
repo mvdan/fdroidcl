@@ -21,6 +21,19 @@ func init() {
 	cmdShow.Run = runShow
 }
 
+func runShow(args []string) {
+	apps := findApps(args)
+	for i, app := range apps {
+		if app == nil {
+			log.Fatalf("Could not find app with ID '%s'", args[i])
+		}
+		if i > 0 {
+			fmt.Printf("\n--\n\n")
+		}
+		printAppDetailed(*app)
+	}
+}
+
 func findApps(ids []string) []*fdroidcl.App {
 	index := mustLoadIndex()
 	apps := make(map[string]*fdroidcl.App, len(index.Apps))
@@ -34,19 +47,6 @@ func findApps(ids []string) []*fdroidcl.App {
 		result[i] = app
 	}
 	return result
-}
-
-func runShow(args []string) {
-	apps := findApps(args)
-	for i, app := range apps {
-		if app == nil {
-			log.Fatalf("Could not find app with ID '%s'", args[i])
-		}
-		if i > 0 {
-			fmt.Printf("\n--\n\n")
-		}
-		printAppDetailed(*app)
-	}
 }
 
 func printAppDetailed(app fdroidcl.App) {
