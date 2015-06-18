@@ -20,11 +20,53 @@ const (
 )
 
 var (
-	ErrInternalError       = errors.New("internal error")
+	// Common install and uninstall errors
+	ErrInternalError  = errors.New("internal error")
+	ErrUserRestricted = errors.New("user restricted")
+	ErrAborted        = errors.New("aborted")
+
+	// Install errors
+	ErrAlreadyExists            = errors.New("already exists")
+	ErrInvalidApk               = errors.New("invalid apk")
+	ErrInvalidUri               = errors.New("invalid uri")
+	ErrInsufficientStorage      = errors.New("insufficient storage")
+	ErrDuplicatePackage         = errors.New("duplicate package")
+	ErrNoSharedUser             = errors.New("no shared user")
+	ErrUpdateIncompatible       = errors.New("update incompatible")
+	ErrSharedUserIncompatible   = errors.New("shared user incompatible")
+	ErrMissingSharedLibrary     = errors.New("missing shared library")
+	ErrReplaceCouldntDelete     = errors.New("replace couldn't delete")
+	ErrDexopt                   = errors.New("dexopt")
+	ErrOlderSdk                 = errors.New("older sdk")
+	ErrConflictingProvider      = errors.New("conflicting provider")
+	ErrNewerSdk                 = errors.New("newer sdk")
+	ErrTestOnly                 = errors.New("test only")
+	ErrCpuAbiIncompatible       = errors.New("cpu abi incompatible")
+	ErrMissingFeature           = errors.New("missing feature")
+	ErrContainerError           = errors.New("combiner error")
+	ErrInvalidInstallLocation   = errors.New("invalid install location")
+	ErrMediaUnavailable         = errors.New("media unavailable")
+	ErrVerificationTimeout      = errors.New("verification timeout")
+	ErrVerificationFailure      = errors.New("verification failure")
+	ErrPackageChanged           = errors.New("package changed")
+	ErrUidChanged               = errors.New("uid changed")
+	ErrVersionDowngrade         = errors.New("version downgrade")
+	ErrNotApk                   = errors.New("not apk")
+	ErrBadManifest              = errors.New("bad manifest")
+	ErrUnexpectedException      = errors.New("unexpected exception")
+	ErrNoCertificates           = errors.New("no certificates")
+	ErrInconsistentCertificates = errors.New("inconsistent certificates")
+	ErrCertificateEncoding      = errors.New("certificate encoding")
+	ErrBadPackageName           = errors.New("bad package name")
+	ErrBadSharedUserId          = errors.New("bad shared user id")
+	ErrManifestMalformed        = errors.New("manifest malformed")
+	ErrManifestEmpty            = errors.New("manifest empty")
+	ErrDuplicatePermission      = errors.New("duplicate permission")
+	ErrNoMatchingAbis           = errors.New("no matching abis")
+
+	// Uninstall errors
 	ErrDevicePolicyManager = errors.New("device policy manager")
-	ErrUserRestricted      = errors.New("user restricted")
 	ErrOwnerBlocked        = errors.New("owner blocked")
-	ErrAborted             = errors.New("aborted")
 )
 
 func IsServerRunning() bool {
@@ -109,10 +151,101 @@ func (d *Device) AdbShell(args ...string) *exec.Cmd {
 
 func (d *Device) Install(path string) error {
 	cmd := d.AdbCmd("install", path)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	return cmd.Wait()
+	line := getLine(stdout)
+	if line == "Success" {
+		return nil
+	}
+	code := line[len("Failure [") : len(line)-1]
+	switch code {
+	case "INSTALL_FAILED_ALREADY_EXISTS":
+		return ErrAlreadyExists
+	case "INSTALL_FAILED_INVALID_APK":
+		return ErrInvalidApk
+	case "INSTALL_FAILED_INVALID_URI":
+		return ErrInvalidUri
+	case "INSTALL_FAILED_INSUFFICIENT_STORAGE":
+		return ErrInsufficientStorage
+	case "INSTALL_FAILED_DUPLICATE_PACKAGE":
+		return ErrDuplicatePackage
+	case "INSTALL_FAILED_NO_SHARED_USER":
+		return ErrNoSharedUser
+	case "INSTALL_FAILED_UPDATE_INCOMPATIBLE":
+		return ErrUpdateIncompatible
+	case "INSTALL_FAILED_SHARED_USER_INCOMPATIBLE":
+		return ErrSharedUserIncompatible
+	case "INSTALL_FAILED_MISSING_SHARED_LIBRARY":
+		return ErrMissingSharedLibrary
+	case "INSTALL_FAILED_REPLACE_COULDNT_DELETE":
+		return ErrReplaceCouldntDelete
+	case "INSTALL_FAILED_DEXOPT":
+		return ErrDexopt
+	case "INSTALL_FAILED_OLDER_SDK":
+		return ErrOlderSdk
+	case "INSTALL_FAILED_CONFLICTING_PROVIDER":
+		return ErrConflictingProvider
+	case "INSTALL_FAILED_NEWER_SDK":
+		return ErrNewerSdk
+	case "INSTALL_FAILED_TEST_ONLY":
+		return ErrTestOnly
+	case "INSTALL_FAILED_CPU_ABI_INCOMPATIBLE":
+		return ErrCpuAbiIncompatible
+	case "INSTALL_FAILED_MISSING_FEATURE":
+		return ErrMissingFeature
+	case "INSTALL_FAILED_CONTAINER_ERROR":
+		return ErrContainerError
+	case "INSTALL_FAILED_INVALID_INSTALL_LOCATION":
+		return ErrInvalidInstallLocation
+	case "INSTALL_FAILED_MEDIA_UNAVAILABLE":
+		return ErrMediaUnavailable
+	case "INSTALL_FAILED_VERIFICATION_TIMEOUT":
+		return ErrVerificationTimeout
+	case "INSTALL_FAILED_VERIFICATION_FAILURE":
+		return ErrVerificationFailure
+	case "INSTALL_FAILED_PACKAGE_CHANGED":
+		return ErrPackageChanged
+	case "INSTALL_FAILED_UID_CHANGED":
+		return ErrUidChanged
+	case "INSTALL_FAILED_VERSION_DOWNGRADE":
+		return ErrVersionDowngrade
+	case "INSTALL_PARSE_FAILED_NOT_APK":
+		return ErrNotApk
+	case "INSTALL_PARSE_FAILED_BAD_MANIFEST":
+		return ErrBadManifest
+	case "INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION":
+		return ErrUnexpectedException
+	case "INSTALL_PARSE_FAILED_NO_CERTIFICATES":
+		return ErrNoCertificates
+	case "INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES":
+		return ErrInconsistentCertificates
+	case "INSTALL_PARSE_FAILED_CERTIFICATE_ENCODING":
+		return ErrCertificateEncoding
+	case "INSTALL_PARSE_FAILED_BAD_PACKAGE_NAME":
+		return ErrBadPackageName
+	case "INSTALL_PARSE_FAILED_BAD_SHARED_USER_ID":
+		return ErrBadSharedUserId
+	case "INSTALL_PARSE_FAILED_MANIFEST_MALFORMED":
+		return ErrManifestMalformed
+	case "INSTALL_PARSE_FAILED_MANIFEST_EMPTY":
+		return ErrManifestEmpty
+	case "INSTALL_FAILED_INTERNAL_ERROR":
+		return ErrInternalError
+	case "INSTALL_FAILED_USER_RESTRICTED":
+		return ErrUserRestricted
+	case "INSTALL_FAILED_DUPLICATE_PERMISSION":
+		return ErrDuplicatePermission
+	case "INSTALL_FAILED_NO_MATCHING_ABIS":
+		return ErrNoMatchingAbis
+	case "INSTALL_FAILED_ABORTED":
+		return ErrAborted
+	}
+	return errors.New("unknown error: " + line)
 }
 
 func getLine(out io.ReadCloser) string {
@@ -136,16 +269,17 @@ func (d *Device) Uninstall(pkg string) error {
 	if line == "Success" {
 		return nil
 	}
-	switch line {
-	case "Failure [DELETE_FAILED_INTERNAL_ERROR]":
+	code := line[len("Failure [") : len(line)-1]
+	switch code {
+	case "DELETE_FAILED_INTERNAL_ERROR":
 		return ErrInternalError
-	case "Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]":
+	case "DELETE_FAILED_DEVICE_POLICY_MANAGER":
 		return ErrDevicePolicyManager
-	case "Failure [DELETE_FAILED_USER_RESTRICTED]":
+	case "DELETE_FAILED_USER_RESTRICTED":
 		return ErrUserRestricted
-	case "Failure [DELETE_FAILED_OWNER_BLOCKED]":
+	case "DELETE_FAILED_OWNER_BLOCKED":
 		return ErrOwnerBlocked
-	case "Failure [DELETE_FAILED_ABORTED]":
+	case "DELETE_FAILED_ABORTED":
 		return ErrAborted
 	}
 	return errors.New("unknown error: " + line)
