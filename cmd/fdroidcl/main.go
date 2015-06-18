@@ -47,7 +47,7 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) Usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s %s\n", cmdName, c.UsageLine)
+	fmt.Fprintf(os.Stderr, "Usage: %s %s [-h]\n", cmdName, c.UsageLine)
 	anyFlags := false
 	c.Flag.VisitAll(func(f *flag.Flag) { anyFlags = true })
 	if anyFlags {
@@ -71,6 +71,7 @@ func init() {
 			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
 				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
 		}
+		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more info\n", cmdName)
 	}
 }
 
