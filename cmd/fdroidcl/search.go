@@ -29,21 +29,19 @@ func init() {
 }
 
 func runSearch(args []string) {
-	index := mustLoadIndex()
-	apps := filterAppsSearch(index.Apps, args)
 	if *installed && *updates {
-		fmt.Println("-i and -u at the same time don't make sense")
+		fmt.Println("-i is redundant if -u is specified")
 		cmdSearch.Flag.Usage()
 	}
+	index := mustLoadIndex()
+	apps := filterAppsSearch(index.Apps, args)
 	if *installed {
-		device := oneDevice()
-		installed := mustInstalled(device)
-		apps = filterAppsInstalled(apps, installed)
+		instPkgs := mustInstalled(oneDevice())
+		apps = filterAppsInstalled(apps, instPkgs)
 	}
 	if *updates {
-		device := oneDevice()
-		installed := mustInstalled(device)
-		apps = filterAppsUpdates(apps, installed)
+		instPkgs := mustInstalled(oneDevice())
+		apps = filterAppsUpdates(apps, instPkgs)
 	}
 	if *quiet {
 		for _, app := range apps {
