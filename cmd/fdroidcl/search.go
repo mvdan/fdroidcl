@@ -5,8 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"regexp"
 	"strings"
 
@@ -36,27 +34,6 @@ func runSearch(args []string) {
 	} else {
 		printApps(apps)
 	}
-}
-
-func mustLoadIndex() *fdroidcl.Index {
-	p := indexPath(repoName)
-	f, err := os.Open(p)
-	if err != nil {
-		log.Fatalf("Could not open index file: %v", err)
-	}
-	stat, err := f.Stat()
-	if err != nil {
-		log.Fatalf("Could not stat index file: %v", err)
-	}
-	//pubkey, err := hex.DecodeString(repoPubkey)
-	//if err != nil {
-	//	log.Fatalf("Could not decode public key: %v", err)
-	//}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
-	if err != nil {
-		log.Fatalf("Could not load index: %v", err)
-	}
-	return index
 }
 
 func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {

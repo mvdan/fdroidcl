@@ -39,3 +39,17 @@ func startAdbIfNeeded() {
 		log.Fatalf("Could not start ADB server: %v", err)
 	}
 }
+
+func oneDevice() adb.Device {
+	devices, err := adb.Devices()
+	if err != nil {
+		log.Fatalf("Could not get devices: %v", err)
+	}
+	if len(devices) == 0 {
+		log.Fatalf("No devices found")
+	}
+	if len(devices) > 1 {
+		log.Fatalf("Too many devices found")
+	}
+	return devices[0]
+}

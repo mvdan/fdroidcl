@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/mvdan/appdir"
+	"github.com/mvdan/fdroidcl"
 )
 
 var cmdUpdate = &Command{
@@ -96,4 +97,25 @@ func appSubdir(appdir string) string {
 		log.Fatalf("Could not create app dir: %v", err)
 	}
 	return p
+}
+
+func mustLoadIndex() *fdroidcl.Index {
+	p := indexPath(repoName)
+	f, err := os.Open(p)
+	if err != nil {
+		log.Fatalf("Could not open index file: %v", err)
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		log.Fatalf("Could not stat index file: %v", err)
+	}
+	//pubkey, err := hex.DecodeString(repoPubkey)
+	//if err != nil {
+	//	log.Fatalf("Could not decode public key: %v", err)
+	//}
+	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
+	if err != nil {
+		log.Fatalf("Could not load index: %v", err)
+	}
+	return index
 }
