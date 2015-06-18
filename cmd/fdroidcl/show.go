@@ -13,8 +13,8 @@ import (
 )
 
 var cmdShow = &Command{
-	Name:  "show",
-	Short: "Show detailed info of an app",
+	UsageLine: "show <appid...>",
+	Short:     "Show detailed info of an app",
 }
 
 func init() {

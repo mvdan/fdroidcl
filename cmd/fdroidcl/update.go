@@ -16,8 +16,8 @@ import (
 )
 
 var cmdUpdate = &Command{
-	Name:  "update",
-	Short: "Update the index",
+	UsageLine: "update",
+	Short:     "Update the index",
 }
 
 func init() {

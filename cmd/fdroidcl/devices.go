@@ -11,8 +11,8 @@ import (
 )
 
 var cmdDevices = &Command{
-	Name:  "devices",
-	Short: "List connected devices",
+	UsageLine: "devices",
+	Short:     "List connected devices",
 }
 
 func init() {

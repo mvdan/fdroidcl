@@ -12,8 +12,8 @@ import (
 )
 
 var cmdSearch = &Command{
-	Name:  "search",
-	Short: "Search available apps",
+	UsageLine: "search <regexp...>",
+	Short:     "Search available apps",
 }
 
 var (

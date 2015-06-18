@@ -8,9 +8,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
+	cmdName = "fdroidcl"
+
 	repoName = "repo"
 	repoURL  = "https://f-droid.org/repo"
 )
@@ -22,14 +25,36 @@ type Command struct {
 	// The args are the arguments after the command name.
 	Run func(args []string)
 
-	// Name of the command.
-	Name string
+	// UsageLine is the one-line usage message.
+	// The first word in the line is taken to be the command name.
+	UsageLine string
 
 	// Short is the short description.
 	Short string
 
 	// Flag is a set of flags specific to this command.
 	Flag flag.FlagSet
+}
+
+// Name returns the command's name: the first word in the usage line.
+func (c *Command) Name() string {
+	name := c.UsageLine
+	i := strings.Index(name, " ")
+	if i >= 0 {
+		name = name[:i]
+	}
+	return name
+}
+
+func (c *Command) Usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s %s\n", cmdName, c.UsageLine)
+	anyFlags := false
+	c.Flag.VisitAll(func(f *flag.Flag) { anyFlags = true })
+	if anyFlags {
+		fmt.Fprintf(os.Stderr, "\nAvailable options:\n")
+		c.Flag.PrintDefaults()
+	}
+	os.Exit(2)
 }
 
 func init() {
@@ -66,9 +91,10 @@ func main() {
 	}
 
 	for _, cmd := range commands {
-		if cmd.Name != args[0] {
+		if cmd.Name() != args[0] {
 			continue
 		}
+		cmd.Flag.Usage = func() { cmd.Usage() }
 		cmd.Flag.Parse(args[1:])
 		args = cmd.Flag.Args()
 		cmd.Run(args)

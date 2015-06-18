@@ -11,8 +11,8 @@ import (
 )
 
 var cmdInstalled = &Command{
-	Name:  "installed",
-	Short: "List installed apps",
+	UsageLine: "installed",
+	Short:     "List installed apps",
 }
 
 func init() {

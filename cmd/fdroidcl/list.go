@@ -13,8 +13,8 @@ import (
 )
 
 var cmdList = &Command{
-	Name:  "list",
-	Short: "List all available apps",
+	UsageLine: "list",
+	Short:     "List all available apps",
 }
 
 func init() {
