@@ -33,14 +33,18 @@ func runSearch(args []string) {
 		fmt.Println("-i is redundant if -u is specified")
 		cmdSearch.Flag.Usage()
 	}
+	device := oneDevice()
+	if device == nil && (*installed || *updates) {
+		log.Fatalf("Exactly one connected device is needed")
+	}
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
 	if *installed {
-		instPkgs := mustInstalled(oneDevice())
+		instPkgs := mustInstalled(device)
 		apps = filterAppsInstalled(apps, instPkgs)
 	}
 	if *updates {
-		instPkgs := mustInstalled(oneDevice())
+		instPkgs := mustInstalled(device)
 		apps = filterAppsUpdates(apps, instPkgs)
 	}
 	if *quiet {
@@ -104,7 +108,10 @@ func printApp(app fdroidcl.App, IDLen int) {
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func mustInstalled(device adb.Device) map[string]adb.Package {
+func mustInstalled(device *adb.Device) map[string]adb.Package {
+	if device == nil {
+		return nil
+	}
 	inst, err := device.Installed()
 	if err != nil {
 		log.Fatalf("Could not get installed packages: %v", err)

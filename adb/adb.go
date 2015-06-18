@@ -45,7 +45,7 @@ type Device struct {
 
 var deviceRegex = regexp.MustCompile(`^([^\s]+)\s+device(.*)$`)
 
-func Devices() ([]Device, error) {
+func Devices() ([]*Device, error) {
 	cmd := exec.Command("adb", "devices", "-l")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -54,7 +54,7 @@ func Devices() ([]Device, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	var devices []Device
+	var devices []*Device
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -62,7 +62,7 @@ func Devices() ([]Device, error) {
 		if m == nil {
 			continue
 		}
-		device := Device{
+		device := &Device{
 			Id: m[1],
 		}
 		extras := m[2]
@@ -87,17 +87,17 @@ func Devices() ([]Device, error) {
 	return devices, nil
 }
 
-func (d Device) AdbCmd(args ...string) *exec.Cmd {
+func (d *Device) AdbCmd(args ...string) *exec.Cmd {
 	cmdArgs := append([]string{"-s", d.Id}, args...)
 	return exec.Command("adb", cmdArgs...)
 }
 
-func (d Device) AdbShell(args ...string) *exec.Cmd {
+func (d *Device) AdbShell(args ...string) *exec.Cmd {
 	shellArgs := append([]string{"shell"}, args...)
 	return d.AdbCmd(shellArgs...)
 }
 
-func (d Device) Install(path string) error {
+func (d *Device) Install(path string) error {
 	cmd := d.AdbCmd("install", path)
 	if err := cmd.Start(); err != nil {
 		return err
@@ -105,7 +105,7 @@ func (d Device) Install(path string) error {
 	return nil
 }
 
-func (d Device) Uninstall(pkg string) error {
+func (d *Device) Uninstall(pkg string) error {
 	cmd := d.AdbCmd("uninstall", pkg)
 	if err := cmd.Start(); err != nil {
 		return err
@@ -125,7 +125,7 @@ var (
 	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
 )
 
-func (d Device) Installed() (map[string]Package, error) {
+func (d *Device) Installed() (map[string]Package, error) {
 	cmd := d.AdbShell("dumpsys", "package", "packages")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
