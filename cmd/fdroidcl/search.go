@@ -39,12 +39,11 @@ func runSearch(args []string) {
 	}
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
+	instPkgs := mustInstalled(device)
 	if *installed {
-		instPkgs := mustInstalled(device)
 		apps = filterAppsInstalled(apps, instPkgs)
 	}
 	if *updates {
-		instPkgs := mustInstalled(device)
 		apps = filterAppsUpdates(apps, instPkgs)
 	}
 	if *quiet {
@@ -52,7 +51,7 @@ func runSearch(args []string) {
 			fmt.Println(app.ID)
 		}
 	} else {
-		printApps(apps)
+		printApps(apps, instPkgs)
 	}
 }
 
@@ -90,7 +89,7 @@ fieldLoop:
 	return false
 }
 
-func printApps(apps []fdroidcl.App) {
+func printApps(apps []fdroidcl.App, inst map[string]adb.Package) {
 	maxIDLen := 0
 	for _, app := range apps {
 		if len(app.ID) > maxIDLen {
@@ -98,13 +97,30 @@ func printApps(apps []fdroidcl.App) {
 		}
 	}
 	for _, app := range apps {
-		printApp(app, maxIDLen)
+		var pkg *adb.Package
+		p, e := inst[app.ID]
+		if e {
+			pkg = &p
+		}
+		printApp(app, maxIDLen, pkg)
 	}
 }
 
-func printApp(app fdroidcl.App, IDLen int) {
-	fmt.Printf("%s%s %s %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
-		app.Name, app.CurApk.VName)
+func descVersion(app fdroidcl.App, inst *adb.Package) string {
+	cur := app.CurApk
+	if inst == nil {
+		return fmt.Sprintf("%s (%d)", cur.VName, cur.VCode)
+	}
+	if inst.VCode >= cur.VCode {
+		return fmt.Sprintf("%s (%d) [installed]", cur.VName, cur.VCode)
+	}
+	return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VName, inst.VCode,
+		cur.VName, cur.VCode)
+}
+
+func printApp(app fdroidcl.App, IDLen int, inst *adb.Package) {
+	fmt.Printf("%s%s %s - %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
+		app.Name, descVersion(app, inst))
 	fmt.Printf("    %s\n", app.Summary)
 }
 
