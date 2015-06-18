@@ -20,8 +20,11 @@ const (
 )
 
 var (
-	ErrInternalError = errors.New("internal error")
-	ErrUnknown       = errors.New("unknown error")
+	ErrInternalError       = errors.New("internal error")
+	ErrDevicePolicyManager = errors.New("device policy manager")
+	ErrUserRestricted      = errors.New("user restricted")
+	ErrOwnerBlocked        = errors.New("owner blocked")
+	ErrAborted             = errors.New("aborted")
 )
 
 func IsServerRunning() bool {
@@ -136,8 +139,16 @@ func (d *Device) Uninstall(pkg string) error {
 	switch line {
 	case "Failure [DELETE_FAILED_INTERNAL_ERROR]":
 		return ErrInternalError
+	case "Failure [DELETE_FAILED_DEVICE_POLICY_MANAGER]":
+		return ErrDevicePolicyManager
+	case "Failure [DELETE_FAILED_USER_RESTRICTED]":
+		return ErrUserRestricted
+	case "Failure [DELETE_FAILED_OWNER_BLOCKED]":
+		return ErrOwnerBlocked
+	case "Failure [DELETE_FAILED_ABORTED]":
+		return ErrAborted
 	}
-	return ErrUnknown
+	return errors.New("unknown error: " + line)
 }
 
 type Package struct {
