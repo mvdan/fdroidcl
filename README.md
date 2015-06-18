@@ -10,7 +10,6 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 ### Commands
 
 	update              Update the index
-	list                List all available apps
 	search <regexp...>  Search available apps
 	show <appid...>     Show detailed info about an app
 	devices             List connected devices

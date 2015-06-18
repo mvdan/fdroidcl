@@ -78,7 +78,6 @@ func init() {
 // Commands lists the available commands.
 var commands = []*Command{
 	cmdUpdate,
-	cmdList,
 	cmdSearch,
 	cmdShow,
 	cmdDevices,
