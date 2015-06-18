@@ -30,23 +30,8 @@ func findApps(ids []string) []*fdroidcl.App {
 	}
 	result := make([]*fdroidcl.App, len(ids))
 	for i, id := range ids {
-		app, e := apps[id]
-		if e {
-			result[i] = app
-			continue
-		}
-		var found *fdroidcl.App
-		for j := range index.Apps {
-			app = &index.Apps[j]
-			if strings.Contains(strings.ToLower(app.ID), id) {
-				if found != nil {
-					found = nil
-					break
-				}
-				found = app
-			}
-		}
-		result[i] = found
+		app, _ := apps[id]
+		result[i] = app
 	}
 	return result
 }
