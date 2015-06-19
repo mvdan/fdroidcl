@@ -79,12 +79,7 @@ func IsServerRunning() bool {
 }
 
 func StartServer() error {
-	cmd := exec.Command("adb", "start-server")
-	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-	return cmd.Wait()
+	return exec.Command("adb", "start-server").Run()
 }
 
 type Device struct {

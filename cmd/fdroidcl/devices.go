@@ -41,6 +41,7 @@ func startAdbIfNeeded() {
 }
 
 func maybeOneDevice() *adb.Device {
+	startAdbIfNeeded()
 	devices, err := adb.Devices()
 	if err != nil {
 		log.Fatalf("Could not get devices: %v", err)
