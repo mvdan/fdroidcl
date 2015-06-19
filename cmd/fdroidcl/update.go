@@ -51,7 +51,7 @@ func respEtag(resp *http.Response) string {
 }
 
 func downloadEtag(url, path string, sum []byte) error {
-	fmt.Printf("Downloading %s...", url)
+	fmt.Printf("Downloading %s... ", url)
 	defer fmt.Println()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -68,7 +68,7 @@ func downloadEtag(url, path string, sum []byte) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotModified {
-		fmt.Printf(" not modified")
+		fmt.Printf("not modified")
 		return nil
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
@@ -96,7 +96,7 @@ func downloadEtag(url, path string, sum []byte) error {
 	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644); err != nil {
 		return err
 	}
-	fmt.Printf(" done")
+	fmt.Printf("done")
 	return nil
 }
 

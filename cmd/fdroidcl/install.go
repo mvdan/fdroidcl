@@ -39,9 +39,12 @@ func runInstall(args []string) {
 	}
 	for i, app := range apps {
 		path := paths[i]
+		fmt.Printf("Installing %s... ", app.ID)
 		if err := device.Install(path); err != nil {
+			fmt.Println()
 			log.Fatalf("Could not install '%s': %v", app.ID, err)
 		}
+		fmt.Println("done")
 	}
 }
 

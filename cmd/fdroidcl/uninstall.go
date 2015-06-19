@@ -3,7 +3,10 @@
 
 package main
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 var cmdUninstall = &Command{
 	UsageLine: "uninstall <appid...>",
@@ -20,8 +23,11 @@ func runUninstall(args []string) {
 	}
 	device := mustOneDevice()
 	for _, id := range args {
+		fmt.Printf("Uninstalling %s... ", id)
 		if err := device.Uninstall(id); err != nil {
+			fmt.Println()
 			log.Fatalf("Could not uninstall '%s': %v", id, err)
 		}
+		fmt.Println("done")
 	}
 }
