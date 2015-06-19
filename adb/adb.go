@@ -153,7 +153,7 @@ func (d *Device) Install(path string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	line := getLine(stdout)
+	line := getResultLine(stdout)
 	if line == "Success" {
 		return nil
 	}
@@ -243,12 +243,15 @@ func (d *Device) Install(path string) error {
 	return errors.New("unknown error: " + line)
 }
 
-func getLine(out io.ReadCloser) string {
+func getResultLine(out io.ReadCloser) string {
 	scanner := bufio.NewScanner(out)
-	if !scanner.Scan() {
-		return ""
+	for scanner.Scan() {
+		l := scanner.Text()
+		if strings.HasPrefix(l, "Failure") || strings.HasPrefix(l, "Success") {
+			return l
+		}
 	}
-	return scanner.Text()
+	return ""
 }
 
 func (d *Device) Uninstall(pkg string) error {
@@ -260,7 +263,7 @@ func (d *Device) Uninstall(pkg string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	line := getLine(stdout)
+	line := getResultLine(stdout)
 	if line == "Success" {
 		return nil
 	}
