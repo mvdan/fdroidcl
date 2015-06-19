@@ -28,7 +28,7 @@ var (
 	// Install errors
 	ErrAlreadyExists            = errors.New("already exists")
 	ErrInvalidApk               = errors.New("invalid apk")
-	ErrInvalidUri               = errors.New("invalid uri")
+	ErrInvalidURI               = errors.New("invalid uri")
 	ErrInsufficientStorage      = errors.New("insufficient storage")
 	ErrDuplicatePackage         = errors.New("duplicate package")
 	ErrNoSharedUser             = errors.New("no shared user")
@@ -41,7 +41,7 @@ var (
 	ErrConflictingProvider      = errors.New("conflicting provider")
 	ErrNewerSdk                 = errors.New("newer sdk")
 	ErrTestOnly                 = errors.New("test only")
-	ErrCpuAbiIncompatible       = errors.New("cpu abi incompatible")
+	ErrCPUAbiIncompatible       = errors.New("cpu abi incompatible")
 	ErrMissingFeature           = errors.New("missing feature")
 	ErrContainerError           = errors.New("combiner error")
 	ErrInvalidInstallLocation   = errors.New("invalid install location")
@@ -49,7 +49,7 @@ var (
 	ErrVerificationTimeout      = errors.New("verification timeout")
 	ErrVerificationFailure      = errors.New("verification failure")
 	ErrPackageChanged           = errors.New("package changed")
-	ErrUidChanged               = errors.New("uid changed")
+	ErrUIDChanged               = errors.New("uid changed")
 	ErrVersionDowngrade         = errors.New("version downgrade")
 	ErrNotApk                   = errors.New("not apk")
 	ErrBadManifest              = errors.New("bad manifest")
@@ -58,7 +58,7 @@ var (
 	ErrInconsistentCertificates = errors.New("inconsistent certificates")
 	ErrCertificateEncoding      = errors.New("certificate encoding")
 	ErrBadPackageName           = errors.New("bad package name")
-	ErrBadSharedUserId          = errors.New("bad shared user id")
+	ErrBadSharedUserID          = errors.New("bad shared user id")
 	ErrManifestMalformed        = errors.New("manifest malformed")
 	ErrManifestEmpty            = errors.New("manifest empty")
 	ErrDuplicatePermission      = errors.New("duplicate permission")
@@ -83,7 +83,7 @@ func StartServer() error {
 }
 
 type Device struct {
-	Id      string
+	ID      string
 	Usb     string
 	Product string
 	Model   string
@@ -110,7 +110,7 @@ func Devices() ([]*Device, error) {
 			continue
 		}
 		device := &Device{
-			Id: m[1],
+			ID: m[1],
 		}
 		extras := m[2]
 		for _, extra := range strings.Split(extras, " ") {
@@ -135,7 +135,7 @@ func Devices() ([]*Device, error) {
 }
 
 func (d *Device) AdbCmd(args ...string) *exec.Cmd {
-	cmdArgs := append([]string{"-s", d.Id}, args...)
+	cmdArgs := append([]string{"-s", d.ID}, args...)
 	return exec.Command("adb", cmdArgs...)
 }
 
@@ -164,7 +164,7 @@ func (d *Device) Install(path string) error {
 	case "FAILED_INVALID_APK":
 		return ErrInvalidApk
 	case "FAILED_INVALID_URI":
-		return ErrInvalidUri
+		return ErrInvalidURI
 	case "FAILED_INSUFFICIENT_STORAGE":
 		return ErrInsufficientStorage
 	case "FAILED_DUPLICATE_PACKAGE":
@@ -190,7 +190,7 @@ func (d *Device) Install(path string) error {
 	case "FAILED_TEST_ONLY":
 		return ErrTestOnly
 	case "FAILED_CPU_ABI_INCOMPATIBLE":
-		return ErrCpuAbiIncompatible
+		return ErrCPUAbiIncompatible
 	case "FAILED_MISSING_FEATURE":
 		return ErrMissingFeature
 	case "FAILED_CONTAINER_ERROR":
@@ -206,7 +206,7 @@ func (d *Device) Install(path string) error {
 	case "FAILED_PACKAGE_CHANGED":
 		return ErrPackageChanged
 	case "FAILED_UID_CHANGED":
-		return ErrUidChanged
+		return ErrUIDChanged
 	case "FAILED_VERSION_DOWNGRADE":
 		return ErrVersionDowngrade
 	case "PARSE_FAILED_NOT_APK":
@@ -224,7 +224,7 @@ func (d *Device) Install(path string) error {
 	case "PARSE_FAILED_BAD_PACKAGE_NAME":
 		return ErrBadPackageName
 	case "PARSE_FAILED_BAD_SHARED_USER_ID":
-		return ErrBadSharedUserId
+		return ErrBadSharedUserID
 	case "PARSE_FAILED_MANIFEST_MALFORMED":
 		return ErrManifestMalformed
 	case "PARSE_FAILED_MANIFEST_EMPTY":
