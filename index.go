@@ -151,15 +151,6 @@ type Apk struct {
 	Hash    HexHash   `xml:"hash"`
 }
 
-func (app *App) calcCurApk() {
-	for _, apk := range app.Apks {
-		app.CurApk = &apk
-		if app.CVCode >= apk.VCode {
-			break
-		}
-	}
-}
-
 func (app *App) TextDesc(w io.Writer) {
 	reader := strings.NewReader(app.Desc)
 	decoder := xml.NewDecoder(reader)
@@ -251,15 +242,17 @@ func (app *App) TextDesc(w io.Writer) {
 	}
 }
 
-func (app *App) prepareData() {
-	app.calcCurApk()
-}
-
 type appList []App
 
 func (al appList) Len() int           { return len(al) }
 func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+
+type apkList []Apk
+
+func (al apkList) Len() int           { return len(al) }
+func (al apkList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al apkList) Less(i, j int) bool { return al[i].VCode > al[j].VCode }
 
 func LoadIndexXml(r io.Reader) (*Index, error) {
 	var index Index
@@ -272,7 +265,17 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 
 	for i := range index.Apps {
 		app := &index.Apps[i]
-		app.prepareData()
+		sort.Sort(apkList(app.Apks))
+		app.calcCurApk()
 	}
 	return &index, nil
+}
+
+func (app *App) calcCurApk() {
+	for _, apk := range app.Apks {
+		app.CurApk = &apk
+		if app.CVCode >= apk.VCode {
+			break
+		}
+	}
 }
