@@ -81,6 +81,7 @@ var commands = []*Command{
 	cmdSearch,
 	cmdShow,
 	cmdDevices,
+	cmdInstall,
 	cmdUninstall,
 }
 

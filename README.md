@@ -13,11 +13,11 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 	search <regexp...>    Search available apps
 	show <appid...>       Show detailed info about an app
 	devices               List connected devices
+	install <appid...>    Install an app
 	uninstall <appid...>  Uninstall an app
 
 ### Missing commands
 
-	install <appid...>  Install an app
 	upgrade <appid...>  Upgrade an app
 
 ### Missing features
