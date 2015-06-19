@@ -91,8 +91,9 @@ func indexPath(name string) string {
 	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
-func appSubdir(appdir string) string {
-	p := filepath.Join(appdir, "fdroidcl")
+func appSubdir(appdir string, subdir ...string) string {
+	elems := append([]string{appdir, "fdroidcl"}, subdir...)
+	p := filepath.Join(elems...)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.Fatalf("Could not create app dir: %v", err)
 	}

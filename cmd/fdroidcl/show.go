@@ -24,9 +24,6 @@ func init() {
 func runShow(args []string) {
 	apps := findApps(args)
 	for i, app := range apps {
-		if app == nil {
-			log.Fatalf("Could not find app with ID '%s'", args[i])
-		}
 		if i > 0 {
 			fmt.Printf("\n--\n\n")
 		}
@@ -34,16 +31,24 @@ func runShow(args []string) {
 	}
 }
 
+func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
+	m := make(map[string]*fdroidcl.App, len(apps))
+	for i := range apps {
+		app := &apps[i]
+		m[app.ID] = app
+	}
+	return m
+}
+
 func findApps(ids []string) []*fdroidcl.App {
 	index := mustLoadIndex()
-	apps := make(map[string]*fdroidcl.App, len(index.Apps))
-	for i := range index.Apps {
-		app := &index.Apps[i]
-		apps[app.ID] = app
-	}
+	apps := appsMap(index.Apps)
 	result := make([]*fdroidcl.App, len(ids))
 	for i, id := range ids {
-		app, _ := apps[id]
+		app, e := apps[id]
+		if !e {
+			log.Fatalf("Could not find app with ID '%s'", id)
+		}
 		result[i] = app
 	}
 	return result
