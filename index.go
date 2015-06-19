@@ -26,42 +26,55 @@ type Index struct {
 	Apps []App `xml:"application"`
 }
 
-type commaList []string
+type CommaList []string
 
-func (cl *commaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (cl *CommaList) FromString(s string) {
+	*cl = strings.Split(s, ",")
+}
+
+func (cl *CommaList) String() string {
+	return strings.Join(*cl, ",")
+}
+
+func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
 	if err := d.DecodeElement(&content, &start); err != nil {
 		return err
 	}
-	*cl = strings.Split(content, ",")
+	cl.FromString(content)
 	return nil
 }
 
-type hexVal []byte
+func (cl *CommaList) UnmarshalText(text []byte) (err error) {
+	cl.FromString(string(text))
+	return nil
+}
 
-func (hv *hexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err error) {
-	var content string
-	if err = d.DecodeElement(&content, &start); err != nil {
-		return
+type HexVal []byte
+
+func (hv *HexVal) FromString(s string) error {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		return err
 	}
-	*hv, err = hex.DecodeString(content)
-	return
-}
-
-func (hv *hexVal) UnmarshalText(text []byte) (err error) {
-	*hv, err = hex.DecodeString(string(text))
-	return
-}
-
-func (hv *hexVal) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	s := hex.EncodeToString(*hv)
-	e.EncodeElement(s, start)
+	*hv = b
 	return nil
 }
 
-func (hv *hexVal) MarshalText() (result []byte, err error) {
-	s := hex.EncodeToString(*hv)
-	return []byte(s), nil
+func (hv *HexVal) String() string {
+	return hex.EncodeToString(*hv)
+}
+
+func (hv *HexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var content string
+	if err := d.DecodeElement(&content, &start); err != nil {
+		return err
+	}
+	return hv.FromString(content)
+}
+
+func (hv *HexVal) UnmarshalText(text []byte) (err error) {
+	return hv.FromString(string(text))
 }
 
 // App is an Android application
@@ -71,7 +84,7 @@ type App struct {
 	Summary   string    `xml:"summary"`
 	Desc      string    `xml:"desc"`
 	License   string    `xml:"license"`
-	Categs    commaList `xml:"categories"`
+	Categs    CommaList `xml:"categories"`
 	Website   string    `xml:"web"`
 	Source    string    `xml:"source"`
 	Tracker   string    `xml:"tracker"`
@@ -89,21 +102,36 @@ type App struct {
 
 type HexHash struct {
 	Type string `xml:"type,attr"`
-	Data hexVal `xml:",chardata"`
+	Data HexVal `xml:",chardata"`
 }
 
-type dateVal struct {
+type DateVal struct {
 	time.Time
 }
 
-func (dv *dateVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (dv *DateVal) FromString(s string) error {
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return err
+	}
+	*dv = DateVal{t}
+	return nil
+}
+
+func (dv *DateVal) String() string {
+	return dv.Format("2006-01-02")
+}
+
+func (dv *DateVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var content string
 	if err := d.DecodeElement(&content, &start); err != nil {
 		return err
 	}
-	t, err := time.Parse("2006-01-02", content)
-	*dv = dateVal{t}
-	return err
+	return dv.FromString(content)
+}
+
+func (dv *DateVal) UnmarshalText(text []byte) (err error) {
+	return dv.FromString(string(text))
 }
 
 // Apk is an Android package
@@ -113,13 +141,13 @@ type Apk struct {
 	Size    int64     `xml:"size"`
 	MinSdk  int       `xml:"sdkver"`
 	MaxSdk  int       `xml:"maxsdkver"`
-	ABIs    commaList `xml:"nativecode"`
+	ABIs    CommaList `xml:"nativecode"`
 	ApkName string    `xml:"apkname"`
 	SrcName string    `xml:"srcname"`
-	Sig     hexVal    `xml:"sig"`
-	Added   dateVal   `xml:"added"`
-	Perms   commaList `xml:"permissions"`
-	Feats   commaList `xml:"features"`
+	Sig     HexVal    `xml:"sig"`
+	Added   DateVal   `xml:"added"`
+	Perms   CommaList `xml:"permissions"`
+	Feats   CommaList `xml:"features"`
 	Hash    HexHash   `xml:"hash"`
 }
 
