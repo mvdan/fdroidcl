@@ -39,14 +39,29 @@ func (cl *commaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 
 type hexVal []byte
 
-func (hv *hexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (hv *hexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err error) {
 	var content string
-	var err error
 	if err = d.DecodeElement(&content, &start); err != nil {
-		return err
+		return
 	}
 	*hv, err = hex.DecodeString(content)
-	return err
+	return
+}
+
+func (hv *hexVal) UnmarshalText(text []byte) (err error) {
+	*hv, err = hex.DecodeString(string(text))
+	return
+}
+
+func (hv *hexVal) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	s := hex.EncodeToString(*hv)
+	e.EncodeElement(s, start)
+	return nil
+}
+
+func (hv *hexVal) MarshalText() (result []byte, err error) {
+	s := hex.EncodeToString(*hv)
+	return []byte(s), nil
 }
 
 // App is an Android application
@@ -72,7 +87,7 @@ type App struct {
 	CurApk    *Apk
 }
 
-type Hash struct {
+type HexHash struct {
 	Type string `xml:"type,attr"`
 	Data hexVal `xml:",chardata"`
 }
@@ -105,7 +120,7 @@ type Apk struct {
 	Added   dateVal   `xml:"added"`
 	Perms   commaList `xml:"permissions"`
 	Feats   commaList `xml:"features"`
-	Hashes  []Hash    `xml:"hash"`
+	Hash    HexHash   `xml:"hash"`
 }
 
 func (app *App) calcCurApk() {

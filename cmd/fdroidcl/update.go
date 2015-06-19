@@ -4,6 +4,9 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -33,7 +36,7 @@ func runUpdate(args []string) {
 
 func updateIndex() error {
 	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
-	if err := downloadEtag(url, indexPath(repoName)); err != nil {
+	if err := downloadEtag(url, indexPath(repoName), nil); err != nil {
 		return err
 	}
 	return nil
@@ -47,8 +50,9 @@ func respEtag(resp *http.Response) string {
 	return etags[0]
 }
 
-func downloadEtag(url, path string) error {
+func downloadEtag(url, path string, sum []byte) error {
 	fmt.Printf("Downloading %s...", url)
+	defer fmt.Println()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -64,22 +68,35 @@ func downloadEtag(url, path string) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNotModified {
-		fmt.Println(" not modified")
+		fmt.Printf(" not modified")
 		return nil
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(f, resp.Body)
-	err2 := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644)
-	if err != nil {
+	if sum == nil {
+		_, err := io.Copy(f, resp.Body)
+		if err != nil {
+			return err
+		}
+	} else {
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		got := sha256.Sum256(data)
+		if !bytes.Equal(sum, got[:]) {
+			return errors.New("sha256 mismatch")
+		}
+		if _, err := f.Write(data); err != nil {
+			return err
+		}
+	}
+	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644); err != nil {
 		return err
 	}
-	if err2 != nil {
-		return err2
-	}
-	fmt.Println(" done")
+	fmt.Printf(" done")
 	return nil
 }
 

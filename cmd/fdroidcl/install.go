@@ -32,7 +32,7 @@ func runInstall(args []string) {
 		apk := app.CurApk
 		url := fmt.Sprintf("%s/%s", repoURL, apk.ApkName)
 		path := filepath.Join(apksDir, apk.ApkName)
-		if err := downloadEtag(url, path); err != nil {
+		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
 			log.Fatalf("Could not download '%s': %v", app.ID, err)
 		}
 		paths[i] = path
