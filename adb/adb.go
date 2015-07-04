@@ -144,6 +144,16 @@ func (d *Device) AdbShell(args ...string) *exec.Cmd {
 	return d.AdbCmd(shellArgs...)
 }
 
+func getFailureCode(r *regexp.Regexp, line string) string {
+	s := r.FindStringSubmatch(line)
+	if len(s) < 2 {
+		return ""
+	}
+	return s[1]
+}
+
+var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
+
 func (d *Device) Install(path string) error {
 	cmd := d.AdbCmd("install", path)
 	stdout, err := cmd.StdoutPipe()
@@ -157,11 +167,7 @@ func (d *Device) Install(path string) error {
 	if line == "Success" {
 		return nil
 	}
-	if !strings.HasPrefix(line, "Failure [INSTALL_") {
-		return errors.New("unknown result: " + line)
-	}
-	code := line[len("Failure [INSTALL_") : len(line)-1]
-	switch code {
+	switch getFailureCode(installFailureRegex, line) {
 	case "FAILED_ALREADY_EXISTS":
 		return ErrAlreadyExists
 	case "FAILED_INVALID_APK":
@@ -257,6 +263,8 @@ func getResultLine(out io.ReadCloser) string {
 	return ""
 }
 
+var deleteFailureRegex = regexp.MustCompile(`^Failure \[DELETE_(.+)\]$`)
+
 func (d *Device) Uninstall(pkg string) error {
 	cmd := d.AdbCmd("uninstall", pkg)
 	stdout, err := cmd.StdoutPipe()
@@ -270,11 +278,7 @@ func (d *Device) Uninstall(pkg string) error {
 	if line == "Success" {
 		return nil
 	}
-	if !strings.HasPrefix(line, "Failure [DELETE_") {
-		return errors.New("unknown result: " + line)
-	}
-	code := line[len("Failure [DELETE_") : len(line)-1]
-	switch code {
+	switch getFailureCode(deleteFailureRegex, line) {
 	case "FAILED_INTERNAL_ERROR":
 		return ErrInternalError
 	case "FAILED_DEVICE_POLICY_MANAGER":
