@@ -157,6 +157,9 @@ func (d *Device) Install(path string) error {
 	if line == "Success" {
 		return nil
 	}
+	if !strings.HasPrefix(line, "Failure [INSTALL_") {
+		return errors.New("unknown result: " + line)
+	}
 	code := line[len("Failure [INSTALL_") : len(line)-1]
 	switch code {
 	case "FAILED_ALREADY_EXISTS":
@@ -266,6 +269,9 @@ func (d *Device) Uninstall(pkg string) error {
 	line := getResultLine(stdout)
 	if line == "Success" {
 		return nil
+	}
+	if !strings.HasPrefix(line, "Failure [DELETE_") {
+		return errors.New("unknown result: " + line)
 	}
 	code := line[len("Failure [DELETE_") : len(line)-1]
 	switch code {
