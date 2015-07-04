@@ -145,11 +145,7 @@ func (d *Device) AdbShell(args ...string) *exec.Cmd {
 }
 
 func getFailureCode(r *regexp.Regexp, line string) string {
-	s := r.FindStringSubmatch(line)
-	if len(s) < 2 {
-		return ""
-	}
-	return s[1]
+	return r.FindStringSubmatch(line)[1]
 }
 
 var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
