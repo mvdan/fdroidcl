@@ -8,7 +8,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/mvdan/appdir"
+	"github.com/mvdan/basedir"
 )
 
 var cmdInstall = &Command{
@@ -49,7 +49,7 @@ func runInstall(args []string) {
 }
 
 func apksCacheDir() string {
-	cache, err := appdir.Cache()
+	cache, err := basedir.Cache()
 	if err != nil {
 		log.Fatalf("Could not determine cache dir: %v", err)
 	}
@@ -57,7 +57,7 @@ func apksCacheDir() string {
 }
 
 func apkPath(apkname string) string {
-	cache, err := appdir.Cache()
+	cache, err := basedir.Cache()
 	if err != nil {
 		log.Fatalf("Could not determine cache dir: %v", err)
 	}

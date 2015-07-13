@@ -15,7 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mvdan/appdir"
+	"github.com/mvdan/basedir"
 	"github.com/mvdan/fdroidcl"
 )
 
@@ -101,15 +101,15 @@ func downloadEtag(url, path string, sum []byte) error {
 }
 
 func indexPath(name string) string {
-	cache, err := appdir.Cache()
+	cache, err := basedir.Cache()
 	if err != nil {
 		log.Fatalf("Could not determine cache dir: %v", err)
 	}
 	return filepath.Join(appSubdir(cache), repoName+".jar")
 }
 
-func appSubdir(appdir string, subdir ...string) string {
-	elems := append([]string{appdir, "fdroidcl"}, subdir...)
+func appSubdir(dir string, subdir ...string) string {
+	elems := append([]string{dir, "fdroidcl"}, subdir...)
 	p := filepath.Join(elems...)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.Fatalf("Could not create app dir: %v", err)
