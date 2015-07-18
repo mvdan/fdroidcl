@@ -4,6 +4,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -45,10 +46,35 @@ func mustConfig() string {
 	return subdir(dir, cmdName)
 }
 
-var config struct {
-	Repos map[string]struct {
-		URL string `json:"url"`
-	} `json:"repos"`
+type Repo struct {
+	URL string `json:"url"`
+}
+
+type userConfig struct {
+	Repos map[string]Repo `json:"repos"`
+}
+
+var config = userConfig{
+	Repos: map[string]Repo{
+		"f-droid": {
+			URL: "https://f-droid.org/repo",
+		},
+	},
+}
+
+func readConfig() {
+	p := filepath.Join(mustConfig(), "config.json")
+	f, err := os.Open(p)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+		log.Fatalf("Error when opening config file: %v", err)
+	}
+	defer f.Close()
+	if err := json.NewDecoder(f).Decode(&config); err != nil {
+		log.Fatalf("Error when parsing config file: %v", err)
+	}
 }
 
 // A Command is an implementation of a go command
@@ -131,6 +157,7 @@ func main() {
 		if cmd.Name() != args[0] {
 			continue
 		}
+		readConfig()
 		cmd.Flag.Usage = func() { cmd.Usage() }
 		cmd.Flag.Parse(args[1:])
 		args = cmd.Flag.Args()
