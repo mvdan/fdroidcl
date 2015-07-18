@@ -66,14 +66,26 @@ func readConfig() {
 	p := filepath.Join(mustConfig(), "config.json")
 	f, err := os.Open(p)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return
+		if !os.IsNotExist(err) {
+			log.Fatalf("Error when opening config file: %v", err)
 		}
-		log.Fatalf("Error when opening config file: %v", err)
+		f, err := os.Create(p)
+		if err != nil {
+			log.Fatalf("Error when creating config file: %v", err)
+		}
+		defer f.Close()
+		b, err := json.MarshalIndent(&config, "", "\t")
+		if err != nil {
+			log.Fatalf("Error when encoding config file: %v", err)
+		}
+		if _, err := f.Write(b); err != nil {
+			log.Fatalf("Error when writing config file: %v", err)
+		}
+		return
 	}
 	defer f.Close()
 	if err := json.NewDecoder(f).Decode(&config); err != nil {
-		log.Fatalf("Error when parsing config file: %v", err)
+		log.Fatalf("Error when decoding config file: %v", err)
 	}
 }
 
