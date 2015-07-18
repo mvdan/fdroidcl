@@ -75,6 +75,7 @@ func downloadEtag(url, path string, sum []byte) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	if sum == nil {
 		_, err := io.Copy(f, resp.Body)
 		if err != nil {
