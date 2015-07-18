@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
-
-	"github.com/mvdan/basedir"
 )
 
 var cmdInstall = &Command{
@@ -27,11 +25,10 @@ func runInstall(args []string) {
 	device := mustOneDevice()
 	apps := findApps(args)
 	paths := make([]string, len(apps))
-	apksDir := apksCacheDir()
 	for i, app := range apps {
 		apk := app.CurApk
 		url := fmt.Sprintf("%s/%s", repoURL, apk.ApkName)
-		path := filepath.Join(apksDir, apk.ApkName)
+		path := apkPath(apk.ApkName)
 		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
 			log.Fatalf("Could not download '%s': %v", app.ID, err)
 		}
@@ -48,18 +45,7 @@ func runInstall(args []string) {
 	}
 }
 
-func apksCacheDir() string {
-	cache, err := basedir.Cache()
-	if err != nil {
-		log.Fatalf("Could not determine cache dir: %v", err)
-	}
-	return appSubdir(cache, "apks")
-}
-
 func apkPath(apkname string) string {
-	cache, err := basedir.Cache()
-	if err != nil {
-		log.Fatalf("Could not determine cache dir: %v", err)
-	}
-	return filepath.Join(appSubdir(cache, "apks"), apkname)
+	apksDir := subdir(mustCache(), "apks")
+	return filepath.Join(apksDir, apkname)
 }

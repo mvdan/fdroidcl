@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/mvdan/basedir"
 )
 
 const (
@@ -17,6 +20,36 @@ const (
 	repoName = "repo"
 	repoURL  = "https://f-droid.org/repo"
 )
+
+func subdir(dir, name string) string {
+	p := filepath.Join(dir, name)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.Fatalf("Could not create dir '%s': %v", p, err)
+	}
+	return p
+}
+
+func mustCache() string {
+	dir, err := basedir.Cache()
+	if err != nil {
+		log.Fatalf("Could not determine cache dir: %v", err)
+	}
+	return subdir(dir, cmdName)
+}
+
+func mustConfig() string {
+	dir, err := basedir.Config()
+	if err != nil {
+		log.Fatalf("Could not determine config dir: %v", err)
+	}
+	return subdir(dir, cmdName)
+}
+
+var config struct {
+	Repos map[string]struct {
+		URL string `json:"url"`
+	} `json:"repos"`
+}
 
 // A Command is an implementation of a go command
 // like go build or go fix.
