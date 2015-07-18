@@ -7,6 +7,10 @@ While the Android client integrates with the system with regular update checks
 and notifications, this is a command line client that talks to connected
 devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
+This software is **unfinished** and **unstable**. Since it lacks JAR
+verification signature, it also relies solely on HTTPS for security. Use at
+your own risk.
+
 ### Commands
 
 	update                Update the index
