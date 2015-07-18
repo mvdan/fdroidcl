@@ -40,22 +40,14 @@ func startAdbIfNeeded() {
 	}
 }
 
-func maybeOneDevice() *adb.Device {
+func mustOneDevice() *adb.Device {
 	startAdbIfNeeded()
 	devices, err := adb.Devices()
 	if err != nil {
 		log.Fatalf("Could not get devices: %v", err)
 	}
 	if len(devices) != 1 {
-		return nil
-	}
-	return devices[0]
-}
-
-func mustOneDevice() *adb.Device {
-	device := maybeOneDevice()
-	if device == nil {
 		log.Fatalf("Exactly one connected device is needed")
 	}
-	return device
+	return devices[0]
 }

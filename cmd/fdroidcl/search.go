@@ -36,8 +36,6 @@ func runSearch(args []string) {
 	var device *adb.Device
 	if *installed || *updates {
 		device = mustOneDevice()
-	} else {
-		device = maybeOneDevice()
 	}
 	index := mustLoadIndex()
 	apps := filterAppsSearch(index.Apps, args)
