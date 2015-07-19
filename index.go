@@ -47,7 +47,7 @@ type App struct {
 	Apks      []Apk     `xml:"package"`
 	CVName    string    `xml:"marketversion"`
 	CVCode    int       `xml:"marketvercode"`
-	CurApk    *Apk
+	CurApk    *Apk      `xml:"-"`
 }
 
 type IconDensity uint
@@ -197,7 +197,7 @@ type Apk struct {
 	Perms   CommaList `xml:"permissions"`
 	Feats   CommaList `xml:"features"`
 	Hash    HexHash   `xml:"hash"`
-	Repo    *Repo
+	Repo    *Repo     `xml:"-"`
 }
 
 func (a *Apk) URL() string {
