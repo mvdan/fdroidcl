@@ -26,7 +26,7 @@ func runInstall(args []string) {
 	paths := make([]string, len(apps))
 	for i, app := range apps {
 		apk := app.CurApk
-		url := fmt.Sprintf("%s/%s", apk.Repo.URL, apk.ApkName)
+		url := apk.URL()
 		path := apkPath(apk.ApkName)
 		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
 			log.Fatalf("Could not download '%s': %v", app.ID, err)

@@ -158,6 +158,10 @@ type Apk struct {
 	Repo    *Repo
 }
 
+func (a *Apk) URL() string {
+	return fmt.Sprintf("%s/%s", a.Repo.URL, a.ApkName)
+}
+
 type appList []App
 
 func (al appList) Len() int           { return len(al) }
