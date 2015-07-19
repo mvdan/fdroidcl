@@ -28,13 +28,14 @@ func init() {
 }
 
 func runUpdate(args []string) {
-	r := mustOneRepo()
-	if err := updateRepo(r); err != nil {
-		log.Fatalf("Could not update index: %v", err)
+	for _, r := range config.Repos {
+		if err := r.updateIndex(); err != nil {
+			log.Fatalf("Could not update index: %v", err)
+		}
 	}
 }
 
-func updateRepo(r *repo) error {
+func (r *repo) updateIndex() error {
 	url := fmt.Sprintf("%s/%s", r.URL, "index.jar")
 	if err := downloadEtag(url, indexPath(r.ID), nil); err != nil {
 		return err
