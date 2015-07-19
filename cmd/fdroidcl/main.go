@@ -47,17 +47,17 @@ func configPath() string {
 	return filepath.Join(mustConfig(), "config.json")
 }
 
-type Repo struct {
+type repo struct {
 	ID  string `json:"id"`
 	URL string `json:"url"`
 }
 
 type userConfig struct {
-	Repos []Repo `json:"repos"`
+	Repos []repo `json:"repos"`
 }
 
 var config = userConfig{
-	Repos: []Repo{
+	Repos: []repo{
 		{
 			ID:  "f-droid",
 			URL: "https://f-droid.org/repo",
@@ -80,7 +80,7 @@ func readConfig() error {
 	return nil
 }
 
-func mustOneRepo() *Repo {
+func mustOneRepo() *repo {
 	if len(config.Repos) != 1 {
 		log.Fatalf("Exactly one repo is needed")
 	}

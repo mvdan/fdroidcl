@@ -28,15 +28,15 @@ func init() {
 }
 
 func runUpdate(args []string) {
-	if err := updateIndex(); err != nil {
+	r := mustOneRepo()
+	if err := updateRepo(r); err != nil {
 		log.Fatalf("Could not update index: %v", err)
 	}
 }
 
-func updateIndex() error {
-	repo := mustOneRepo()
-	url := fmt.Sprintf("%s/%s", repo.URL, "index.jar")
-	if err := downloadEtag(url, indexPath(repo.ID), nil); err != nil {
+func updateRepo(r *repo) error {
+	url := fmt.Sprintf("%s/%s", r.URL, "index.jar")
+	if err := downloadEtag(url, indexPath(r.ID), nil); err != nil {
 		return err
 	}
 	return nil
@@ -106,8 +106,8 @@ func indexPath(name string) string {
 }
 
 func mustLoadIndex() *fdroidcl.Index {
-	repo := mustOneRepo()
-	p := indexPath(repo.ID)
+	r := mustOneRepo()
+	p := indexPath(r.ID)
 	f, err := os.Open(p)
 	if err != nil {
 		log.Fatalf("Could not open index file: %v", err)
