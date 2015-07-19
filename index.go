@@ -49,29 +49,6 @@ type App struct {
 	CurApk    *Apk
 }
 
-type HexHash struct {
-	Type string `xml:"type,attr"`
-	Data HexVal `xml:",chardata"`
-}
-
-// Apk is an Android package
-type Apk struct {
-	VName   string    `xml:"version"`
-	VCode   int       `xml:"versioncode"`
-	Size    int64     `xml:"size"`
-	MinSdk  int       `xml:"sdkver"`
-	MaxSdk  int       `xml:"maxsdkver"`
-	ABIs    CommaList `xml:"nativecode"`
-	ApkName string    `xml:"apkname"`
-	SrcName string    `xml:"srcname"`
-	Sig     HexVal    `xml:"sig"`
-	Added   DateVal   `xml:"added"`
-	Perms   CommaList `xml:"permissions"`
-	Feats   CommaList `xml:"features"`
-	Hash    HexHash   `xml:"hash"`
-	Repo    *Repo
-}
-
 func (app *App) TextDesc(w io.Writer) {
 	reader := strings.NewReader(app.Desc)
 	decoder := xml.NewDecoder(reader)
@@ -161,6 +138,24 @@ func (app *App) TextDesc(w io.Writer) {
 			fmt.Fprintf(w, "[%d] %s\n", i, link)
 		}
 	}
+}
+
+// Apk is an Android package
+type Apk struct {
+	VName   string    `xml:"version"`
+	VCode   int       `xml:"versioncode"`
+	Size    int64     `xml:"size"`
+	MinSdk  int       `xml:"sdkver"`
+	MaxSdk  int       `xml:"maxsdkver"`
+	ABIs    CommaList `xml:"nativecode"`
+	ApkName string    `xml:"apkname"`
+	SrcName string    `xml:"srcname"`
+	Sig     HexVal    `xml:"sig"`
+	Added   DateVal   `xml:"added"`
+	Perms   CommaList `xml:"permissions"`
+	Feats   CommaList `xml:"features"`
+	Hash    HexHash   `xml:"hash"`
+	Repo    *Repo
 }
 
 type appList []App

@@ -34,6 +34,11 @@ func (cl *CommaList) UnmarshalText(text []byte) (err error) {
 	return nil
 }
 
+type HexHash struct {
+	Type string `xml:"type,attr"`
+	Data HexVal `xml:",chardata"`
+}
+
 type HexVal []byte
 
 func (hv *HexVal) FromString(s string) error {
