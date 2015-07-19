@@ -17,9 +17,6 @@ import (
 
 const (
 	cmdName = "fdroidcl"
-
-	repoName = "repo"
-	repoURL  = "https://f-droid.org/repo"
 )
 
 func subdir(dir, name string) string {
@@ -47,16 +44,18 @@ func mustConfig() string {
 }
 
 type Repo struct {
+	ID  string `json:"id"`
 	URL string `json:"url"`
 }
 
 type userConfig struct {
-	Repos map[string]Repo `json:"repos"`
+	Repos []Repo `json:"repos"`
 }
 
 var config = userConfig{
-	Repos: map[string]Repo{
-		"f-droid": {
+	Repos: []Repo{
+		{
+			ID:  "f-droid",
 			URL: "https://f-droid.org/repo",
 		},
 	},
@@ -87,6 +86,13 @@ func readConfig() {
 	if err := json.NewDecoder(f).Decode(&config); err != nil {
 		log.Fatalf("Error when decoding config file: %v", err)
 	}
+}
+
+func mustOneRepo() *Repo {
+	if len(config.Repos) != 1 {
+		log.Fatalf("Exactly one repo is needed")
+	}
+	return &config.Repos[0]
 }
 
 // A Command is an implementation of a go command

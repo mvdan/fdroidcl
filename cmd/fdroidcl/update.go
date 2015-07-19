@@ -34,8 +34,9 @@ func runUpdate(args []string) {
 }
 
 func updateIndex() error {
-	url := fmt.Sprintf("%s/%s", repoURL, "index.jar")
-	if err := downloadEtag(url, indexPath(repoName), nil); err != nil {
+	repo := mustOneRepo()
+	url := fmt.Sprintf("%s/%s", repo.URL, "index.jar")
+	if err := downloadEtag(url, indexPath(repo.ID), nil); err != nil {
 		return err
 	}
 	return nil
@@ -101,11 +102,12 @@ func downloadEtag(url, path string, sum []byte) error {
 }
 
 func indexPath(name string) string {
-	return filepath.Join(mustConfig(), repoName+".jar")
+	return filepath.Join(mustConfig(), name+".jar")
 }
 
 func mustLoadIndex() *fdroidcl.Index {
-	p := indexPath(repoName)
+	repo := mustOneRepo()
+	p := indexPath(repo.ID)
 	f, err := os.Open(p)
 	if err != nil {
 		log.Fatalf("Could not open index file: %v", err)
