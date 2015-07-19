@@ -20,6 +20,7 @@ your own risk.
 	download <appid...>   Download an app
 	install <appid...>    Install an app
 	uninstall <appid...>  Uninstall an app
+	defaults              Reset to the default settings
 
 ### Missing commands
 

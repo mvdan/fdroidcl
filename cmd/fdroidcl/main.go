@@ -43,6 +43,10 @@ func mustConfig() string {
 	return subdir(dir, cmdName)
 }
 
+func configPath() string {
+	return filepath.Join(mustConfig(), "config.json")
+}
+
 type Repo struct {
 	ID  string `json:"id"`
 	URL string `json:"url"`
@@ -62,23 +66,10 @@ var config = userConfig{
 }
 
 func readConfig() {
-	p := filepath.Join(mustConfig(), "config.json")
-	f, err := os.Open(p)
+	f, err := os.Open(configPath())
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.Fatalf("Error when opening config file: %v", err)
-		}
-		f, err := os.Create(p)
-		if err != nil {
-			log.Fatalf("Error when creating config file: %v", err)
-		}
-		defer f.Close()
-		b, err := json.MarshalIndent(&config, "", "\t")
-		if err != nil {
-			log.Fatalf("Error when encoding config file: %v", err)
-		}
-		if _, err := f.Write(b); err != nil {
-			log.Fatalf("Error when writing config file: %v", err)
 		}
 		return
 	}
@@ -161,6 +152,7 @@ var commands = []*Command{
 	cmdDownload,
 	cmdInstall,
 	cmdUninstall,
+	cmdDefaults,
 }
 
 func main() {
