@@ -152,6 +152,7 @@ var commands = []*Command{
 	cmdSearch,
 	cmdShow,
 	cmdDevices,
+	cmdDownload,
 	cmdInstall,
 	cmdUninstall,
 }

@@ -17,6 +17,7 @@ your own risk.
 	search <regexp...>    Search available apps
 	show <appid...>       Show detailed info about an app
 	devices               List connected devices
+	download <appid...>   Download an app
 	install <appid...>    Install an app
 	uninstall <appid...>  Uninstall an app
 

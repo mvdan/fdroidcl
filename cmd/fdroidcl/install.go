@@ -6,7 +6,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 )
 
 var cmdInstall = &Command{
@@ -43,9 +42,4 @@ func runInstall(args []string) {
 		}
 		fmt.Println("done")
 	}
-}
-
-func apkPath(apkname string) string {
-	apksDir := subdir(mustCache(), "apks")
-	return filepath.Join(apksDir, apkname)
 }
