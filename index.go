@@ -69,6 +69,7 @@ type Apk struct {
 	Perms   CommaList `xml:"permissions"`
 	Feats   CommaList `xml:"features"`
 	Hash    HexHash   `xml:"hash"`
+	Repo    *Repo
 }
 
 func (app *App) TextDesc(w io.Writer) {
@@ -186,6 +187,10 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 	for i := range index.Apps {
 		app := &index.Apps[i]
 		sort.Sort(apkList(app.Apks))
+		for j := range app.Apks {
+			apk := &app.Apks[j]
+			apk.Repo = &index.Repo
+		}
 		app.calcCurApk()
 	}
 	return &index, nil
