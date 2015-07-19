@@ -162,6 +162,10 @@ func (a *Apk) URL() string {
 	return fmt.Sprintf("%s/%s", a.Repo.URL, a.ApkName)
 }
 
+func (a *Apk) SrcURL() string {
+	return fmt.Sprintf("%s/%s", a.Repo.URL, a.SrcName)
+}
+
 type appList []App
 
 func (al appList) Len() int           { return len(al) }
