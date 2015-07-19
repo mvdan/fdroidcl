@@ -31,6 +31,7 @@ type App struct {
 	ID        string    `xml:"id"`
 	Name      string    `xml:"name"`
 	Summary   string    `xml:"summary"`
+	Icon      string    `xml:"icon"`
 	Desc      string    `xml:"desc"`
 	License   string    `xml:"license"`
 	Categs    CommaList `xml:"categories"`
@@ -49,8 +50,49 @@ type App struct {
 	CurApk    *Apk
 }
 
-func (app *App) TextDesc(w io.Writer) {
-	reader := strings.NewReader(app.Desc)
+type IconDensity uint
+
+const (
+	UnknownDensity IconDensity = 0
+	LowDensity     IconDensity = 120
+	MediumDensity  IconDensity = 160
+	HighDensity    IconDensity = 240
+	XHighDensity   IconDensity = 320
+	XXHighDensity  IconDensity = 480
+	XXXHighDensity IconDensity = 640
+)
+
+func getIconsDir(density IconDensity) string {
+	if density == UnknownDensity {
+		return "icons"
+	}
+	for _, d := range [...]IconDensity{
+		XXXHighDensity,
+		XXHighDensity,
+		XHighDensity,
+		HighDensity,
+		MediumDensity,
+	} {
+		if density >= d {
+			return fmt.Sprintf("icons-%d", d)
+		}
+	}
+	return fmt.Sprintf("icons-%d", LowDensity)
+}
+
+func (a *App) IconURLForDensity(density IconDensity) string {
+	if a.CurApk == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s/%s/%s", a.CurApk.Repo.URL, getIconsDir(density), a.Icon)
+}
+
+func (a *App) IconURL() string {
+	return a.IconURLForDensity(UnknownDensity)
+}
+
+func (a *App) TextDesc(w io.Writer) {
+	reader := strings.NewReader(a.Desc)
 	decoder := xml.NewDecoder(reader)
 	firstParagraph := true
 	linePrefix := ""
