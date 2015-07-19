@@ -65,18 +65,19 @@ var config = userConfig{
 	},
 }
 
-func readConfig() {
+func readConfig() error {
 	f, err := os.Open(configPath())
 	if err != nil {
-		if !os.IsNotExist(err) {
-			log.Fatalf("Error when opening config file: %v", err)
+		if os.IsNotExist(err) {
+			return nil
 		}
-		return
+		return fmt.Errorf("could not open config file: %v", err)
 	}
 	defer f.Close()
 	if err := json.NewDecoder(f).Decode(&config); err != nil {
-		log.Fatalf("Error when decoding config file: %v", err)
+		return fmt.Errorf("could not decode config file: %v", err)
 	}
+	return nil
 }
 
 func mustOneRepo() *Repo {
@@ -168,7 +169,10 @@ func main() {
 		if cmd.Name() != args[0] {
 			continue
 		}
-		readConfig()
+		if err := readConfig(); err != nil {
+			log.Printf("Could not load config: %v", err)
+			log.Printf("Using default config")
+		}
 		cmd.Flag.Usage = func() { cmd.Usage() }
 		cmd.Flag.Parse(args[1:])
 		args = cmd.Flag.Args()
