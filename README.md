@@ -30,7 +30,6 @@ your own risk.
 
  * Index verification via jar signature
    - Cannot be currently done since MD5WithRSA is unimplemented
- * Multi-repo support
  * Interaction with multiple devices at once
 
 ### Advantages over the Android client
