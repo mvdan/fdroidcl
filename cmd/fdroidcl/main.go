@@ -80,13 +80,6 @@ func readConfig() error {
 	return nil
 }
 
-func mustOneRepo() *repo {
-	if len(config.Repos) != 1 {
-		log.Fatalf("Exactly one repo is needed")
-	}
-	return &config.Repos[0]
-}
-
 // A Command is an implementation of a go command
 // like go build or go fix.
 type Command struct {
