@@ -47,7 +47,6 @@ type App struct {
 	Apks      []Apk     `xml:"package"`
 	CVName    string    `xml:"marketversion"`
 	CVCode    int       `xml:"marketvercode"`
-	CurApk    *Apk      `xml:"-"`
 }
 
 type IconDensity uint
@@ -81,10 +80,11 @@ func getIconsDir(density IconDensity) string {
 }
 
 func (a *App) IconURLForDensity(density IconDensity) string {
-	if a.CurApk == nil {
+	cur := a.CurApk()
+	if cur == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s/%s/%s", a.CurApk.Repo.URL, getIconsDir(density), a.Icon)
+	return fmt.Sprintf("%s/%s/%s", cur.Repo.URL, getIconsDir(density), a.Icon)
 }
 
 func (a *App) IconURL() string {
@@ -236,16 +236,16 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 			apk := &app.Apks[j]
 			apk.Repo = &index.Repo
 		}
-		app.calcCurApk()
 	}
 	return &index, nil
 }
 
-func (app *App) calcCurApk() {
-	for _, apk := range app.Apks {
-		app.CurApk = &apk
+func (app *App) CurApk() *Apk {
+	for i := range app.Apks {
+		apk := app.Apks[i]
 		if app.CVCode >= apk.VCode {
-			break
+			return &apk
 		}
 	}
+	return nil
 }

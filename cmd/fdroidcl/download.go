@@ -24,7 +24,7 @@ func runDownload(args []string) {
 	}
 	apps := findApps(args)
 	for _, app := range apps {
-		apk := app.CurApk
+		apk := app.CurApk()
 		url := apk.URL()
 		path := apkPath(apk.ApkName)
 		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
