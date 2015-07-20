@@ -37,8 +37,7 @@ func runSearch(args []string) {
 	if *installed || *updates {
 		device = mustOneDevice()
 	}
-	index := mustLoadIndex()
-	apps := filterAppsSearch(index.Apps, args)
+	apps := filterAppsSearch(mustLoadIndexes(), args)
 	instPkgs := mustInstalled(device)
 	if *installed {
 		apps = filterAppsInstalled(apps, instPkgs)

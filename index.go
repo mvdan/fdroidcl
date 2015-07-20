@@ -208,17 +208,17 @@ func (a *Apk) SrcURL() string {
 	return fmt.Sprintf("%s/%s", a.Repo.URL, a.SrcName)
 }
 
-type appList []App
+type AppList []App
 
-func (al appList) Len() int           { return len(al) }
-func (al appList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al appList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+func (al AppList) Len() int           { return len(al) }
+func (al AppList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al AppList) Less(i, j int) bool { return al[i].ID < al[j].ID }
 
-type apkList []Apk
+type ApkList []Apk
 
-func (al apkList) Len() int           { return len(al) }
-func (al apkList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al apkList) Less(i, j int) bool { return al[i].VCode > al[j].VCode }
+func (al ApkList) Len() int           { return len(al) }
+func (al ApkList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al ApkList) Less(i, j int) bool { return al[i].VCode > al[j].VCode }
 
 func LoadIndexXml(r io.Reader) (*Index, error) {
 	var index Index
@@ -227,11 +227,11 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 		return nil, err
 	}
 
-	sort.Sort(appList(index.Apps))
+	sort.Sort(AppList(index.Apps))
 
 	for i := range index.Apps {
 		app := &index.Apps[i]
-		sort.Sort(apkList(app.Apks))
+		sort.Sort(ApkList(app.Apks))
 		for j := range app.Apks {
 			apk := &app.Apks[j]
 			apk.Repo = &index.Repo

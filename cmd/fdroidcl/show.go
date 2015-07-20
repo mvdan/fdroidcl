@@ -41,8 +41,7 @@ func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
 }
 
 func findApps(ids []string) []*fdroidcl.App {
-	index := mustLoadIndex()
-	apps := appsMap(index.Apps)
+	apps := appsMap(mustLoadIndexes())
 	result := make([]*fdroidcl.App, len(ids))
 	for i, id := range ids {
 		app, e := apps[id]

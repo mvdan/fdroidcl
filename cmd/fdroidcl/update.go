@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/mvdan/fdroidcl"
 )
@@ -41,6 +42,27 @@ func (r *repo) updateIndex() error {
 		return err
 	}
 	return nil
+}
+
+func (r *repo) loadIndex() (*fdroidcl.Index, error) {
+	p := indexPath(r.ID)
+	f, err := os.Open(p)
+	if err != nil {
+		return nil, fmt.Errorf("could not open index: %v", err)
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("could not stat index: %v", err)
+	}
+	//pubkey, err := hex.DecodeString(repoPubkey)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not decode public key: %v", err)
+	//}
+	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not load index: %v", err)
+	}
+	return index, nil
 }
 
 func respEtag(resp *http.Response) string {
@@ -106,24 +128,26 @@ func indexPath(name string) string {
 	return filepath.Join(mustConfig(), name+".jar")
 }
 
-func mustLoadIndex() *fdroidcl.Index {
-	r := mustOneRepo()
-	p := indexPath(r.ID)
-	f, err := os.Open(p)
-	if err != nil {
-		log.Fatalf("Could not open index file: %v", err)
+func mustLoadIndexes() []fdroidcl.App {
+	var m map[string]*fdroidcl.App
+	for _, r := range config.Repos {
+		index, err := r.loadIndex()
+		if err != nil {
+			log.Fatalf("Error while loading %s: %v", r.ID, err)
+		}
+		for _, a := range index.Apps {
+			_, e := m[a.ID]
+			if !e {
+				m[a.ID] = &a
+				continue
+			}
+			// TODO: merge apks
+		}
 	}
-	stat, err := f.Stat()
-	if err != nil {
-		log.Fatalf("Could not stat index file: %v", err)
+	apps := make([]fdroidcl.App, 0, len(m))
+	for _, a := range m {
+		apps = append(apps, *a)
 	}
-	//pubkey, err := hex.DecodeString(repoPubkey)
-	//if err != nil {
-	//	log.Fatalf("Could not decode public key: %v", err)
-	//}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
-	if err != nil {
-		log.Fatalf("Could not load index: %v", err)
-	}
-	return index
+	sort.Sort(fdroidcl.AppList(apps))
+	return apps
 }
