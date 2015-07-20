@@ -129,19 +129,25 @@ func indexPath(name string) string {
 }
 
 func mustLoadIndexes() []fdroidcl.App {
-	var m map[string]*fdroidcl.App
+	m := make(map[string]*fdroidcl.App)
 	for _, r := range config.Repos {
 		index, err := r.loadIndex()
 		if err != nil {
 			log.Fatalf("Error while loading %s: %v", r.ID, err)
 		}
-		for _, a := range index.Apps {
-			_, e := m[a.ID]
+		for i := range index.Apps {
+			app := index.Apps[i]
+			orig, e := m[app.ID]
 			if !e {
-				m[a.ID] = &a
+				m[app.ID] = &app
 				continue
 			}
-			// TODO: merge apks
+			apks := append(orig.Apks, app.Apks...)
+			// We use a stable sort so that repository order
+			// (priority) is preserved amongst apks with the same
+			// vercode on apps
+			sort.Stable(fdroidcl.ApkList(apks))
+			m[app.ID].Apks = apks
 		}
 	}
 	apps := make([]fdroidcl.App, 0, len(m))
