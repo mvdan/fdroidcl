@@ -48,8 +48,9 @@ func configPath() string {
 }
 
 type repo struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+	ID      string `json:"id"`
+	URL     string `json:"url"`
+	Enabled bool   `json:"enabled"`
 }
 
 type userConfig struct {
@@ -59,8 +60,14 @@ type userConfig struct {
 var config = userConfig{
 	Repos: []repo{
 		{
-			ID:  "f-droid",
-			URL: "https://f-droid.org/repo",
+			ID:      "f-droid",
+			URL:     "https://f-droid.org/repo",
+			Enabled: true,
+		},
+		{
+			ID:      "f-droid-archive",
+			URL:     "https://f-droid.org/archive",
+			Enabled: false,
 		},
 	},
 }

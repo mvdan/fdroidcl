@@ -30,6 +30,9 @@ func init() {
 
 func runUpdate(args []string) {
 	for _, r := range config.Repos {
+		if !r.Enabled {
+			continue
+		}
 		if err := r.updateIndex(); err != nil {
 			log.Fatalf("Could not update index: %v", err)
 		}
@@ -131,6 +134,9 @@ func indexPath(name string) string {
 func mustLoadIndexes() []fdroidcl.App {
 	m := make(map[string]*fdroidcl.App)
 	for _, r := range config.Repos {
+		if !r.Enabled {
+			continue
+		}
 		index, err := r.loadIndex()
 		if err != nil {
 			log.Fatalf("Error while loading %s: %v", r.ID, err)
