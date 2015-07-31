@@ -1,5 +1,7 @@
 # fdroidcl
 
+[![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/github.com/mvdan/fdroidcl) [![Build Status](https://travis-ci.org/mvdan/fdroidcl.svg?branch=master)](https://travis-ci.org/mvdan/fdroidcl)
+
 [F-Droid](https://f-droid.org/) desktop client.
 
 This is **not** a replacement for the [Android client](https://gitlab.com/fdroid/fdroidclient).
