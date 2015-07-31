@@ -128,7 +128,7 @@ func downloadEtag(url, path string, sum []byte) error {
 }
 
 func indexPath(name string) string {
-	return filepath.Join(mustConfig(), name+".jar")
+	return filepath.Join(mustData(), name+".jar")
 }
 
 func mustLoadIndexes() []fdroidcl.App {

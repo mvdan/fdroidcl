@@ -28,23 +28,23 @@ func subdir(dir, name string) string {
 }
 
 func mustCache() string {
-	dir, err := basedir.Cache()
-	if err != nil {
-		log.Fatalf("Could not determine cache dir: %v", err)
+	dir := basedir.Cache()
+	if dir == "" {
+		log.Fatalf("Could not determine cache dir")
 	}
 	return subdir(dir, cmdName)
 }
 
-func mustConfig() string {
-	dir, err := basedir.Config()
-	if err != nil {
-		log.Fatalf("Could not determine config dir: %v", err)
+func mustData() string {
+	dir := basedir.Data()
+	if dir == "" {
+		log.Fatalf("Could not determine data dir")
 	}
 	return subdir(dir, cmdName)
 }
 
 func configPath() string {
-	return filepath.Join(mustConfig(), "config.json")
+	return filepath.Join(mustData(), "config.json")
 }
 
 type repo struct {
