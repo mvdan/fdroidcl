@@ -92,9 +92,6 @@ func printAppDetailed(app fdroidcl.App) {
 	if app.Litecoin != "" {
 		p("Litecoin         :", "litecoin:%s", app.Litecoin)
 	}
-	if app.Dogecoin != "" {
-		p("Dogecoin         :", "dogecoin:%s", app.Dogecoin)
-	}
 	if app.FlattrID != "" {
 		p("Flattr           :", "https://flattr.com/thing/%s", app.FlattrID)
 	}

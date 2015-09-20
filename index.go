@@ -42,7 +42,6 @@ type App struct {
 	Donate    string    `xml:"donate"`
 	Bitcoin   string    `xml:"bitcoin"`
 	Litecoin  string    `xml:"litecoin"`
-	Dogecoin  string    `xml:"dogecoin"`
 	FlattrID  string    `xml:"flattr"`
 	Apks      []Apk     `xml:"package"`
 	CVName    string    `xml:"marketversion"`
