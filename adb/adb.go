@@ -69,6 +69,92 @@ var (
 	ErrOwnerBlocked        = errors.New("owner blocked")
 )
 
+func parseError(s string) error {
+	switch s {
+	case "FAILED_ALREADY_EXISTS":
+		return ErrAlreadyExists
+	case "FAILED_INVALID_APK":
+		return ErrInvalidApk
+	case "FAILED_INVALID_URI":
+		return ErrInvalidURI
+	case "FAILED_INSUFFICIENT_STORAGE":
+		return ErrInsufficientStorage
+	case "FAILED_DUPLICATE_PACKAGE":
+		return ErrDuplicatePackage
+	case "FAILED_NO_SHARED_USER":
+		return ErrNoSharedUser
+	case "FAILED_UPDATE_INCOMPATIBLE":
+		return ErrUpdateIncompatible
+	case "FAILED_SHARED_USER_INCOMPATIBLE":
+		return ErrSharedUserIncompatible
+	case "FAILED_MISSING_SHARED_LIBRARY":
+		return ErrMissingSharedLibrary
+	case "FAILED_REPLACE_COULDNT_DELETE":
+		return ErrReplaceCouldntDelete
+	case "FAILED_DEXOPT":
+		return ErrDexopt
+	case "FAILED_OLDER_SDK":
+		return ErrOlderSdk
+	case "FAILED_CONFLICTING_PROVIDER":
+		return ErrConflictingProvider
+	case "FAILED_NEWER_SDK":
+		return ErrNewerSdk
+	case "FAILED_TEST_ONLY":
+		return ErrTestOnly
+	case "FAILED_CPU_ABI_INCOMPATIBLE":
+		return ErrCPUAbiIncompatible
+	case "FAILED_MISSING_FEATURE":
+		return ErrMissingFeature
+	case "FAILED_CONTAINER_ERROR":
+		return ErrContainerError
+	case "FAILED_INVALID_INSTALL_LOCATION":
+		return ErrInvalidInstallLocation
+	case "FAILED_MEDIA_UNAVAILABLE":
+		return ErrMediaUnavailable
+	case "FAILED_VERIFICATION_TIMEOUT":
+		return ErrVerificationTimeout
+	case "FAILED_VERIFICATION_FAILURE":
+		return ErrVerificationFailure
+	case "FAILED_PACKAGE_CHANGED":
+		return ErrPackageChanged
+	case "FAILED_UID_CHANGED":
+		return ErrUIDChanged
+	case "FAILED_VERSION_DOWNGRADE":
+		return ErrVersionDowngrade
+	case "PARSE_FAILED_NOT_APK":
+		return ErrNotApk
+	case "PARSE_FAILED_BAD_MANIFEST":
+		return ErrBadManifest
+	case "PARSE_FAILED_UNEXPECTED_EXCEPTION":
+		return ErrUnexpectedException
+	case "PARSE_FAILED_NO_CERTIFICATES":
+		return ErrNoCertificates
+	case "PARSE_FAILED_INCONSISTENT_CERTIFICATES":
+		return ErrInconsistentCertificates
+	case "PARSE_FAILED_CERTIFICATE_ENCODING":
+		return ErrCertificateEncoding
+	case "PARSE_FAILED_BAD_PACKAGE_NAME":
+		return ErrBadPackageName
+	case "PARSE_FAILED_BAD_SHARED_USER_ID":
+		return ErrBadSharedUserID
+	case "PARSE_FAILED_MANIFEST_MALFORMED":
+		return ErrManifestMalformed
+	case "PARSE_FAILED_MANIFEST_EMPTY":
+		return ErrManifestEmpty
+	case "FAILED_INTERNAL_ERROR":
+		return ErrInternalError
+	case "FAILED_USER_RESTRICTED":
+		return ErrUserRestricted
+	case "FAILED_DUPLICATE_PERMISSION":
+		return ErrDuplicatePermission
+	case "FAILED_NO_MATCHING_ABIS":
+		return ErrNoMatchingAbis
+	case "FAILED_ABORTED":
+		return ErrAborted
+	}
+	return fmt.Errorf("unknown error: %s", s)
+}
+
 func IsServerRunning() bool {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", port))
 	if err != nil {
@@ -163,89 +249,7 @@ func (d *Device) Install(path string) error {
 	if line == "Success" {
 		return nil
 	}
-	switch getFailureCode(installFailureRegex, line) {
-	case "FAILED_ALREADY_EXISTS":
-		return ErrAlreadyExists
-	case "FAILED_INVALID_APK":
-		return ErrInvalidApk
-	case "FAILED_INVALID_URI":
-		return ErrInvalidURI
-	case "FAILED_INSUFFICIENT_STORAGE":
-		return ErrInsufficientStorage
-	case "FAILED_DUPLICATE_PACKAGE":
-		return ErrDuplicatePackage
-	case "FAILED_NO_SHARED_USER":
-		return ErrNoSharedUser
-	case "FAILED_UPDATE_INCOMPATIBLE":
-		return ErrUpdateIncompatible
-	case "FAILED_SHARED_USER_INCOMPATIBLE":
-		return ErrSharedUserIncompatible
-	case "FAILED_MISSING_SHARED_LIBRARY":
-		return ErrMissingSharedLibrary
-	case "FAILED_REPLACE_COULDNT_DELETE":
-		return ErrReplaceCouldntDelete
-	case "FAILED_DEXOPT":
-		return ErrDexopt
-	case "FAILED_OLDER_SDK":
-		return ErrOlderSdk
-	case "FAILED_CONFLICTING_PROVIDER":
-		return ErrConflictingProvider
-	case "FAILED_NEWER_SDK":
-		return ErrNewerSdk
-	case "FAILED_TEST_ONLY":
-		return ErrTestOnly
-	case "FAILED_CPU_ABI_INCOMPATIBLE":
-		return ErrCPUAbiIncompatible
-	case "FAILED_MISSING_FEATURE":
-		return ErrMissingFeature
-	case "FAILED_CONTAINER_ERROR":
-		return ErrContainerError
-	case "FAILED_INVALID_INSTALL_LOCATION":
-		return ErrInvalidInstallLocation
-	case "FAILED_MEDIA_UNAVAILABLE":
-		return ErrMediaUnavailable
-	case "FAILED_VERIFICATION_TIMEOUT":
-		return ErrVerificationTimeout
-	case "FAILED_VERIFICATION_FAILURE":
-		return ErrVerificationFailure
-	case "FAILED_PACKAGE_CHANGED":
-		return ErrPackageChanged
-	case "FAILED_UID_CHANGED":
-		return ErrUIDChanged
-	case "FAILED_VERSION_DOWNGRADE":
-		return ErrVersionDowngrade
-	case "PARSE_FAILED_NOT_APK":
-		return ErrNotApk
-	case "PARSE_FAILED_BAD_MANIFEST":
-		return ErrBadManifest
-	case "PARSE_FAILED_UNEXPECTED_EXCEPTION":
-		return ErrUnexpectedException
-	case "PARSE_FAILED_NO_CERTIFICATES":
-		return ErrNoCertificates
-	case "PARSE_FAILED_INCONSISTENT_CERTIFICATES":
-		return ErrInconsistentCertificates
-	case "PARSE_FAILED_CERTIFICATE_ENCODING":
-		return ErrCertificateEncoding
-	case "PARSE_FAILED_BAD_PACKAGE_NAME":
-		return ErrBadPackageName
-	case "PARSE_FAILED_BAD_SHARED_USER_ID":
-		return ErrBadSharedUserID
-	case "PARSE_FAILED_MANIFEST_MALFORMED":
-		return ErrManifestMalformed
-	case "PARSE_FAILED_MANIFEST_EMPTY":
-		return ErrManifestEmpty
-	case "FAILED_INTERNAL_ERROR":
-		return ErrInternalError
-	case "FAILED_USER_RESTRICTED":
-		return ErrUserRestricted
-	case "FAILED_DUPLICATE_PERMISSION":
-		return ErrDuplicatePermission
-	case "FAILED_NO_MATCHING_ABIS":
-		return ErrNoMatchingAbis
-	case "FAILED_ABORTED":
-		return ErrAborted
-	}
-	return errors.New("unknown error: " + line)
+	return parseError(getFailureCode(installFailureRegex, line))
 }
 
 func getResultLine(out io.ReadCloser) string {
@@ -274,19 +278,7 @@ func (d *Device) Uninstall(pkg string) error {
 	if line == "Success" {
 		return nil
 	}
-	switch getFailureCode(deleteFailureRegex, line) {
-	case "FAILED_INTERNAL_ERROR":
-		return ErrInternalError
-	case "FAILED_DEVICE_POLICY_MANAGER":
-		return ErrDevicePolicyManager
-	case "FAILED_USER_RESTRICTED":
-		return ErrUserRestricted
-	case "FAILED_OWNER_BLOCKED":
-		return ErrOwnerBlocked
-	case "FAILED_ABORTED":
-		return ErrAborted
-	}
-	return errors.New("unknown error: " + line)
+	return parseError(getFailureCode(deleteFailureRegex, line))
 }
 
 type Package struct {
