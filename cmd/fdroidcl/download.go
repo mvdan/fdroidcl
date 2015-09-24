@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+
+	"github.com/mvdan/fdroidcl"
 )
 
 var cmdDownload = &Command{
@@ -28,13 +30,18 @@ func runDownload(args []string) {
 		if apk == nil {
 			log.Fatalf("No current apk found for %s", app.ID)
 		}
-		url := apk.URL()
-		path := apkPath(apk.ApkName)
-		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
-			log.Fatalf("Could not download '%s': %v", app.ID, err)
-		}
+		path := downloadApk(apk)
 		fmt.Printf("APK available in %s\n", path)
 	}
+}
+
+func downloadApk(apk *fdroidcl.Apk) string {
+	url := apk.URL()
+	path := apkPath(apk.ApkName)
+	if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
+		log.Fatalf("Could not download '%s': %v", apk.App.ID, err)
+	}
+	return path
 }
 
 func apkPath(apkname string) string {
