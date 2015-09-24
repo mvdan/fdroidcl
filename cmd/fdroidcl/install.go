@@ -6,6 +6,9 @@ package main
 import (
 	"fmt"
 	"log"
+
+	"github.com/mvdan/fdroidcl"
+	"github.com/mvdan/fdroidcl/adb"
 )
 
 var cmdInstall = &Command{
@@ -23,21 +26,30 @@ func runInstall(args []string) {
 	}
 	device := mustOneDevice()
 	apps := findApps(args)
-	paths := make([]string, len(apps))
+
+	type downloaded struct {
+		apk  *fdroidcl.Apk
+		path string
+	}
+	toInstall := make([]downloaded, len(apps))
 	for i, app := range apps {
 		apk := app.CurApk()
 		if apk == nil {
 			log.Fatalf("No current apk found for %s", app.ID)
 		}
-		paths[i] = downloadApk(apk)
+		path := downloadApk(apk)
+		toInstall[i] = downloaded{apk: apk, path: path}
 	}
-	for i, app := range apps {
-		path := paths[i]
-		fmt.Printf("Installing %s... ", app.ID)
-		if err := device.Install(path); err != nil {
-			fmt.Println()
-			log.Fatalf("Could not install '%s': %v", app.ID, err)
-		}
-		fmt.Println("done")
+	for _, t := range toInstall {
+		installApk(device, t.apk, t.path)
 	}
+}
+
+func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
+	fmt.Printf("Installing %s... ", apk.App.ID)
+	if err := device.Install(path); err != nil {
+		fmt.Println()
+		log.Fatalf("Could not install '%s': %v", apk.App.ID, err)
+	}
+	fmt.Println("done")
 }
