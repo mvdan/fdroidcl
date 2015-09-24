@@ -49,7 +49,7 @@ func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
 	fmt.Printf("Installing %s... ", apk.App.ID)
 	if err := device.Install(path); err != nil {
 		fmt.Println()
-		log.Fatalf("Could not install '%s': %v", apk.App.ID, err)
+		log.Fatalf("Could not install %s: %v", apk.App.ID, err)
 	}
 	fmt.Println("done")
 }
