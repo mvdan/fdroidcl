@@ -196,7 +196,9 @@ type Apk struct {
 	Perms   CommaList `xml:"permissions"`
 	Feats   CommaList `xml:"features"`
 	Hash    HexHash   `xml:"hash"`
-	Repo    *Repo     `xml:"-"`
+
+	App  *App  `xml:"-"`
+	Repo *Repo `xml:"-"`
 }
 
 func (a *Apk) URL() string {
@@ -233,6 +235,7 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 		sort.Sort(ApkList(app.Apks))
 		for j := range app.Apks {
 			apk := &app.Apks[j]
+			apk.App = app
 			apk.Repo = &index.Repo
 		}
 	}
