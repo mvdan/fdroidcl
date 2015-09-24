@@ -107,6 +107,9 @@ func printApps(apps []fdroidcl.App, inst map[string]adb.Package) {
 
 func descVersion(app fdroidcl.App, inst *adb.Package) string {
 	cur := app.CurApk()
+	if cur == nil {
+		return "(no version available)"
+	}
 	if inst == nil {
 		return fmt.Sprintf("%s (%d)", cur.VName, cur.VCode)
 	}
@@ -152,7 +155,11 @@ func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package) []fdroi
 		if !e {
 			continue
 		}
-		if p.VCode >= app.CurApk().VCode {
+		cur := app.CurApk()
+		if cur == nil {
+			continue
+		}
+		if p.VCode >= cur.VCode {
 			continue
 		}
 		result = append(result, app)

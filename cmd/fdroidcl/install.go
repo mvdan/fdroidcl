@@ -26,6 +26,9 @@ func runInstall(args []string) {
 	paths := make([]string, len(apps))
 	for i, app := range apps {
 		apk := app.CurApk()
+		if apk == nil {
+			log.Fatalf("No current apk found for %s", app.ID)
+		}
 		url := apk.URL()
 		path := apkPath(apk.ApkName)
 		if err := downloadEtag(url, path, apk.Hash.Data); err != nil {

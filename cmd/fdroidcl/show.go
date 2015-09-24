@@ -65,7 +65,11 @@ func printAppDetailed(app fdroidcl.App) {
 	p("Name             :", "%s", app.Name)
 	p("Summary          :", "%s", app.Summary)
 	cur := app.CurApk()
-	p("Current Version  :", "%s (%d)", cur.VName, cur.VCode)
+	if cur != nil {
+		p("Current Version  :", "%s (%d)", cur.VName, cur.VCode)
+	} else {
+		p("Current Version  :", "(no version available)")
+	}
 	p("Upstream Version :", "%s (%d)", app.CVName, app.CVCode)
 	p("License          :", "%s", app.License)
 	if app.Categs != nil {
