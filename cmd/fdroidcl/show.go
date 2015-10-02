@@ -22,6 +22,9 @@ func init() {
 }
 
 func runShow(args []string) {
+	if len(args) < 1 {
+		log.Fatalf("No package names given")
+	}
 	apps := findApps(args)
 	for i, app := range apps {
 		if i > 0 {
