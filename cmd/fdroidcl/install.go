@@ -26,7 +26,16 @@ func runInstall(args []string) {
 	}
 	device := mustOneDevice()
 	apps := findApps(args)
+	inst := mustInstalled(device)
+	for _, app := range apps {
+		if _, e := inst[app.ID]; e {
+			log.Fatalf("%s is already installed", app.ID)
+		}
+	}
+	downloadAndInstall(apps, device)
+}
 
+func downloadAndInstall(apps []*fdroidcl.App, device *adb.Device) {
 	type downloaded struct {
 		apk  *fdroidcl.Apk
 		path string
