@@ -24,10 +24,13 @@ func runUpgrade(args []string) {
 	apps := findApps(args)
 	inst := mustInstalled(device)
 	for _, app := range apps {
-		_, e := inst[app.ID]
+		p, e := inst[app.ID]
 		if !e {
 			log.Fatalf("%s is not installed", app.ID)
 		}
+		if p.VCode >= app.CVCode {
+			log.Fatalf("%s is up to date", app.ID)
+		}
 	}
-	downloadAndInstall(apps, device)
+	downloadAndDo(apps, device, upgradeApk)
 }

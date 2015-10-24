@@ -32,10 +32,10 @@ func runInstall(args []string) {
 			log.Fatalf("%s is already installed", app.ID)
 		}
 	}
-	downloadAndInstall(apps, device)
+	downloadAndDo(apps, device, installApk)
 }
 
-func downloadAndInstall(apps []*fdroidcl.App, device *adb.Device) {
+func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Device, *fdroidcl.Apk, string)) {
 	type downloaded struct {
 		apk  *fdroidcl.Apk
 		path string
@@ -50,7 +50,7 @@ func downloadAndInstall(apps []*fdroidcl.App, device *adb.Device) {
 		toInstall[i] = downloaded{apk: apk, path: path}
 	}
 	for _, t := range toInstall {
-		installApk(device, t.apk, t.path)
+		doApk(device, t.apk, t.path)
 	}
 }
 
@@ -59,6 +59,15 @@ func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
 	if err := device.Install(path); err != nil {
 		fmt.Println()
 		log.Fatalf("Could not install %s: %v", apk.App.ID, err)
+	}
+	fmt.Println("done")
+}
+
+func upgradeApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
+	fmt.Printf("Upgrading %s... ", apk.App.ID)
+	if err := device.Upgrade(path); err != nil {
+		fmt.Println()
+		log.Fatalf("Could not upgrade %s: %v", apk.App.ID, err)
 	}
 	fmt.Println("done")
 }
