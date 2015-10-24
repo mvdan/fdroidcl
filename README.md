@@ -17,12 +17,9 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 	devices               List connected devices
 	download <appid...>   Download an app
 	install <appid...>    Install an app
+	upgrade <appid...>    Upgrade an app
 	uninstall <appid...>  Uninstall an app
 	defaults              Reset to the default settings
-
-### Missing commands
-
-	upgrade <appid...>    Upgrade an app
 
 ### Missing features
 
