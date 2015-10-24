@@ -24,6 +24,7 @@ var (
 	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
 	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
 	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
+	category  = cmdSearch.Flag.String("c", "", "Filter apps by category")
 	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added, updated)")
 )
 
@@ -52,6 +53,13 @@ func runSearch(args []string) {
 	}
 	if *updates {
 		apps = filterAppsUpdates(apps, instPkgs)
+	}
+	if *category != "" {
+		apps = filterAppsCategory(apps, *category)
+		if apps == nil {
+			fmt.Fprintf(os.Stderr, "No such category: %s\n", *category)
+			cmdSearch.Flag.Usage()
+		}
 	}
 	if sfunc != nil {
 		apps = sortApps(apps, sfunc)
@@ -171,6 +179,26 @@ func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package) []fdroi
 			continue
 		}
 		if p.VCode >= cur.VCode {
+			continue
+		}
+		result = append(result, app)
+	}
+	return result
+}
+
+func contains(l []string, s string) bool {
+	for _, s1 := range l {
+		if s1 == s {
+			return true
+		}
+	}
+	return false
+}
+
+func filterAppsCategory(apps []fdroidcl.App, categ string) []fdroidcl.App {
+	var result []fdroidcl.App
+	for _, app := range apps {
+		if !contains(app.Categs, categ) {
 			continue
 		}
 		result = append(result, app)
