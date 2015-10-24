@@ -236,8 +236,13 @@ func getFailureCode(r *regexp.Regexp, line string) string {
 
 var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
 
-func (d *Device) Install(path string) error {
-	cmd := d.AdbCmd("install", path)
+func withOpts(cmd string, opts []string, args ...string) []string {
+	v := append([]string{"install"}, opts...)
+	return append(v, args...)
+}
+
+func (d *Device) install(opts []string, path string) error {
+	cmd := d.AdbCmd(withOpts("install", opts, path)...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -250,6 +255,14 @@ func (d *Device) Install(path string) error {
 		return nil
 	}
 	return parseError(getFailureCode(installFailureRegex, line))
+}
+
+func (d *Device) Install(path string) error {
+	return d.install(nil, path)
+}
+
+func (d *Device) Upgrade(path string) error {
+	return d.install([]string{"-r"}, path)
 }
 
 func getResultLine(out io.ReadCloser) string {
