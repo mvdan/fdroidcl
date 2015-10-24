@@ -31,6 +31,8 @@ type App struct {
 	ID        string    `xml:"id"`
 	Name      string    `xml:"name"`
 	Summary   string    `xml:"summary"`
+	Added     DateVal   `xml:"added"`
+	Updated   DateVal   `xml:"lastupdated"`
 	Icon      string    `xml:"icon"`
 	Desc      string    `xml:"desc"`
 	License   string    `xml:"license"`
