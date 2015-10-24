@@ -24,7 +24,7 @@ var (
 	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
 	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
 	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
-	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added)")
+	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added, updated)")
 )
 
 func init() {
@@ -182,10 +182,16 @@ func cmpAdded(a, b *fdroidcl.App) bool {
 	return a.Added.Before(b.Added.Time)
 }
 
+func cmpUpdated(a, b *fdroidcl.App) bool {
+	return a.Updated.Before(b.Updated.Time)
+}
+
 func sortFunc(sortBy string) (func(a, b *fdroidcl.App) bool, error) {
 	switch sortBy {
 	case "added":
 		return cmpAdded, nil
+	case "updated":
+		return cmpUpdated, nil
 	case "":
 		return nil, nil
 	}
