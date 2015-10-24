@@ -28,6 +28,7 @@ devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
  * Index verification via jar signature - currently relies on HTTPS
  * Interaction with multiple devices at once
+ * Device compatibility filters (minSdk, maxSdk, abi, features)
 
 ### Advantages over the Android client
 
