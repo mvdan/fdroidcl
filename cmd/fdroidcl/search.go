@@ -132,11 +132,14 @@ func descVersion(app fdroidcl.App, inst *adb.Package) string {
 	if inst == nil {
 		return fmt.Sprintf("%s (%d)", cur.VName, cur.VCode)
 	}
-	if !*installed && inst.VCode >= cur.VCode {
+	if inst.VCode < cur.VCode {
+		return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VName, inst.VCode,
+			cur.VName, cur.VCode)
+	}
+	if !*installed {
 		return fmt.Sprintf("%s (%d) [installed]", cur.VName, cur.VCode)
 	}
-	return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VName, inst.VCode,
-		cur.VName, cur.VCode)
+	return fmt.Sprintf("%s (%d)", cur.VName, cur.VCode)
 }
 
 func printApp(app fdroidcl.App, IDLen int, inst *adb.Package) {
