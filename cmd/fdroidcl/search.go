@@ -6,7 +6,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
@@ -22,6 +24,7 @@ var (
 	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
 	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
 	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
+	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added)")
 )
 
 func init() {
@@ -30,7 +33,12 @@ func init() {
 
 func runSearch(args []string) {
 	if *installed && *updates {
-		fmt.Println("-i is redundant if -u is specified")
+		fmt.Fprintf(os.Stderr, "-i is redundant if -u is specified\n")
+		cmdSearch.Flag.Usage()
+	}
+	sfunc, err := sortFunc(*sortBy)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		cmdSearch.Flag.Usage()
 	}
 	var device *adb.Device
@@ -44,6 +52,9 @@ func runSearch(args []string) {
 	}
 	if *updates {
 		apps = filterAppsUpdates(apps, instPkgs)
+	}
+	if sfunc != nil {
+		apps = sortApps(apps, sfunc)
 	}
 	if *quiet {
 		for _, app := range apps {
@@ -165,4 +176,32 @@ func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package) []fdroi
 		result = append(result, app)
 	}
 	return result
+}
+
+func cmpAdded(a, b *fdroidcl.App) bool {
+	return a.Added.Before(b.Added.Time)
+}
+
+func sortFunc(sortBy string) (func(a, b *fdroidcl.App) bool, error) {
+	switch sortBy {
+	case "added":
+		return cmpAdded, nil
+	case "":
+		return nil, nil
+	}
+	return nil, fmt.Errorf("Unknown sort order: %s", sortBy)
+}
+
+type appList struct {
+	l []fdroidcl.App
+	f func(a, b *fdroidcl.App) bool
+}
+
+func (al appList) Len() int           { return len(al.l) }
+func (al appList) Swap(i, j int)      { al.l[i], al.l[j] = al.l[j], al.l[i] }
+func (al appList) Less(i, j int) bool { return al.f(&al.l[i], &al.l[j]) }
+
+func sortApps(apps []fdroidcl.App, f func(a, b *fdroidcl.App) bool) []fdroidcl.App {
+	sort.Sort(appList{l: apps, f: f})
+	return apps
 }
