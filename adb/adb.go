@@ -265,7 +265,7 @@ func (d *Device) Upgrade(path string) error {
 	return d.install([]string{"-r"}, path)
 }
 
-func getResultLine(out io.ReadCloser) string {
+func getResultLine(out io.Reader) string {
 	scanner := bufio.NewScanner(out)
 	for scanner.Scan() {
 		l := scanner.Text()
