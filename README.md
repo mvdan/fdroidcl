@@ -4,7 +4,10 @@
 
 [F-Droid](https://f-droid.org/) desktop client.
 
+	go get github.com/mvdan/fdroidcl/cmd/fdroidcl
+
 This is **not** a replacement for the [Android client](https://gitlab.com/fdroid/fdroidclient).
+
 While the Android client integrates with the system with regular update checks
 and notifications, this is a command line client that talks to connected
 devices via [ADB](https://developer.android.com/tools/help/adb.html).
