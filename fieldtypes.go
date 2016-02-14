@@ -5,7 +5,6 @@ package fdroidcl
 
 import (
 	"encoding/hex"
-	"encoding/xml"
 	"strings"
 	"time"
 )
@@ -18,15 +17,6 @@ func (cl *CommaList) FromString(s string) {
 
 func (cl *CommaList) String() string {
 	return strings.Join(*cl, ",")
-}
-
-func (cl *CommaList) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var content string
-	if err := d.DecodeElement(&content, &start); err != nil {
-		return err
-	}
-	cl.FromString(content)
-	return nil
 }
 
 func (cl *CommaList) UnmarshalText(text []byte) (err error) {
@@ -54,14 +44,6 @@ func (hv *HexVal) String() string {
 	return hex.EncodeToString(*hv)
 }
 
-func (hv *HexVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var content string
-	if err := d.DecodeElement(&content, &start); err != nil {
-		return err
-	}
-	return hv.FromString(content)
-}
-
 func (hv *HexVal) UnmarshalText(text []byte) (err error) {
 	return hv.FromString(string(text))
 }
@@ -81,14 +63,6 @@ func (dv *DateVal) FromString(s string) error {
 
 func (dv *DateVal) String() string {
 	return dv.Format("2006-01-02")
-}
-
-func (dv *DateVal) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var content string
-	if err := d.DecodeElement(&content, &start); err != nil {
-		return err
-	}
-	return dv.FromString(content)
 }
 
 func (dv *DateVal) UnmarshalText(text []byte) (err error) {
