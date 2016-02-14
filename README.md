@@ -12,6 +12,20 @@ While the Android client integrates with the system with regular update checks
 and notifications, this is a command line client that talks to connected
 devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
+### Quickstart
+
+Download the index:
+
+	fdroidcl update
+
+Show all available apps:
+
+	fdroidcl search
+
+Install an app:
+
+	fdroidcl install org.adaway
+
 ### Commands
 
 	update                Update the index
