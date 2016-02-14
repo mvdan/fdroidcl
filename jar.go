@@ -71,5 +71,5 @@ func LoadIndexJar(r io.ReaderAt, size int64, pubkey []byte) (*Index, error) {
 	if err := verifySignature(pubkey, sig); err != nil {
 		return nil, err
 	}
-	return LoadIndexXml(index)
+	return LoadIndexXML(index)
 }

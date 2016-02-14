@@ -221,7 +221,7 @@ func (al ApkList) Len() int           { return len(al) }
 func (al ApkList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al ApkList) Less(i, j int) bool { return al[i].VCode > al[j].VCode }
 
-func LoadIndexXml(r io.Reader) (*Index, error) {
+func LoadIndexXML(r io.Reader) (*Index, error) {
 	var index Index
 	decoder := xml.NewDecoder(r)
 	if err := decoder.Decode(&index); err != nil {
@@ -242,16 +242,16 @@ func LoadIndexXml(r io.Reader) (*Index, error) {
 	return &index, nil
 }
 
-func (app *App) CurApk() *Apk {
-	if app.CVCode == 0 {
-		if len(app.Apks) > 0 {
-			return &app.Apks[0]
+func (a *App) CurApk() *Apk {
+	if a.CVCode == 0 {
+		if len(a.Apks) > 0 {
+			return &a.Apks[0]
 		}
 		return nil
 	}
-	for i := range app.Apks {
-		apk := app.Apks[i]
-		if app.CVCode >= apk.VCode {
+	for i := range a.Apks {
+		apk := a.Apks[i]
+		if a.CVCode >= apk.VCode {
 			return &apk
 		}
 	}
