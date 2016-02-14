@@ -166,9 +166,7 @@ func (a *App) TextDesc(w io.Writer) {
 				left = left[last+1:]
 				colsUsed = 0
 			}
-			if firstLine {
-				firstLine = false
-			} else {
+			if !firstLine {
 				fmt.Fprint(w, linePrefix)
 			}
 			fmt.Fprint(w, left)
