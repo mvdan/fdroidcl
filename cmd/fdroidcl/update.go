@@ -6,7 +6,6 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -93,6 +92,10 @@ func downloadEtag(url, path string, sum []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("download failed: %d %s",
+			resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
 	if resp.StatusCode == http.StatusNotModified {
 		fmt.Printf("not modified")
 		return nil
@@ -114,7 +117,7 @@ func downloadEtag(url, path string, sum []byte) error {
 		}
 		got := sha256.Sum256(data)
 		if !bytes.Equal(sum, got[:]) {
-			return errors.New("sha256 mismatch")
+			return fmt.Errorf("sha256 mismatch")
 		}
 		if _, err := f.Write(data); err != nil {
 			return err
