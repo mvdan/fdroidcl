@@ -19,7 +19,7 @@ func (cl *CommaList) String() string {
 	return strings.Join(*cl, ",")
 }
 
-func (cl *CommaList) UnmarshalText(text []byte) (err error) {
+func (cl *CommaList) UnmarshalText(text []byte) error {
 	cl.FromString(string(text))
 	return nil
 }
@@ -44,7 +44,7 @@ func (hv *HexVal) String() string {
 	return hex.EncodeToString(*hv)
 }
 
-func (hv *HexVal) UnmarshalText(text []byte) (err error) {
+func (hv *HexVal) UnmarshalText(text []byte) error {
 	return hv.FromString(string(text))
 }
 
@@ -65,6 +65,6 @@ func (dv *DateVal) String() string {
 	return dv.Format("2006-01-02")
 }
 
-func (dv *DateVal) UnmarshalText(text []byte) (err error) {
+func (dv *DateVal) UnmarshalText(text []byte) error {
 	return dv.FromString(string(text))
 }
