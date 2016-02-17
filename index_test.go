@@ -5,6 +5,8 @@ package fdroidcl
 
 import (
 	"bytes"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -26,6 +28,10 @@ func TestTextDesc(t *testing.T) {
 			"Multiple\n\nParagraphs\n",
 		},
 		{
+			"<p>Single, very long paragraph that is over 80 characters long and doesn't fit in a single line.</p>",
+			"Single, very long paragraph that is over 80 characters long and doesn't fit in\na single line.\n",
+		},
+		{
 			"<p>Unordered list:</p><ul><li> Item</li><li> Another item</li></ul>",
 			"Unordered list:\n\n * Item\n * Another item\n",
 		},
@@ -41,10 +47,41 @@ func TestTextDesc(t *testing.T) {
 		app := App{Desc: c.in}
 		var b bytes.Buffer
 		app.TextDesc(&b)
-		out := b.String()
-		if out != c.want {
-			t.Errorf("Description converting into text failed.\nInput:\n%s\nGot:\n%s\nWanted:\n%s\n",
-				c.in, out, c.want)
+		got := b.String()
+		if got != c.want {
+			t.Fatalf("Unexpected description.\nGot:\n%s\nWant:\n%s\n",
+				got, c.want)
+		}
+	}
+}
+
+func TestLoadIndexXML(t *testing.T) {
+	tests := []struct {
+		in   string
+		want Index
+	}{
+		{
+			`<fdroid>
+			<repo name="Foo" version="14">
+			</repo>
+			</fdroid>`,
+			Index{
+				Repo: Repo{
+					Name:    "Foo",
+					Version: 14,
+				},
+			},
+		},
+	}
+	for _, c := range tests {
+		r := strings.NewReader(c.in)
+		got, err := LoadIndexXML(r)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(*got, c.want) {
+			t.Fatalf("Unexpected index.\nGot:\n%v\nWant:\n%v\n",
+				got, c.want)
 		}
 	}
 }
