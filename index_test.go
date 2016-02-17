@@ -62,13 +62,32 @@ func TestLoadIndexXML(t *testing.T) {
 	}{
 		{
 			`<fdroid>
-			<repo name="Foo" version="14">
-			</repo>
+			<repo name="Foo" version="14"/>
 			</fdroid>`,
 			Index{
 				Repo: Repo{
 					Name:    "Foo",
 					Version: 14,
+				},
+			},
+		},
+		{
+			`<fdroid>
+			<repo name="Foo"/>
+			<application>
+				<id>foo.bar</id>
+				<name>Foo bar</name>
+			</application>
+			</fdroid>`,
+			Index{
+				Repo: Repo{
+					Name: "Foo",
+				},
+				Apps: []App{
+					{
+						ID:   "foo.bar",
+						Name: "Foo bar",
+					},
 				},
 			},
 		},
