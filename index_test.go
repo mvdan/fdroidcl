@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestTextDesc(t *testing.T) {
@@ -66,25 +67,31 @@ func TestLoadIndexXML(t *testing.T) {
 			<application>
 				<id>foo.bar</id>
 				<name>Foo bar</name>
+				<categories>Cat1,Cat2</categories>
+				<added>2015-10-02</added>
 				<package>
 					<version>1.0</version>
 					<versioncode>1</versioncode>
+					<sig>0123456789abcdef</sig>
 				</package>
 			</application>
 			</fdroid>`,
 			Index{
 				Repo: Repo{
-					Name: "Foo",
+					Name:    "Foo",
 					Version: 14,
 				},
 				Apps: []App{
 					{
-						ID:   "foo.bar",
-						Name: "Foo bar",
+						ID:     "foo.bar",
+						Name:   "Foo bar",
+						Categs: []string{"Cat1", "Cat2"},
+						Added:  DateVal{time.Date(2015, 10, 2, 0, 0, 0, 0, time.UTC)},
 						Apks: []Apk{
 							{
 								VName: "1.0",
 								VCode: 1,
+								Sig:   []byte{1, 35, 69, 103, 137, 171, 205, 239},
 							},
 						},
 					},
