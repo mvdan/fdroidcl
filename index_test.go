@@ -63,30 +63,30 @@ func TestLoadIndexXML(t *testing.T) {
 		{
 			`<fdroid>
 			<repo name="Foo" version="14"/>
-			</fdroid>`,
-			Index{
-				Repo: Repo{
-					Name:    "Foo",
-					Version: 14,
-				},
-			},
-		},
-		{
-			`<fdroid>
-			<repo name="Foo"/>
 			<application>
 				<id>foo.bar</id>
 				<name>Foo bar</name>
+				<package>
+					<version>1.0</version>
+					<versioncode>1</versioncode>
+				</package>
 			</application>
 			</fdroid>`,
 			Index{
 				Repo: Repo{
 					Name: "Foo",
+					Version: 14,
 				},
 				Apps: []App{
 					{
 						ID:   "foo.bar",
 						Name: "Foo bar",
+						Apks: []Apk{
+							{
+								VName: "1.0",
+								VCode: 1,
+							},
+						},
 					},
 				},
 			},
@@ -94,11 +94,20 @@ func TestLoadIndexXML(t *testing.T) {
 	}
 	for _, c := range tests {
 		r := strings.NewReader(c.in)
-		got, err := LoadIndexXML(r)
+		index, err := LoadIndexXML(r)
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
-		if !reflect.DeepEqual(*got, c.want) {
+		got := *index
+		for i := range c.want.Apps {
+			app := &c.want.Apps[i]
+			for i := range app.Apks {
+				apk := &app.Apks[i]
+				apk.Repo = &got.Repo
+				apk.App = app
+			}
+		}
+		if !reflect.DeepEqual(got, c.want) {
 			t.Fatalf("Unexpected index.\nGot:\n%v\nWant:\n%v\n",
 				got, c.want)
 		}
