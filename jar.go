@@ -42,8 +42,7 @@ func LoadIndexJar(r io.ReaderAt, size int64, pubkey []byte) (*Index, error) {
 	if err != nil {
 		return nil, err
 	}
-	var index io.ReadCloser
-	var sig io.ReadCloser
+	var index, sig io.ReadCloser
 	for _, f := range reader.File {
 		if f.Name == indexPath {
 			index, err = f.Open()

@@ -38,12 +38,11 @@ func runUpdate(args []string) {
 	}
 }
 
+const jarFile = "index.jar"
+
 func (r *repo) updateIndex() error {
-	url := fmt.Sprintf("%s/%s", r.URL, "index.jar")
-	if err := downloadEtag(url, indexPath(r.ID), nil); err != nil {
-		return err
-	}
-	return nil
+	url := fmt.Sprintf("%s/%s", r.URL, jarFile)
+	return downloadEtag(url, indexPath(r.ID), nil)
 }
 
 func (r *repo) loadIndex() (*fdroidcl.Index, error) {
@@ -60,11 +59,7 @@ func (r *repo) loadIndex() (*fdroidcl.Index, error) {
 	//if err != nil {
 	//	return nil, fmt.Errorf("could not decode public key: %v", err)
 	//}
-	index, err := fdroidcl.LoadIndexJar(f, stat.Size(), nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not load index: %v", err)
-	}
-	return index, nil
+	return fdroidcl.LoadIndexJar(f, stat.Size(), nil)
 }
 
 func respEtag(resp *http.Response) string {
