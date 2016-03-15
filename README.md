@@ -38,6 +38,15 @@ Install an app:
 	uninstall <appid...>  Uninstall an app
 	defaults              Reset to the default settings
 
+### Config
+
+You can configure the repositories to use in the `config.json` file.
+This file will be located in `fdroidcl`'s config directory, which is
+`~/.config/fdroidcl/config.json` on Linux.
+
+By default, the main F-droid repository is enabled. The config file will
+be created after the first run, e.g. once you run `fdroid update`.
+
 ### Missing features
 
  * Index verification via jar signature - currently relies on HTTPS
