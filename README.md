@@ -1,6 +1,7 @@
 # fdroidcl
 
-[![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/github.com/mvdan/fdroidcl) [![Build Status](https://travis-ci.org/mvdan/fdroidcl.svg?branch=master)](https://travis-ci.org/mvdan/fdroidcl)
+[![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/github.com/mvdan/fdroidcl)
+[![Build Status](https://travis-ci.org/mvdan/fdroidcl.svg?branch=master)](https://travis-ci.org/mvdan/fdroidcl)
 
 [F-Droid](https://f-droid.org/) desktop client.
 
@@ -51,7 +52,7 @@ be created after the first run, e.g. once you run `fdroid update`.
 
  * Index verification via jar signature - currently relies on HTTPS
  * Interaction with multiple devices at once
- * Device compatibility filters (minSdk, maxSdk, abi, features)
+ * Device compatibility filters (minSdk, maxSdk, arch, hardware features)
 
 ### Advantages over the Android client
 
