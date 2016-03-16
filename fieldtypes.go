@@ -52,8 +52,10 @@ type DateVal struct {
 	time.Time
 }
 
+const dateFormat = "2006-01-02"
+
 func (dv *DateVal) FromString(s string) error {
-	t, err := time.Parse("2006-01-02", s)
+	t, err := time.Parse(dateFormat, s)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (dv *DateVal) FromString(s string) error {
 }
 
 func (dv *DateVal) String() string {
-	return dv.Format("2006-01-02")
+	return dv.Format(dateFormat)
 }
 
 func (dv *DateVal) UnmarshalText(text []byte) error {

@@ -15,9 +15,7 @@ import (
 	"strings"
 )
 
-const (
-	port = 5037
-)
+const port = 5037
 
 var (
 	// Common install and uninstall errors

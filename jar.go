@@ -5,10 +5,8 @@ package fdroidcl
 
 import (
 	"archive/zip"
-	//"crypto/x509"
 	"errors"
 	"io"
-	//"io/ioutil"
 	"regexp"
 )
 
@@ -23,18 +21,8 @@ var (
 )
 
 func verifySignature(pubkey []byte, sig io.Reader) error {
-	/*
-		sigBytes, err := ioutil.ReadAll(sig)
-		if err != nil {
-			return err
-		}
-		cert, err := x509.ParseCertificate(pubkey)
-		if err != nil {
-			return err
-		}
-		return cert.CheckSignature(x509.MD5WithRSA, ...)
-	*/
-	return nil // MD5WithRSA is currently unimplemented
+	// TODO: Implement
+	return nil
 }
 
 func LoadIndexJar(r io.ReaderAt, size int64, pubkey []byte) (*Index, error) {
