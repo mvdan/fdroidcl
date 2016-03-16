@@ -32,7 +32,8 @@ func runUpgrade(args []string) {
 		if !e {
 			log.Fatalf("%s is not installed", app.ID)
 		}
-		if p.VCode >= app.CVCode {
+		cur := app.CurApk()
+		if p.VCode >= cur.VCode {
 			log.Fatalf("%s is up to date", app.ID)
 		}
 	}
