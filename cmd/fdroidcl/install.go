@@ -62,12 +62,3 @@ func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
 	}
 	fmt.Println("done")
 }
-
-func upgradeApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
-	fmt.Printf("Upgrading %s... ", apk.App.ID)
-	if err := device.Upgrade(path); err != nil {
-		fmt.Println()
-		log.Fatalf("Could not upgrade %s: %v", apk.App.ID, err)
-	}
-	fmt.Println("done")
-}

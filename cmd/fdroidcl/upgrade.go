@@ -4,7 +4,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
+
+	"github.com/mvdan/fdroidcl"
+	"github.com/mvdan/fdroidcl/adb"
 )
 
 var cmdUpgrade = &Command{
@@ -33,4 +37,13 @@ func runUpgrade(args []string) {
 		}
 	}
 	downloadAndDo(apps, device, upgradeApk)
+}
+
+func upgradeApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
+	fmt.Printf("Upgrading %s... ", apk.App.ID)
+	if err := device.Upgrade(path); err != nil {
+		fmt.Println()
+		log.Fatalf("Could not upgrade %s: %v", apk.App.ID, err)
+	}
+	fmt.Println("done")
 }
