@@ -41,12 +41,12 @@ Install an app:
 
 ### Config
 
-You can configure the repositories to use in the `config.json` file.
-This file will be located in `fdroidcl`'s config directory, which is
+You can configure the repositories to use in the `config.json` file,
+located in `fdroidcl`'s config directory. This will be
 `~/.config/fdroidcl/config.json` on Linux.
 
-By default, the main F-droid repository is enabled. The config file will
-be created after the first run, e.g. once you run `fdroid update`.
+You can run `fdroidcl defaults` to create the config with the default
+settings.
 
 ### Missing features
 
