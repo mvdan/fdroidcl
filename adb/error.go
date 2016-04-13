@@ -58,88 +58,52 @@ var (
 	ErrOwnerBlocked        = errors.New("owner blocked")
 )
 
+var errorVals = map[string]error{
+	"FAILED_ALREADY_EXISTS":                  ErrAlreadyExists,
+	"FAILED_INVALID_APK":                     ErrInvalidApk,
+	"FAILED_INVALID_URI":                     ErrInvalidURI,
+	"FAILED_INSUFFICIENT_STORAGE":            ErrInsufficientStorage,
+	"FAILED_DUPLICATE_PACKAGE":               ErrDuplicatePackage,
+	"FAILED_NO_SHARED_USER":                  ErrNoSharedUser,
+	"FAILED_UPDATE_INCOMPATIBLE":             ErrUpdateIncompatible,
+	"FAILED_SHARED_USER_INCOMPATIBLE":        ErrSharedUserIncompatible,
+	"FAILED_MISSING_SHARED_LIBRARY":          ErrMissingSharedLibrary,
+	"FAILED_REPLACE_COULDNT_DELETE":          ErrReplaceCouldntDelete,
+	"FAILED_DEXOPT":                          ErrDexopt,
+	"FAILED_OLDER_SDK":                       ErrOlderSdk,
+	"FAILED_CONFLICTING_PROVIDER":            ErrConflictingProvider,
+	"FAILED_NEWER_SDK":                       ErrNewerSdk,
+	"FAILED_TEST_ONLY":                       ErrTestOnly,
+	"FAILED_CPU_ABI_INCOMPATIBLE":            ErrCPUAbiIncompatible,
+	"FAILED_MISSING_FEATURE":                 ErrMissingFeature,
+	"FAILED_CONTAINER_ERROR":                 ErrContainerError,
+	"FAILED_INVALID_INSTALL_LOCATION":        ErrInvalidInstallLocation,
+	"FAILED_MEDIA_UNAVAILABLE":               ErrMediaUnavailable,
+	"FAILED_VERIFICATION_TIMEOUT":            ErrVerificationTimeout,
+	"FAILED_VERIFICATION_FAILURE":            ErrVerificationFailure,
+	"FAILED_PACKAGE_CHANGED":                 ErrPackageChanged,
+	"FAILED_UID_CHANGED":                     ErrUIDChanged,
+	"FAILED_VERSION_DOWNGRADE":               ErrVersionDowngrade,
+	"PARSE_FAILED_NOT_APK":                   ErrNotApk,
+	"PARSE_FAILED_BAD_MANIFEST":              ErrBadManifest,
+	"PARSE_FAILED_UNEXPECTED_EXCEPTION":      ErrUnexpectedException,
+	"PARSE_FAILED_NO_CERTIFICATES":           ErrNoCertificates,
+	"PARSE_FAILED_INCONSISTENT_CERTIFICATES": ErrInconsistentCertificates,
+	"PARSE_FAILED_CERTIFICATE_ENCODING":      ErrCertificateEncoding,
+	"PARSE_FAILED_BAD_PACKAGE_NAME":          ErrBadPackageName,
+	"PARSE_FAILED_BAD_SHARED_USER_ID":        ErrBadSharedUserID,
+	"PARSE_FAILED_MANIFEST_MALFORMED":        ErrManifestMalformed,
+	"PARSE_FAILED_MANIFEST_EMPTY":            ErrManifestEmpty,
+	"FAILED_INTERNAL_ERROR":                  ErrInternalError,
+	"FAILED_USER_RESTRICTED":                 ErrUserRestricted,
+	"FAILED_DUPLICATE_PERMISSION":            ErrDuplicatePermission,
+	"FAILED_NO_MATCHING_ABIS":                ErrNoMatchingAbis,
+	"FAILED_ABORTED":                         ErrAborted,
+}
+
 func parseError(s string) error {
-	switch s {
-	case "FAILED_ALREADY_EXISTS":
-		return ErrAlreadyExists
-	case "FAILED_INVALID_APK":
-		return ErrInvalidApk
-	case "FAILED_INVALID_URI":
-		return ErrInvalidURI
-	case "FAILED_INSUFFICIENT_STORAGE":
-		return ErrInsufficientStorage
-	case "FAILED_DUPLICATE_PACKAGE":
-		return ErrDuplicatePackage
-	case "FAILED_NO_SHARED_USER":
-		return ErrNoSharedUser
-	case "FAILED_UPDATE_INCOMPATIBLE":
-		return ErrUpdateIncompatible
-	case "FAILED_SHARED_USER_INCOMPATIBLE":
-		return ErrSharedUserIncompatible
-	case "FAILED_MISSING_SHARED_LIBRARY":
-		return ErrMissingSharedLibrary
-	case "FAILED_REPLACE_COULDNT_DELETE":
-		return ErrReplaceCouldntDelete
-	case "FAILED_DEXOPT":
-		return ErrDexopt
-	case "FAILED_OLDER_SDK":
-		return ErrOlderSdk
-	case "FAILED_CONFLICTING_PROVIDER":
-		return ErrConflictingProvider
-	case "FAILED_NEWER_SDK":
-		return ErrNewerSdk
-	case "FAILED_TEST_ONLY":
-		return ErrTestOnly
-	case "FAILED_CPU_ABI_INCOMPATIBLE":
-		return ErrCPUAbiIncompatible
-	case "FAILED_MISSING_FEATURE":
-		return ErrMissingFeature
-	case "FAILED_CONTAINER_ERROR":
-		return ErrContainerError
-	case "FAILED_INVALID_INSTALL_LOCATION":
-		return ErrInvalidInstallLocation
-	case "FAILED_MEDIA_UNAVAILABLE":
-		return ErrMediaUnavailable
-	case "FAILED_VERIFICATION_TIMEOUT":
-		return ErrVerificationTimeout
-	case "FAILED_VERIFICATION_FAILURE":
-		return ErrVerificationFailure
-	case "FAILED_PACKAGE_CHANGED":
-		return ErrPackageChanged
-	case "FAILED_UID_CHANGED":
-		return ErrUIDChanged
-	case "FAILED_VERSION_DOWNGRADE":
-		return ErrVersionDowngrade
-	case "PARSE_FAILED_NOT_APK":
-		return ErrNotApk
-	case "PARSE_FAILED_BAD_MANIFEST":
-		return ErrBadManifest
-	case "PARSE_FAILED_UNEXPECTED_EXCEPTION":
-		return ErrUnexpectedException
-	case "PARSE_FAILED_NO_CERTIFICATES":
-		return ErrNoCertificates
-	case "PARSE_FAILED_INCONSISTENT_CERTIFICATES":
-		return ErrInconsistentCertificates
-	case "PARSE_FAILED_CERTIFICATE_ENCODING":
-		return ErrCertificateEncoding
-	case "PARSE_FAILED_BAD_PACKAGE_NAME":
-		return ErrBadPackageName
-	case "PARSE_FAILED_BAD_SHARED_USER_ID":
-		return ErrBadSharedUserID
-	case "PARSE_FAILED_MANIFEST_MALFORMED":
-		return ErrManifestMalformed
-	case "PARSE_FAILED_MANIFEST_EMPTY":
-		return ErrManifestEmpty
-	case "FAILED_INTERNAL_ERROR":
-		return ErrInternalError
-	case "FAILED_USER_RESTRICTED":
-		return ErrUserRestricted
-	case "FAILED_DUPLICATE_PERMISSION":
-		return ErrDuplicatePermission
-	case "FAILED_NO_MATCHING_ABIS":
-		return ErrNoMatchingAbis
-	case "FAILED_ABORTED":
-		return ErrAborted
+	if err, e := errorVals[s]; e {
+		return err
 	}
 	return fmt.Errorf("unknown error: %s", s)
 }
