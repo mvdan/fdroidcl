@@ -243,17 +243,14 @@ func LoadIndexXML(r io.Reader) (*Index, error) {
 }
 
 func (a *App) CurApk() *Apk {
-	if a.CVCode == 0 {
-		if len(a.Apks) > 0 {
-			return &a.Apks[0]
-		}
-		return nil
-	}
 	for i := range a.Apks {
 		apk := a.Apks[i]
 		if a.CVCode >= apk.VCode {
 			return &apk
 		}
+	}
+	if len(a.Apks) > 0 {
+		return &a.Apks[0]
 	}
 	return nil
 }
