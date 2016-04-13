@@ -11,8 +11,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mvdan/adb"
+
 	"github.com/mvdan/fdroidcl"
-	"github.com/mvdan/fdroidcl/adb"
 )
 
 var cmdSearch = &Command{

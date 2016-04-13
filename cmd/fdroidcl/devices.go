@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mvdan/fdroidcl/adb"
+	"github.com/mvdan/adb"
 )
 
 var cmdDevices = &Command{
