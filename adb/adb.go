@@ -15,7 +15,10 @@ import (
 	"strings"
 )
 
-const port = 5037
+const (
+	host = "127.0.0.1"
+	port = 5037
+)
 
 var (
 	// Common install and uninstall errors
@@ -154,7 +157,7 @@ func parseError(s string) error {
 }
 
 func IsServerRunning() bool {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", port))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
 		return false
 	}
