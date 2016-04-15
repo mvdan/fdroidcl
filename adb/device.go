@@ -5,6 +5,7 @@ package adb
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"os/exec"
 	"regexp"
@@ -13,11 +14,13 @@ import (
 )
 
 type Device struct {
-	ID      string
-	Usb     string
-	Product string
-	Model   string
-	Device  string
+	ID       string
+	Usb      string
+	Product  string
+	Model    string
+	Device   string
+	ABIs     []string
+	APILevel int
 }
 
 var deviceRegex = regexp.MustCompile(`^([^\s]+)\s+device(.*)$`)
@@ -59,6 +62,20 @@ func Devices() ([]*Device, error) {
 				device.Device = sp[1]
 			}
 		}
+
+		props, err := device.AdbProps()
+		if err != nil {
+			return nil, err
+		}
+		device.ABIs = getAbis(props)
+		if len(device.ABIs) == 0 {
+			return nil, errors.New("failed to get device ABIs")
+		}
+		device.APILevel, err = strconv.Atoi(props["ro.build.version.sdk"])
+		if device.APILevel == 0 {
+			return nil, errors.New("failed to get device API level")
+		}
+
 		devices = append(devices, device)
 	}
 	return devices, nil
@@ -74,8 +91,50 @@ func (d *Device) AdbShell(args ...string) *exec.Cmd {
 	return d.AdbCmd(shellArgs...)
 }
 
+func (d *Device) AdbProps() (map[string]string, error) {
+	cmd := d.AdbShell("getprop")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	props := make(map[string]string)
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		// [property]: [value]
+		entry := strings.Split(scanner.Text(), ": ")
+		if len(entry) == 2 {
+			key := strings.Trim(entry[0], "[]")
+			val := strings.Trim(entry[1], "[]")
+			props[key] = val
+		}
+	}
+	return props, nil
+}
+
 func getFailureCode(r *regexp.Regexp, line string) string {
 	return r.FindStringSubmatch(line)[1]
+}
+
+func getAbis(props map[string]string) []string {
+	// Android 5.0 and later specify a list of ABIs
+	abilist, e := props["ro.product.cpu.abilist"]
+	if e {
+		return strings.Split(abilist, ",")
+	}
+	// Older Android versions specify one primary ABI and optionally
+	// one secondary ABI
+	abi, e := props["ro.product.cpu.abi"]
+	if e {
+		abi2, e := props["ro.product.cpu.abi2"]
+		if e {
+			return []string{abi, abi2}
+		}
+		return []string{abi}
+	}
+	return nil
 }
 
 var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
