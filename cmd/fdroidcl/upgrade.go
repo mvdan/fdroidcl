@@ -33,8 +33,11 @@ func runUpgrade(args []string) {
 		if !e {
 			log.Fatalf("%s is not installed", app.ID)
 		}
-		cur := app.CurApk()
-		if p.VCode >= cur.VCode {
+		suggested := app.SuggestedApk(device)
+		if suggested == nil {
+			log.Fatalf("No suitable APKs found for %s", app.ID)
+		}
+		if p.VCode >= suggested.VCode {
 			log.Fatalf("%s is up to date", app.ID)
 		}
 	}
