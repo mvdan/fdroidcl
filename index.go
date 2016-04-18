@@ -9,6 +9,8 @@ import (
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/mvdan/adb"
 )
 
 type Index struct {
@@ -209,6 +211,29 @@ func (a *Apk) SrcURL() string {
 	return fmt.Sprintf("%s/%s", a.Repo.URL, a.SrcName)
 }
 
+func (apk *Apk) IsCompatibleABI(ABIs []string) bool {
+	if len(apk.ABIs) == 0 {
+		return true // APK does not contain native code
+	}
+	for i := range apk.ABIs {
+		for j := range ABIs {
+			if apk.ABIs[i] == ABIs[j] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (apk *Apk) IsCompatibleAPILevel(sdk int) bool {
+	return sdk >= apk.MinSdk && (apk.MaxSdk == 0 || sdk <= apk.MaxSdk)
+}
+
+func (apk *Apk) IsCompatible(device *adb.Device) bool {
+	return apk.IsCompatibleABI(device.ABIs) &&
+		apk.IsCompatibleAPILevel(device.APILevel)
+}
+
 type AppList []App
 
 func (al AppList) Len() int           { return len(al) }
@@ -251,6 +276,60 @@ func (a *App) CurApk() *Apk {
 	}
 	if len(a.Apks) > 0 {
 		return &a.Apks[0]
+	}
+	return nil
+}
+
+func (a *App) ApksByVName(vname string) []Apk {
+	var apks []Apk
+	for i := range a.Apks {
+		if vname == a.Apks[i].VName {
+			apks = append(apks, a.Apks[i])
+		}
+	}
+	return apks
+}
+
+func (a *App) SuggestedVName() string {
+	for i := range a.Apks {
+		apk := &a.Apks[i]
+		if a.CVCode >= apk.VCode {
+			return apk.VName
+		}
+	}
+	return ""
+}
+
+func (a *App) SuggestedApks() []Apk {
+	// No APKs => nothing to suggest
+	if len(a.Apks) == 0 {
+		return nil
+	}
+
+	// First, try to follow CV
+	apks := a.ApksByVName(a.SuggestedVName())
+	if len(apks) > 0 {
+		return apks
+	}
+
+	// When CV is missing current version code or it's invalid (no APKs
+	// match it), use heuristic: find all APKs having the same version
+	// string as the APK with the greatest version code
+	return a.ApksByVName(a.Apks[0].VName)
+}
+
+func (a *App) SuggestedApk(device *adb.Device) *Apk {
+	for i := range a.Apks {
+		apk := &a.Apks[i]
+		if a.CVCode >= apk.VCode && apk.IsCompatible(device) {
+			return apk
+		}
+	}
+	for i := range a.Apks {
+		apk := &a.Apks[i]
+		if apk.IsCompatible(device) {
+			return apk
+		}
 	}
 	return nil
 }
