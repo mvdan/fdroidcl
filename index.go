@@ -83,11 +83,11 @@ func getIconsDir(density IconDensity) string {
 }
 
 func (a *App) IconURLForDensity(density IconDensity) string {
-	cur := a.CurApk()
-	if cur == nil {
+	if len(a.Apks) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%s/%s/%s", cur.Repo.URL, getIconsDir(density), a.Icon)
+	return fmt.Sprintf("%s/%s/%s", a.Apks[0].Repo.URL,
+		getIconsDir(density), a.Icon)
 }
 
 func (a *App) IconURL() string {
