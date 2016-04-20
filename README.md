@@ -52,7 +52,7 @@ settings.
 
  * Index verification via jar signature - currently relies on HTTPS
  * Interaction with multiple devices at once
- * Device compatibility filters (minSdk, maxSdk, arch, hardware features)
+ * Hardware features filtering
 
 ### Advantages over the Android client
 
