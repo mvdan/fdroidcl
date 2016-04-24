@@ -5,7 +5,7 @@ package adb
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"io"
 	"os/exec"
 	"regexp"
@@ -45,8 +45,7 @@ func Devices() ([]*Device, error) {
 		device := &Device{
 			ID: m[1],
 		}
-		extras := m[2]
-		for _, extra := range strings.Split(extras, " ") {
+		for _, extra := range strings.Split(m[2], " ") {
 			sp := strings.SplitN(extra, ":", 2)
 			if len(sp) < 2 {
 				continue
@@ -69,11 +68,11 @@ func Devices() ([]*Device, error) {
 		}
 		device.ABIs = getAbis(props)
 		if len(device.ABIs) == 0 {
-			return nil, errors.New("failed to get device ABIs")
+			return nil, fmt.Errorf("failed to get device ABIs")
 		}
 		device.APILevel, err = strconv.Atoi(props["ro.build.version.sdk"])
 		if device.APILevel == 0 {
-			return nil, errors.New("failed to get device API level")
+			return nil, fmt.Errorf("failed to get device API level")
 		}
 
 		devices = append(devices, device)
@@ -120,21 +119,19 @@ func getFailureCode(r *regexp.Regexp, line string) string {
 
 func getAbis(props map[string]string) []string {
 	// Android 5.0 and later specify a list of ABIs
-	abilist, e := props["ro.product.cpu.abilist"]
-	if e {
+	if abilist, e := props["ro.product.cpu.abilist"]; e {
 		return strings.Split(abilist, ",")
 	}
 	// Older Android versions specify one primary ABI and optionally
 	// one secondary ABI
 	abi, e := props["ro.product.cpu.abi"]
-	if e {
-		abi2, e := props["ro.product.cpu.abi2"]
-		if e {
-			return []string{abi, abi2}
-		}
-		return []string{abi}
+	if !e {
+		return nil
 	}
-	return nil
+	if abi2, e := props["ro.product.cpu.abi2"]; e {
+		return []string{abi, abi2}
+	}
+	return []string{abi}
 }
 
 var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
