@@ -90,6 +90,8 @@ func (d *Device) AdbShell(args ...string) *exec.Cmd {
 	return d.AdbCmd(shellArgs...)
 }
 
+var propLineRegex = regexp.MustCompile(`^\[(.*)\]: \[(.*)\]$`)
+
 func (d *Device) AdbProps() (map[string]string, error) {
 	cmd := d.AdbShell("getprop")
 	stdout, err := cmd.StdoutPipe()
@@ -102,13 +104,12 @@ func (d *Device) AdbProps() (map[string]string, error) {
 	props := make(map[string]string)
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		// [property]: [value]
-		entry := strings.Split(scanner.Text(), ": ")
-		if len(entry) == 2 {
-			key := strings.Trim(entry[0], "[]")
-			val := strings.Trim(entry[1], "[]")
-			props[key] = val
+		m := propLineRegex.FindStringSubmatch(scanner.Text())
+		if m == nil {
+			continue
 		}
+		key, val := m[1], m[2]
+		props[key] = val
 	}
 	return props, nil
 }
