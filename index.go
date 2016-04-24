@@ -215,9 +215,9 @@ func (apk *Apk) IsCompatibleABI(ABIs []string) bool {
 	if len(apk.ABIs) == 0 {
 		return true // APK does not contain native code
 	}
-	for i := range apk.ABIs {
-		for j := range ABIs {
-			if apk.ABIs[i] == ABIs[j] {
+	for _, apkABI := range apk.ABIs {
+		for _, abi := range ABIs {
+			if apkABI == abi {
 				return true
 			}
 		}
