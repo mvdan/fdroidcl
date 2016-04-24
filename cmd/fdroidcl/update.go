@@ -75,6 +75,9 @@ func downloadEtag(url, path string, sum []byte) error {
 	defer fmt.Println()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
 
 	etagPath := path + "-etag"
 	if _, err := os.Stat(path); err == nil {
