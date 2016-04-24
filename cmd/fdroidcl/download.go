@@ -25,15 +25,14 @@ func runDownload(args []string) {
 		log.Fatalf("No package names given")
 	}
 	apps := findApps(args)
+	device := maybeOneDevice()
 	for _, app := range apps {
-		apks := app.SuggestedApks()
-		if len(apks) == 0 {
-			log.Fatalf("No suggested APKs found for %s", app.ID)
+		apk := app.SuggestedApk(device)
+		if apk == nil {
+			log.Fatalf("No suggested APK found for %s", app.ID)
 		}
-		for _, apk := range apks {
-			path := downloadApk(&apk)
-			fmt.Printf("APK available in %s\n", path)
-		}
+		path := downloadApk(apk)
+		fmt.Printf("APK available in %s\n", path)
 	}
 }
 

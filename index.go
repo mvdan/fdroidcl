@@ -230,6 +230,9 @@ func (apk *Apk) IsCompatibleAPILevel(sdk int) bool {
 }
 
 func (apk *Apk) IsCompatible(device *adb.Device) bool {
+	if device == nil {
+		return true
+	}
 	return apk.IsCompatibleABI(device.ABIs) &&
 		apk.IsCompatibleAPILevel(device.APILevel)
 }
@@ -267,44 +270,6 @@ func LoadIndexXML(r io.Reader) (*Index, error) {
 	return &index, nil
 }
 
-func (a *App) ApksByVName(vname string) []Apk {
-	var apks []Apk
-	for i := range a.Apks {
-		if vname == a.Apks[i].VName {
-			apks = append(apks, a.Apks[i])
-		}
-	}
-	return apks
-}
-
-func (a *App) SuggestedVName() string {
-	for i := range a.Apks {
-		apk := &a.Apks[i]
-		if a.CVCode >= apk.VCode {
-			return apk.VName
-		}
-	}
-	return ""
-}
-
-func (a *App) SuggestedApks() []Apk {
-	// No APKs => nothing to suggest
-	if len(a.Apks) == 0 {
-		return nil
-	}
-
-	// First, try to follow CV
-	apks := a.ApksByVName(a.SuggestedVName())
-	if len(apks) > 0 {
-		return apks
-	}
-
-	// When CV is missing current version code or it's invalid (no APKs
-	// match it), use heuristic: find all APKs having the same version
-	// string as the APK with the greatest version code
-	return a.ApksByVName(a.Apks[0].VName)
-}
-
 func (a *App) SuggestedApk(device *adb.Device) *Apk {
 	for i := range a.Apks {
 		apk := &a.Apks[i]
@@ -312,6 +277,7 @@ func (a *App) SuggestedApk(device *adb.Device) *Apk {
 			return apk
 		}
 	}
+	// fall back to the first compatible apk
 	for i := range a.Apks {
 		apk := &a.Apks[i]
 		if apk.IsCompatible(device) {
