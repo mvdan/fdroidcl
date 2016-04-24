@@ -43,9 +43,9 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Dev
 	}
 	toInstall := make([]downloaded, len(apps))
 	for i, app := range apps {
-		apk := app.CurApk()
+		apk := app.SuggestedApk(device)
 		if apk == nil {
-			log.Fatalf("No current apk found for %s", app.ID)
+			log.Fatalf("No suitable APKs found for %s", app.ID)
 		}
 		path := downloadApk(apk)
 		toInstall[i] = downloaded{apk: apk, path: path}

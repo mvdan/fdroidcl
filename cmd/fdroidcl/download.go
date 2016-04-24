@@ -26,12 +26,14 @@ func runDownload(args []string) {
 	}
 	apps := findApps(args)
 	for _, app := range apps {
-		apk := app.CurApk()
-		if apk == nil {
-			log.Fatalf("No current apk found for %s", app.ID)
+		apks := app.SuggestedApks()
+		if len(apks) == 0 {
+			log.Fatalf("No suggested APKs found for %s", app.ID)
 		}
-		path := downloadApk(apk)
-		fmt.Printf("APK available in %s\n", path)
+		for _, apk := range apks {
+			path := downloadApk(&apk)
+			fmt.Printf("APK available in %s\n", path)
+		}
 	}
 }
 
