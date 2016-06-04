@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mvdan/adb"
-
 	"github.com/mvdan/fdroidcl"
+	"github.com/mvdan/fdroidcl/adb"
 )
 
 var cmdInstall = &Command{
