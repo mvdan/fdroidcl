@@ -5,7 +5,7 @@
 
 [F-Droid](https://f-droid.org/) desktop client.
 
-	go get github.com/mvdan/fdroidcl/cmd/fdroidcl
+	go get -u github.com/mvdan/fdroidcl/cmd/fdroidcl
 
 This is **not** a replacement for the [Android client](https://gitlab.com/fdroid/fdroidclient).
 
