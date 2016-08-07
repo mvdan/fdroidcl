@@ -140,6 +140,7 @@ func init() {
 			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
 				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
 		}
+		fmt.Fprintf(os.Stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
 		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more info\n", cmdName)
 	}
 }

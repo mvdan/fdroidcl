@@ -39,6 +39,8 @@ Install an app:
 	uninstall <appid...>  Uninstall an app
 	defaults              Reset to the default settings
 
+  A specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.
+
 ### Config
 
 You can configure the repositories to use in the `config.json` file,

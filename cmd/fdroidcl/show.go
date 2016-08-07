@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/mvdan/fdroidcl"
@@ -47,9 +48,33 @@ func findApps(ids []string) []*fdroidcl.App {
 	apps := appsMap(mustLoadIndexes())
 	result := make([]*fdroidcl.App, len(ids))
 	for i, id := range ids {
+		var vcode = -1
+		j := strings.Index(id, ":")
+		if j > -1 {
+			var err error
+			vcode, err = strconv.Atoi(id[j+1:])
+			if err != nil {
+				log.Fatalf("Could not parse version code from '%s'", id)
+			}
+			id = id[:j]
+		}
+
 		app, e := apps[id]
 		if !e {
 			log.Fatalf("Could not find app with ID '%s'", id)
+		}
+
+		if vcode > -1 {
+			found := false
+			for _, apk := range app.Apks {
+				if apk.VCode == vcode {
+					app.Apks = []fdroidcl.Apk{apk}
+					found = true
+				}
+			}
+			if !found {
+				log.Fatalf("Could not find version %d for app with ID '%s'", vcode, id)
+			}
 		}
 		result[i] = app
 	}
