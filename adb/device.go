@@ -37,8 +37,7 @@ func Devices() ([]*Device, error) {
 	var devices []*Device
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		line := scanner.Text()
-		m := deviceRegex.FindStringSubmatch(line)
+		m := deviceRegex.FindStringSubmatch(scanner.Text())
 		if m == nil {
 			continue
 		}
@@ -70,7 +69,7 @@ func Devices() ([]*Device, error) {
 		if len(device.ABIs) == 0 {
 			return nil, fmt.Errorf("failed to get device ABIs")
 		}
-		device.APILevel, err = strconv.Atoi(props["ro.build.version.sdk"])
+		device.APILevel, _ = strconv.Atoi(props["ro.build.version.sdk"])
 		if device.APILevel == 0 {
 			return nil, fmt.Errorf("failed to get device API level")
 		}
