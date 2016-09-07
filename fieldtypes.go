@@ -11,16 +11,12 @@ import (
 
 type CommaList []string
 
-func (cl *CommaList) FromString(s string) {
-	*cl = strings.Split(s, ",")
-}
-
 func (cl *CommaList) String() string {
 	return strings.Join(*cl, ",")
 }
 
 func (cl *CommaList) UnmarshalText(text []byte) error {
-	cl.FromString(string(text))
+	*cl = strings.Split(string(text), ",")
 	return nil
 }
 
@@ -31,21 +27,17 @@ type HexHash struct {
 
 type HexVal []byte
 
-func (hv *HexVal) FromString(s string) error {
-	b, err := hex.DecodeString(s)
-	if err != nil {
-		return err
-	}
-	*hv = b
-	return nil
-}
-
 func (hv *HexVal) String() string {
 	return hex.EncodeToString(*hv)
 }
 
 func (hv *HexVal) UnmarshalText(text []byte) error {
-	return hv.FromString(string(text))
+	b, err := hex.DecodeString(string(text))
+	if err != nil {
+		return err
+	}
+	*hv = b
+	return nil
 }
 
 type DateVal struct {
@@ -54,19 +46,15 @@ type DateVal struct {
 
 const dateFormat = "2006-01-02"
 
-func (dv *DateVal) FromString(s string) error {
-	t, err := time.Parse(dateFormat, s)
-	if err != nil {
-		return err
-	}
-	*dv = DateVal{t}
-	return nil
-}
-
 func (dv *DateVal) String() string {
 	return dv.Format(dateFormat)
 }
 
 func (dv *DateVal) UnmarshalText(text []byte) error {
-	return dv.FromString(string(text))
+	t, err := time.Parse(dateFormat, string(text))
+	if err != nil {
+		return err
+	}
+	*dv = DateVal{t}
+	return nil
 }
