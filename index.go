@@ -207,11 +207,11 @@ func (a *Apk) SrcURL() string {
 	return fmt.Sprintf("%s/%s", a.Repo.URL, a.SrcName)
 }
 
-func (apk *Apk) IsCompatibleABI(ABIs []string) bool {
-	if len(apk.ABIs) == 0 {
+func (a *Apk) IsCompatibleABI(ABIs []string) bool {
+	if len(a.ABIs) == 0 {
 		return true // APK does not contain native code
 	}
-	for _, apkABI := range apk.ABIs {
+	for _, apkABI := range a.ABIs {
 		for _, abi := range ABIs {
 			if apkABI == abi {
 				return true
@@ -221,16 +221,16 @@ func (apk *Apk) IsCompatibleABI(ABIs []string) bool {
 	return false
 }
 
-func (apk *Apk) IsCompatibleAPILevel(sdk int) bool {
-	return sdk >= apk.MinSdk && (apk.MaxSdk == 0 || sdk <= apk.MaxSdk)
+func (a *Apk) IsCompatibleAPILevel(sdk int) bool {
+	return sdk >= a.MinSdk && (a.MaxSdk == 0 || sdk <= a.MaxSdk)
 }
 
-func (apk *Apk) IsCompatible(device *adb.Device) bool {
+func (a *Apk) IsCompatible(device *adb.Device) bool {
 	if device == nil {
 		return true
 	}
-	return apk.IsCompatibleABI(device.ABIs) &&
-		apk.IsCompatibleAPILevel(device.APILevel)
+	return a.IsCompatibleABI(device.ABIs) &&
+		a.IsCompatibleAPILevel(device.APILevel)
 }
 
 type AppList []App
