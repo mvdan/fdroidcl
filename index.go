@@ -133,11 +133,7 @@ func (a *App) TextDesc(w io.Writer) {
 			}
 		case xml.EndElement:
 			switch t.Name.Local {
-			case "p":
-				fmt.Fprintln(w)
-			case "ul":
-				fmt.Fprintln(w)
-			case "ol":
+			case "p", "ul", "ol":
 				fmt.Fprintln(w)
 			}
 		case xml.CharData:
