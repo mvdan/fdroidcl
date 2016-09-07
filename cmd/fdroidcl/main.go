@@ -15,9 +15,7 @@ import (
 	"github.com/mvdan/basedir"
 )
 
-const (
-	cmdName = "fdroidcl"
-)
+const cmdName = "fdroidcl"
 
 func subdir(dir, name string) string {
 	p := filepath.Join(dir, name)
