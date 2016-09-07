@@ -140,5 +140,8 @@ func printAppDetailed(app fdroidcl.App) {
 		if apk.ABIs != nil {
 			p("    ABIs   :", "%s", strings.Join(apk.ABIs, ", "))
 		}
+		if apk.Perms != nil {
+			p("    Perms  :", "%s", strings.Join(apk.Perms, ", "))
+		}
 	}
 }
