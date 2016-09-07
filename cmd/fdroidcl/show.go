@@ -131,14 +131,17 @@ func printAppDetailed(app fdroidcl.App) {
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
 		fmt.Println()
-		p("    Name   :", "%s (%d)", apk.VName, apk.VCode)
-		p("    Size   :", "%d", apk.Size)
-		p("    MinSdk :", "%d", apk.MinSdk)
+		p("    Version :", "%s (%d)", apk.VName, apk.VCode)
+		p("    Size    :", "%d", apk.Size)
+		p("    MinSdk  :", "%d", apk.MinSdk)
 		if apk.MaxSdk > 0 {
-			p("    MaxSdk :", "%d", apk.MaxSdk)
+			p("    MaxSdk  :", "%d", apk.MaxSdk)
 		}
 		if apk.ABIs != nil {
-			p("    ABIs   :", "%s", strings.Join(apk.ABIs, ", "))
+			p("    ABIs    :", "%s", strings.Join(apk.ABIs, ", "))
+		}
+		if apk.Perms != nil {
+			p("    Perms   :", "%s", strings.Join(apk.Perms, ", "))
 		}
 	}
 }
