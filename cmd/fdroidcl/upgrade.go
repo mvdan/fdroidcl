@@ -44,10 +44,10 @@ func runUpgrade(args []string) {
 }
 
 func upgradeApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
-	fmt.Printf("Upgrading %s... ", apk.App.ID)
+	fmt.Printf("Upgrading %s... ", apk.AppID)
 	if err := device.Upgrade(path); err != nil {
 		fmt.Println()
-		log.Fatalf("Could not upgrade %s: %v", apk.App.ID, err)
+		log.Fatalf("Could not upgrade %s: %v", apk.AppID, err)
 	}
 	fmt.Println("done")
 }

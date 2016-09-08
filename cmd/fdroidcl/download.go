@@ -40,7 +40,7 @@ func downloadApk(apk *fdroidcl.Apk) string {
 	url := apk.URL()
 	path := apkPath(apk.ApkName)
 	if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
-		log.Fatalf("Could not download %s: %v", apk.App.ID, err)
+		log.Fatalf("Could not download %s: %v", apk.AppID, err)
 	}
 	return path
 }
