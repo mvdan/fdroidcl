@@ -110,8 +110,8 @@ func TestLoadIndexXML(t *testing.T) {
 			app := &c.want.Apps[i]
 			for i := range app.Apks {
 				apk := &app.Apks[i]
-				apk.Repo = &got.Repo
-				apk.App = app
+				apk.repo = &got.Repo
+				apk.AppID = app.ID
 			}
 		}
 		if !reflect.DeepEqual(got, c.want) {
