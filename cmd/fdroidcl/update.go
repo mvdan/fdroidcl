@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -132,7 +133,14 @@ func indexPath(name string) string {
 	return filepath.Join(mustData(), name+".jar")
 }
 
-func mustLoadIndexes() []fdroidcl.App {
+func mustLoadIndexes() (apps []fdroidcl.App) {
+	cache := filepath.Join(mustData(), "cache-gob")
+	if f, err := os.Open(cache); err == nil {
+		defer f.Close()
+		if err := gob.NewDecoder(f).Decode(&apps); err == nil {
+			return
+		}
+	}
 	m := make(map[string]*fdroidcl.App)
 	for _, r := range config.Repos {
 		if !r.Enabled {
@@ -157,10 +165,14 @@ func mustLoadIndexes() []fdroidcl.App {
 			m[app.ID].Apks = apks
 		}
 	}
-	apps := make([]fdroidcl.App, 0, len(m))
+	apps = make([]fdroidcl.App, 0, len(m))
 	for _, a := range m {
 		apps = append(apps, *a)
 	}
 	sort.Sort(fdroidcl.AppList(apps))
-	return apps
+	if f, err := os.Create(cache); err == nil {
+		defer f.Close()
+		gob.NewEncoder(f).Encode(apps)
+	}
+	return
 }
