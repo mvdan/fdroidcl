@@ -29,13 +29,21 @@ func init() {
 }
 
 func runUpdate(args []string) {
+	anyModified := false
 	for _, r := range config.Repos {
 		if !r.Enabled {
 			continue
 		}
-		if err := r.updateIndex(); err != nil {
+		if err := r.updateIndex(); err == errNotModified {
+		} else if err != nil {
 			log.Fatalf("Could not update index: %v", err)
+		} else {
+			anyModified = true
 		}
+	}
+	if anyModified {
+		cache := filepath.Join(mustData(), "cache-gob")
+		os.Remove(cache)
 	}
 }
 
@@ -71,10 +79,11 @@ func respEtag(resp *http.Response) string {
 	return etags[0]
 }
 
+var errNotModified = fmt.Errorf("not modified")
+
 func downloadEtag(url, path string, sum []byte) error {
 	fmt.Printf("Downloading %s... ", url)
 	defer fmt.Println()
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -86,6 +95,7 @@ func downloadEtag(url, path string, sum []byte) error {
 		req.Header.Add("If-None-Match", string(etag))
 	}
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -97,7 +107,7 @@ func downloadEtag(url, path string, sum []byte) error {
 	}
 	if resp.StatusCode == http.StatusNotModified {
 		fmt.Printf("not modified")
-		return nil
+		return errNotModified
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {

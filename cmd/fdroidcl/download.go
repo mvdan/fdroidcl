@@ -39,7 +39,8 @@ func runDownload(args []string) {
 func downloadApk(apk *fdroidcl.Apk) string {
 	url := apk.URL()
 	path := apkPath(apk.ApkName)
-	if err := downloadEtag(url, path, apk.Hash.Data); err != nil {
+	if err := downloadEtag(url, path, apk.Hash.Data); err == errNotModified {
+	} else if err != nil {
 		log.Fatalf("Could not download %s: %v", apk.AppID, err)
 	}
 	return path
