@@ -177,7 +177,7 @@ func main() {
 		cmd.Flag.Parse(args[1:])
 		args = cmd.Flag.Args()
 		cmd.Run(args)
-		os.Exit(0)
+		return
 	}
 
 	switch args[0] {
