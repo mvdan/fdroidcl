@@ -47,16 +47,16 @@ func runSearch(args []string) {
 		device = mustOneDevice()
 	}
 	apps := mustLoadIndexes()
-	if len(args) > 0 {
+	if len(apps) > 0 && len(args) > 0 {
 		apps = filterAppsSearch(apps, args)
 	}
-	if *installed {
+	if len(apps) > 0 && *installed {
 		apps = filterAppsInstalled(apps, device)
 	}
-	if *updates {
+	if len(apps) > 0 && *updates {
 		apps = filterAppsUpdates(apps, device)
 	}
-	if *category != "" {
+	if len(apps) > 0 && *category != "" {
 		apps = filterAppsCategory(apps, *category)
 		if apps == nil {
 			fmt.Fprintf(os.Stderr, "No such category: %s\n", *category)
