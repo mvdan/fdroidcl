@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/mvdan/fdroidcl"
 	"github.com/mvdan/fdroidcl/adb"
@@ -24,6 +25,7 @@ var (
 	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
 	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
 	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
+	days      = cmdSearch.Flag.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
 	category  = cmdSearch.Flag.String("c", "", "Filter apps by category")
 	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added, updated)")
 )
@@ -55,6 +57,9 @@ func runSearch(args []string) {
 	}
 	if len(apps) > 0 && *updates {
 		apps = filterAppsUpdates(apps, device)
+	}
+	if len(apps) > 0 && *days != 0 {
+		apps = filterAppsLastUpdated(apps, *days)
 	}
 	if len(apps) > 0 && *category != "" {
 		apps = filterAppsCategory(apps, *category)
@@ -183,6 +188,23 @@ func filterAppsUpdates(apps []fdroidcl.App, device *adb.Device) []fdroidcl.App {
 			continue
 		}
 		if p.VCode >= suggested.VCode {
+			continue
+		}
+		result = append(result, app)
+	}
+	return result
+}
+
+func filterAppsLastUpdated(apps []fdroidcl.App, days int) []fdroidcl.App {
+	var result []fdroidcl.App
+	newer := true
+	if days < 0 {
+		days = -days
+		newer = false
+	}
+	date := time.Now().Truncate(24 * time.Hour).AddDate(0, 0, 1 - days)
+	for _, app := range apps {
+		if app.Updated.Before(date) == newer {
 			continue
 		}
 		result = append(result, app)
