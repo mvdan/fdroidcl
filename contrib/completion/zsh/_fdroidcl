@@ -1,0 +1,51 @@
+#compdef fdroidcl
+
+_fdroidcl() {
+  local -a commands
+  commands=(
+  'update:update the index'
+  'search:search available apps'
+  'show:show detailed info about an app'
+  'list:list all known values of a kind'
+  'devices:list connected devices'
+  'download:download an app'
+  'install:install an app'
+  'upgrade:upgrade an app'
+  'uninstall:uninstall an app'
+  'defaults:reset to the default settings')
+
+  _arguments \
+    '1:command:{_describe -t commands command commands}' \
+    '*:: :_fdroidcl_options'
+  return 0
+}
+
+(( $+functions[_fdroidcl_options] )) ||
+_fdroidcl_options() {
+  local -a packages
+  case ${(Q)words[1]} in
+    (list)
+      _describe -t lists list '(categories)'
+      ;;
+    (search)
+      _arguments -S \
+        '-q[print package names only]' \
+        '-o[sort order]:sort order:(added updated)' \
+        '(-u)-i[filter installed apps]' \
+        '(-i)-u[filter apps with updates]' \
+        '-d[filter apps by last updated]:updated since (days):' \
+        '-c[filter apps by category]:category:_fdroidcl_categories'
+      ;;
+    (show|download|install|upgrade|uninstall)
+      packages=(${(f)"$(fdroidcl search -q 2> /dev/null)"})
+      _describe -t packages package packages
+      ;;
+  esac
+}
+
+(( $+functions[_fdroidcl_categories] )) ||
+_fdroidcl_categories() {
+  local -a categories
+  categories=(${(f)"$(fdroidcl list categories 2> /dev/null)"})
+  _describe -t categories category categories
+}
