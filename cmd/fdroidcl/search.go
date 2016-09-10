@@ -44,10 +44,6 @@ func runSearch(args []string) {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		cmdSearch.Flag.Usage()
 	}
-	var device *adb.Device
-	if *installed || *updates {
-		device = mustOneDevice()
-	}
 	apps := mustLoadIndexes()
 	if len(apps) > 0 && *category != "" {
 		apps = filterAppsCategory(apps, *category)
@@ -58,6 +54,10 @@ func runSearch(args []string) {
 	}
 	if len(apps) > 0 && len(args) > 0 {
 		apps = filterAppsSearch(apps, args)
+	}
+	var device *adb.Device
+	if *installed || *updates {
+		device = mustOneDevice()
 	}
 	if len(apps) > 0 && *installed {
 		apps = filterAppsInstalled(apps, device)
@@ -202,7 +202,7 @@ func filterAppsLastUpdated(apps []fdroidcl.App, days int) []fdroidcl.App {
 		days = -days
 		newer = false
 	}
-	date := time.Now().Truncate(24 * time.Hour).AddDate(0, 0, 1 - days)
+	date := time.Now().Truncate(24*time.Hour).AddDate(0, 0, 1-days)
 	for _, app := range apps {
 		if app.Updated.Before(date) == newer {
 			continue
