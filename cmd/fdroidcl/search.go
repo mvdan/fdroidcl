@@ -49,6 +49,13 @@ func runSearch(args []string) {
 		device = mustOneDevice()
 	}
 	apps := mustLoadIndexes()
+	if len(apps) > 0 && *category != "" {
+		apps = filterAppsCategory(apps, *category)
+		if apps == nil {
+			fmt.Fprintf(os.Stderr, "No such category: %s\n", *category)
+			cmdSearch.Flag.Usage()
+		}
+	}
 	if len(apps) > 0 && len(args) > 0 {
 		apps = filterAppsSearch(apps, args)
 	}
@@ -60,13 +67,6 @@ func runSearch(args []string) {
 	}
 	if len(apps) > 0 && *days != 0 {
 		apps = filterAppsLastUpdated(apps, *days)
-	}
-	if len(apps) > 0 && *category != "" {
-		apps = filterAppsCategory(apps, *category)
-		if apps == nil {
-			fmt.Fprintf(os.Stderr, "No such category: %s\n", *category)
-			cmdSearch.Flag.Usage()
-		}
 	}
 	if sfunc != nil {
 		apps = sortApps(apps, sfunc)
