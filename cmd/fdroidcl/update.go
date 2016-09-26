@@ -42,8 +42,8 @@ func runUpdate(args []string) {
 		}
 	}
 	if anyModified {
-		cache := filepath.Join(mustData(), "cache-gob")
-		os.Remove(cache)
+		cachePath := filepath.Join(mustData(), "cache-gob")
+		os.Remove(cachePath)
 	}
 }
 
@@ -143,12 +143,20 @@ func indexPath(name string) string {
 	return filepath.Join(mustData(), name+".jar")
 }
 
-func mustLoadIndexes() (apps []fdroidcl.App) {
-	cache := filepath.Join(mustData(), "cache-gob")
-	if f, err := os.Open(cache); err == nil {
+const cacheVersion = 1
+
+type cache struct {
+	Version int
+	Apps    []fdroidcl.App
+}
+
+func mustLoadIndexes() []fdroidcl.App {
+	cachePath := filepath.Join(mustData(), "cache-gob")
+	if f, err := os.Open(cachePath); err == nil {
 		defer f.Close()
-		if err := gob.NewDecoder(f).Decode(&apps); err == nil {
-			return
+		var c cache
+		if err := gob.NewDecoder(f).Decode(&c); err == nil && c.Version == cacheVersion {
+			return c.Apps
 		}
 	}
 	m := make(map[string]*fdroidcl.App)
@@ -175,14 +183,17 @@ func mustLoadIndexes() (apps []fdroidcl.App) {
 			m[app.ID].Apks = apks
 		}
 	}
-	apps = make([]fdroidcl.App, 0, len(m))
+	apps := make([]fdroidcl.App, 0, len(m))
 	for _, a := range m {
 		apps = append(apps, *a)
 	}
 	sort.Sort(fdroidcl.AppList(apps))
-	if f, err := os.Create(cache); err == nil {
+	if f, err := os.Create(cachePath); err == nil {
 		defer f.Close()
-		gob.NewEncoder(f).Encode(apps)
+		gob.NewEncoder(f).Encode(cache{
+			Version: cacheVersion,
+			Apps:    apps,
+		})
 	}
-	return
+	return apps
 }

@@ -86,7 +86,7 @@ func (a *App) IconURLForDensity(density IconDensity) string {
 	if len(a.Apks) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%s/%s/%s", a.Apks[0].repo.URL,
+	return fmt.Sprintf("%s/%s/%s", a.Apks[0].repoURL,
 		getIconsDir(density), a.Icon)
 }
 
@@ -195,16 +195,16 @@ type Apk struct {
 	Feats   CommaList `xml:"features"`
 	Hash    HexHash   `xml:"hash"`
 
-	AppID string `xml:"-"`
-	repo  *Repo  `xml:"-"`
+	AppID   string `xml:"-"`
+	repoURL string `xml:"-"`
 }
 
 func (a *Apk) URL() string {
-	return fmt.Sprintf("%s/%s", a.repo.URL, a.ApkName)
+	return fmt.Sprintf("%s/%s", a.repoURL, a.ApkName)
 }
 
 func (a *Apk) SrcURL() string {
-	return fmt.Sprintf("%s/%s", a.repo.URL, a.SrcName)
+	return fmt.Sprintf("%s/%s", a.repoURL, a.SrcName)
 }
 
 func (a *Apk) IsCompatibleABI(ABIs []string) bool {
@@ -260,7 +260,7 @@ func LoadIndexXML(r io.Reader) (*Index, error) {
 		for j := range app.Apks {
 			apk := &app.Apks[j]
 			apk.AppID = app.ID
-			apk.repo = &index.Repo
+			apk.repoURL = index.Repo.URL
 		}
 	}
 	return &index, nil
