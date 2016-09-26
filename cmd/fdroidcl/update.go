@@ -42,7 +42,7 @@ func runUpdate(args []string) {
 		}
 	}
 	if anyModified {
-		cachePath := filepath.Join(mustData(), "cache-gob")
+		cachePath := filepath.Join(mustCache(), "cache-gob")
 		os.Remove(cachePath)
 	}
 }
@@ -151,7 +151,7 @@ type cache struct {
 }
 
 func mustLoadIndexes() []fdroidcl.App {
-	cachePath := filepath.Join(mustData(), "cache-gob")
+	cachePath := filepath.Join(mustCache(), "cache-gob")
 	if f, err := os.Open(cachePath); err == nil {
 		defer f.Close()
 		var c cache
