@@ -143,7 +143,7 @@ func indexPath(name string) string {
 	return filepath.Join(mustData(), name+".jar")
 }
 
-const cacheVersion = 1
+const cacheVersion = 2
 
 type cache struct {
 	Version int
