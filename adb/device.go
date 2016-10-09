@@ -166,8 +166,12 @@ func getResultLine(output []byte) string {
 	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {
 		l := scanner.Text()
-		if strings.HasPrefix(l, "Failure") || strings.HasPrefix(l, "Success") {
+		if strings.HasPrefix(l, "Success") {
 			return l
+		}
+		failure := strings.Index(l, "Failure")
+		if failure >= 0 {
+			return l[failure:]
 		}
 	}
 	return ""
