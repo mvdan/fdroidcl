@@ -5,8 +5,8 @@ package adb
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
-	"io"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -143,14 +143,11 @@ func withOpts(cmd string, opts []string, args ...string) []string {
 
 func (d *Device) install(opts []string, path string) error {
 	cmd := d.AdbCmd(withOpts("install", opts, path)...)
-	stdout, err := cmd.StdoutPipe()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	line := getResultLine(stdout)
+	line := getResultLine(output)
 	if line == "Success" {
 		return nil
 	}
@@ -165,8 +162,8 @@ func (d *Device) Upgrade(path string) error {
 	return d.install([]string{"-r"}, path)
 }
 
-func getResultLine(out io.Reader) string {
-	scanner := bufio.NewScanner(out)
+func getResultLine(output []byte) string {
+	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {
 		l := scanner.Text()
 		if strings.HasPrefix(l, "Failure") || strings.HasPrefix(l, "Success") {
@@ -180,14 +177,11 @@ var deleteFailureRegex = regexp.MustCompile(`^Failure \[DELETE_(.+)\]$`)
 
 func (d *Device) Uninstall(pkg string) error {
 	cmd := d.AdbCmd("uninstall", pkg)
-	stdout, err := cmd.StdoutPipe()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	line := getResultLine(stdout)
+	line := getResultLine(output)
 	if line == "Success" {
 		return nil
 	}
