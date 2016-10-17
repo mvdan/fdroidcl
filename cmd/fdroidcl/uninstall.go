@@ -4,6 +4,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 )
@@ -22,9 +23,16 @@ func runUninstall(args []string) {
 		log.Fatalf("No package names given")
 	}
 	device := mustOneDevice()
+	inst := mustInstalled(device)
 	for _, id := range args {
+		var err error
 		fmt.Printf("Uninstalling %s... ", id)
-		if err := device.Uninstall(id); err != nil {
+		if _, installed := inst[id]; installed {
+			err = device.Uninstall(id)
+		} else {
+			err = errors.New("not installed")
+		}
+		if err != nil {
 			fmt.Println()
 			log.Fatalf("Could not uninstall %s: %v", id, err)
 		}
