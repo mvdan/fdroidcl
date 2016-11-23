@@ -6,7 +6,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 )
 
 var cmdUninstall = &Command{
@@ -18,24 +17,29 @@ func init() {
 	cmdUninstall.Run = runUninstall
 }
 
-func runUninstall(args []string) {
+func runUninstall(args []string) error {
 	if len(args) < 1 {
-		log.Fatalf("No package names given")
+		return fmt.Errorf("no package names given")
 	}
-	device := mustOneDevice()
-	inst := mustInstalled(device)
+	device, err := oneDevice()
+	if err != nil {
+		return err
+	}
+	inst, err := device.Installed()
+	if err != nil {
+		return err
+	}
 	for _, id := range args {
 		var err error
-		fmt.Printf("Uninstalling %s... ", id)
+		fmt.Printf("Uninstalling %s\n", id)
 		if _, installed := inst[id]; installed {
 			err = device.Uninstall(id)
 		} else {
 			err = errors.New("not installed")
 		}
 		if err != nil {
-			fmt.Println()
-			log.Fatalf("Could not uninstall %s: %v", id, err)
+			return fmt.Errorf("could not uninstall %s: %v", id, err)
 		}
-		fmt.Println("done")
 	}
+	return nil
 }

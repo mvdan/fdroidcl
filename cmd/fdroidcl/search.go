@@ -5,8 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -34,36 +32,42 @@ func init() {
 	cmdSearch.Run = runSearch
 }
 
-func runSearch(args []string) {
+func runSearch(args []string) error {
 	if *installed && *updates {
-		fmt.Fprintf(os.Stderr, "-i is redundant if -u is specified\n")
-		cmdSearch.Flag.Usage()
+		return fmt.Errorf("-i is redundant if -u is specified")
 	}
 	sfunc, err := sortFunc(*sortBy)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		cmdSearch.Flag.Usage()
+		return err
 	}
-	apps := mustLoadIndexes()
+	apps, err := loadIndexes()
+	if err != nil {
+		return err
+	}
 	if len(apps) > 0 && *category != "" {
 		apps = filterAppsCategory(apps, *category)
 		if apps == nil {
-			fmt.Fprintf(os.Stderr, "No such category: %s\n", *category)
-			cmdSearch.Flag.Usage()
+			return fmt.Errorf("no such category: %s", *category)
 		}
 	}
 	if len(apps) > 0 && len(args) > 0 {
 		apps = filterAppsSearch(apps, args)
 	}
 	var device *adb.Device
+	var inst map[string]adb.Package
 	if *installed || *updates {
-		device = mustOneDevice()
+		if device, err = oneDevice(); err != nil {
+			return err
+		}
+		if inst, err = device.Installed(); err != nil {
+			return err
+		}
 	}
 	if len(apps) > 0 && *installed {
-		apps = filterAppsInstalled(apps, device)
+		apps = filterAppsInstalled(apps, inst)
 	}
 	if len(apps) > 0 && *updates {
-		apps = filterAppsUpdates(apps, device)
+		apps = filterAppsUpdates(apps, inst, device)
 	}
 	if len(apps) > 0 && *days != 0 {
 		apps = filterAppsLastUpdated(apps, *days)
@@ -76,8 +80,9 @@ func runSearch(args []string) {
 			fmt.Println(app.ID)
 		}
 	} else {
-		printApps(apps, device)
+		printApps(apps, inst, device)
 	}
+	return nil
 }
 
 func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
@@ -114,14 +119,13 @@ fieldLoop:
 	return false
 }
 
-func printApps(apps []fdroidcl.App, device *adb.Device) {
+func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) {
 	maxIDLen := 0
 	for _, app := range apps {
 		if len(app.ID) > maxIDLen {
 			maxIDLen = len(app.ID)
 		}
 	}
-	inst := mustInstalled(device)
 	for _, app := range apps {
 		var pkg *adb.Package
 		p, e := inst[app.ID]
@@ -152,20 +156,8 @@ func printApp(app fdroidcl.App, IDLen int, inst *adb.Package, device *adb.Device
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func mustInstalled(device *adb.Device) map[string]adb.Package {
-	if device == nil {
-		return nil
-	}
-	inst, err := device.Installed()
-	if err != nil {
-		log.Fatalf("Could not get installed packages: %v", err)
-	}
-	return inst
-}
-
-func filterAppsInstalled(apps []fdroidcl.App, device *adb.Device) []fdroidcl.App {
+func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdroidcl.App {
 	var result []fdroidcl.App
-	inst := mustInstalled(device)
 	for _, app := range apps {
 		if _, e := inst[app.ID]; !e {
 			continue
@@ -175,9 +167,8 @@ func filterAppsInstalled(apps []fdroidcl.App, device *adb.Device) []fdroidcl.App
 	return result
 }
 
-func filterAppsUpdates(apps []fdroidcl.App, device *adb.Device) []fdroidcl.App {
+func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) []fdroidcl.App {
 	var result []fdroidcl.App
-	inst := mustInstalled(device)
 	for _, app := range apps {
 		p, e := inst[app.ID]
 		if !e {
@@ -249,7 +240,7 @@ func sortFunc(sortBy string) (func(a, b *fdroidcl.App) bool, error) {
 	case "":
 		return nil, nil
 	}
-	return nil, fmt.Errorf("Unknown sort order: %s", sortBy)
+	return nil, fmt.Errorf("unknown sort order: %s", sortBy)
 }
 
 type appList struct {

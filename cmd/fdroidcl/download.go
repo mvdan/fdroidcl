@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 
 	"github.com/mvdan/fdroidcl"
@@ -20,30 +19,40 @@ func init() {
 	cmdDownload.Run = runDownload
 }
 
-func runDownload(args []string) {
+func runDownload(args []string) error {
 	if len(args) < 1 {
-		log.Fatalf("No package names given")
+		return fmt.Errorf("no package names given")
 	}
-	apps := findApps(args)
-	device := maybeOneDevice()
+	apps, err := findApps(args)
+	if err != nil {
+		return err
+	}
+	device, err := maybeOneDevice()
+	if err != nil {
+		return err
+	}
 	for _, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
-			log.Fatalf("No suggested APK found for %s", app.ID)
+			return fmt.Errorf("no suggested APK found for %s", app.ID)
 		}
-		path := downloadApk(apk)
+		path, err := downloadApk(apk)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("APK available in %s\n", path)
 	}
+	return nil
 }
 
-func downloadApk(apk *fdroidcl.Apk) string {
+func downloadApk(apk *fdroidcl.Apk) (string, error) {
 	url := apk.URL()
 	path := apkPath(apk.ApkName)
 	if err := downloadEtag(url, path, apk.Hash.Data); err == errNotModified {
 	} else if err != nil {
-		log.Fatalf("Could not download %s: %v", apk.AppID, err)
+		return "", fmt.Errorf("could not download %s: %v", apk.AppID, err)
 	}
-	return path
+	return path, nil
 }
 
 func apkPath(apkname string) string {

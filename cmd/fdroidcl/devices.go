@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/mvdan/fdroidcl/adb"
 )
@@ -19,46 +18,51 @@ func init() {
 	cmdDevices.Run = runDevices
 }
 
-func runDevices(args []string) {
-	startAdbIfNeeded()
+func runDevices(args []string) error {
+	if err := startAdbIfNeeded(); err != nil {
+		return err
+	}
 	devices, err := adb.Devices()
 	if err != nil {
-		log.Fatalf("Could not get devices: %v", err)
+		return fmt.Errorf("could not get devices: %v", err)
 	}
 	for _, device := range devices {
 		fmt.Printf("%s - %s (%s)\n", device.ID, device.Model, device.Product)
 	}
+	return nil
 }
 
-func startAdbIfNeeded() {
+func startAdbIfNeeded() error {
 	if adb.IsServerRunning() {
-		return
-	}
-	log.Printf("Starting ADB server...")
-	if err := adb.StartServer(); err != nil {
-		log.Fatalf("Could not start ADB server: %v", err)
-	}
-}
-
-func maybeOneDevice() *adb.Device {
-	startAdbIfNeeded()
-	devices, err := adb.Devices()
-	if err != nil {
-		log.Fatalf("Could not get devices: %v", err)
-	}
-	if len(devices) > 1 {
-		log.Fatalf("At most one connected device can be used")
-	}
-	if len(devices) < 1 {
 		return nil
 	}
-	return devices[0]
+	if err := adb.StartServer(); err != nil {
+		return fmt.Errorf("could not start ADB server: %v", err)
+	}
+	return nil
 }
 
-func mustOneDevice() *adb.Device {
-	device := maybeOneDevice()
-	if device == nil {
-		log.Fatalf("A connected device is needed")
+func maybeOneDevice() (*adb.Device, error) {
+	if err := startAdbIfNeeded(); err != nil {
+		return nil, err
 	}
-	return device
+	devices, err := adb.Devices()
+	if err != nil {
+		return nil, fmt.Errorf("could not get devices: %v", err)
+	}
+	if len(devices) > 1 {
+		return nil, fmt.Errorf("at most one connected device can be used")
+	}
+	if len(devices) < 1 {
+		return nil, nil
+	}
+	return devices[0], nil
+}
+
+func oneDevice() (*adb.Device, error) {
+	device, err := maybeOneDevice()
+	if err == nil && device == nil {
+		err = fmt.Errorf("a connected device is needed")
+	}
+	return device, err
 }

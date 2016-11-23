@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sort"
 )
 
@@ -18,12 +17,14 @@ func init() {
 	cmdList.Run = runList
 }
 
-func runList(args []string) {
+func runList(args []string) error {
 	if len(args) != 1 {
-		fmt.Fprintf(os.Stderr, "need exactly one argument")
-		cmdList.Flag.Usage()
+		return fmt.Errorf("need exactly one argument")
 	}
-	apps := mustLoadIndexes()
+	apps, err := loadIndexes()
+	if err != nil {
+		return err
+	}
 	values := make(map[string]struct{})
 	switch args[0] {
 	case "categories":
@@ -33,8 +34,7 @@ func runList(args []string) {
 			}
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "invalid argument")
-		cmdList.Flag.Usage()
+		return fmt.Errorf("invalid argument")
 	}
 	result := make([]string, 0, len(values))
 	for s := range values {
@@ -44,4 +44,5 @@ func runList(args []string) {
 	for _, s := range result {
 		fmt.Println(s)
 	}
+	return nil
 }

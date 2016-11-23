@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/mvdan/fdroidcl"
 	"github.com/mvdan/fdroidcl/adb"
@@ -20,22 +19,31 @@ func init() {
 	cmdInstall.Run = runInstall
 }
 
-func runInstall(args []string) {
+func runInstall(args []string) error {
 	if len(args) < 1 {
-		log.Fatalf("No package names given")
+		return fmt.Errorf("no package names given")
 	}
-	device := mustOneDevice()
-	apps := findApps(args)
-	inst := mustInstalled(device)
+	device, err := oneDevice()
+	if err != nil {
+		return err
+	}
+	apps, err := findApps(args)
+	if err != nil {
+		return err
+	}
+	inst, err := device.Installed()
+	if err != nil {
+		return err
+	}
 	for _, app := range apps {
 		if _, e := inst[app.ID]; e {
-			log.Fatalf("%s is already installed", app.ID)
+			return fmt.Errorf("%s is already installed", app.ID)
 		}
 	}
-	downloadAndDo(apps, device, installApk)
+	return downloadAndDo(apps, device, installApk)
 }
 
-func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Device, *fdroidcl.Apk, string)) {
+func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Device, *fdroidcl.Apk, string) error) error {
 	type downloaded struct {
 		apk  *fdroidcl.Apk
 		path string
@@ -44,21 +52,26 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Dev
 	for i, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
-			log.Fatalf("No suitable APKs found for %s", app.ID)
+			return fmt.Errorf("no suitable APKs found for %s", app.ID)
 		}
-		path := downloadApk(apk)
+		path, err := downloadApk(apk)
+		if err != nil {
+			return err
+		}
 		toInstall[i] = downloaded{apk: apk, path: path}
 	}
 	for _, t := range toInstall {
-		doApk(device, t.apk, t.path)
+		if err := doApk(device, t.apk, t.path); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) {
-	fmt.Printf("Installing %s... ", apk.AppID)
+func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) error {
+	fmt.Printf("Installing %s\n", apk.AppID)
 	if err := device.Install(path); err != nil {
-		fmt.Println()
-		log.Fatalf("Could not install %s: %v", apk.AppID, err)
+		return fmt.Errorf("could not install %s: %v", apk.AppID, err)
 	}
-	fmt.Println("done")
+	return nil
 }

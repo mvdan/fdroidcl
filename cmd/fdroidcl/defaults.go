@@ -6,7 +6,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -19,13 +18,11 @@ func init() {
 	cmdDefaults.Run = runDefaults
 }
 
-func runDefaults(args []string) {
+func runDefaults(args []string) error {
 	if len(args) > 0 {
-		log.Fatal("No arguments allowed")
+		return fmt.Errorf("no arguments allowed")
 	}
-	if err := writeConfig(&config); err != nil {
-		log.Fatal(err)
-	}
+	return writeConfig(&config)
 }
 
 func writeConfig(c *userConfig) error {

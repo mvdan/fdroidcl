@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -22,17 +21,21 @@ func init() {
 	cmdShow.Run = runShow
 }
 
-func runShow(args []string) {
+func runShow(args []string) error {
 	if len(args) < 1 {
-		log.Fatalf("No package names given")
+		return fmt.Errorf("no package names given")
 	}
-	apps := findApps(args)
+	apps, err := findApps(args)
+	if err != nil {
+		return err
+	}
 	for i, app := range apps {
 		if i > 0 {
 			fmt.Printf("\n--\n\n")
 		}
 		printAppDetailed(*app)
 	}
+	return nil
 }
 
 func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
@@ -44,8 +47,12 @@ func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
 	return m
 }
 
-func findApps(ids []string) []*fdroidcl.App {
-	apps := appsMap(mustLoadIndexes())
+func findApps(ids []string) ([]*fdroidcl.App, error) {
+	apps, err := loadIndexes()
+	if err != nil {
+		return nil, err
+	}
+	byId := appsMap(apps)
 	result := make([]*fdroidcl.App, len(ids))
 	for i, id := range ids {
 		var vcode = -1
@@ -54,14 +61,14 @@ func findApps(ids []string) []*fdroidcl.App {
 			var err error
 			vcode, err = strconv.Atoi(id[j+1:])
 			if err != nil {
-				log.Fatalf("Could not parse version code from '%s'", id)
+				return nil, fmt.Errorf("could not parse version code from '%s'", id)
 			}
 			id = id[:j]
 		}
 
-		app, e := apps[id]
+		app, e := byId[id]
 		if !e {
-			log.Fatalf("Could not find app with ID '%s'", id)
+			return nil, fmt.Errorf("could not find app with ID '%s'", id)
 		}
 
 		if vcode > -1 {
@@ -73,12 +80,12 @@ func findApps(ids []string) []*fdroidcl.App {
 				}
 			}
 			if !found {
-				log.Fatalf("Could not find version %d for app with ID '%s'", vcode, id)
+				return nil, fmt.Errorf("could not find version %d for app with ID '%s'", vcode, id)
 			}
 		}
 		result[i] = app
 	}
-	return result
+	return result, nil
 }
 
 func printAppDetailed(app fdroidcl.App) {

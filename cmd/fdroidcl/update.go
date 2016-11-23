@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -28,7 +27,7 @@ func init() {
 	cmdUpdate.Run = runUpdate
 }
 
-func runUpdate(args []string) {
+func runUpdate(args []string) error {
 	anyModified := false
 	for _, r := range config.Repos {
 		if !r.Enabled {
@@ -36,7 +35,7 @@ func runUpdate(args []string) {
 		}
 		if err := r.updateIndex(); err == errNotModified {
 		} else if err != nil {
-			log.Fatalf("Could not update index: %v", err)
+			return fmt.Errorf("could not update index: %v", err)
 		} else {
 			anyModified = true
 		}
@@ -45,6 +44,7 @@ func runUpdate(args []string) {
 		cachePath := filepath.Join(mustCache(), "cache-gob")
 		os.Remove(cachePath)
 	}
+	return nil
 }
 
 const jarFile = "index.jar"
@@ -150,13 +150,13 @@ type cache struct {
 	Apps    []fdroidcl.App
 }
 
-func mustLoadIndexes() []fdroidcl.App {
+func loadIndexes() ([]fdroidcl.App, error) {
 	cachePath := filepath.Join(mustCache(), "cache-gob")
 	if f, err := os.Open(cachePath); err == nil {
 		defer f.Close()
 		var c cache
 		if err := gob.NewDecoder(f).Decode(&c); err == nil && c.Version == cacheVersion {
-			return c.Apps
+			return c.Apps, nil
 		}
 	}
 	m := make(map[string]*fdroidcl.App)
@@ -166,7 +166,7 @@ func mustLoadIndexes() []fdroidcl.App {
 		}
 		index, err := r.loadIndex()
 		if err != nil {
-			log.Fatalf("Error while loading %s: %v", r.ID, err)
+			return nil, fmt.Errorf("error while loading %s: %v", r.ID, err)
 		}
 		for i := range index.Apps {
 			app := index.Apps[i]
@@ -195,5 +195,5 @@ func mustLoadIndexes() []fdroidcl.App {
 			Apps:    apps,
 		})
 	}
-	return apps
+	return apps, nil
 }
