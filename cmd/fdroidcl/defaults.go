@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 )
@@ -20,22 +21,25 @@ func init() {
 
 func runDefaults(args []string) {
 	if len(args) > 0 {
-		log.Fatalf("No arguments allowed")
+		log.Fatal("No arguments allowed")
 	}
-	writeConfig(&config)
+	if err := writeConfig(&config); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func writeConfig(c *userConfig) {
-	f, err := os.Create(configPath())
-	if err != nil {
-		log.Fatalf("Error when creating config file: %v", err)
-	}
-	defer f.Close()
+func writeConfig(c *userConfig) error {
 	b, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
-		log.Fatalf("Error when encoding config file: %v", err)
+		return fmt.Errorf("cannot encode config: %v", err)
 	}
-	if _, err := f.Write(b); err != nil {
-		log.Fatalf("Error when writing config file: %v", err)
+	f, err := os.Create(configPath())
+	if err != nil {
+		return fmt.Errorf("cannot create config file: %v", err)
 	}
+	_, err = f.Write(b)
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	return err
 }
