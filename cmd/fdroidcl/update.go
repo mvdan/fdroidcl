@@ -64,10 +64,6 @@ func (r *repo) loadIndex() (*fdroidcl.Index, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not stat index: %v", err)
 	}
-	//pubkey, err := hex.DecodeString(repoPubkey)
-	//if err != nil {
-	//	return nil, fmt.Errorf("could not decode public key: %v", err)
-	//}
 	return fdroidcl.LoadIndexJar(f, stat.Size(), nil)
 }
 
