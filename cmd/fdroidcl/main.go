@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,10 +16,15 @@ import (
 
 const cmdName = "fdroidcl"
 
+func errExit(format string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, format, a...)
+	os.Exit(1)
+}
+
 func subdir(dir, name string) string {
 	p := filepath.Join(dir, name)
 	if err := os.MkdirAll(p, 0755); err != nil {
-		log.Fatalf("Could not create dir '%s': %v", p, err)
+		errExit("Could not create dir '%s': %v\n", p, err)
 	}
 	return p
 }
@@ -28,7 +32,7 @@ func subdir(dir, name string) string {
 func mustCache() string {
 	dir := basedir.Cache()
 	if dir == "" {
-		log.Fatalf("Could not determine cache dir")
+		errExit("Could not determine cache dir\n")
 	}
 	return subdir(dir, cmdName)
 }
@@ -36,7 +40,7 @@ func mustCache() string {
 func mustData() string {
 	dir := basedir.Data()
 	if dir == "" {
-		log.Fatalf("Could not determine data dir")
+		errExit("Could not determine data dir\n")
 	}
 	return subdir(dir, cmdName)
 }
@@ -70,19 +74,16 @@ var config = userConfig{
 	},
 }
 
-func readConfig() error {
+func readConfig() {
 	f, err := os.Open(configPath())
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return fmt.Errorf("could not open config file: %v", err)
+		return
 	}
 	defer f.Close()
-	if err := json.NewDecoder(f).Decode(&config); err != nil {
-		return fmt.Errorf("could not decode config file: %v", err)
+	fileConfig := userConfig{}
+	if err := json.NewDecoder(f).Decode(&fileConfig); err == nil {
+		config = fileConfig
 	}
-	return nil
 }
 
 // A Command is an implementation of a go command
@@ -166,26 +167,24 @@ func main() {
 		os.Exit(2)
 	}
 
+	cmdName := args[0]
 	for _, cmd := range commands {
-		if cmd.Name() != args[0] {
+		if cmd.Name() != cmdName {
 			continue
 		}
-		if err := readConfig(); err != nil {
-			log.Printf("Could not load config: %v", err)
-			log.Printf("Using default config")
-		}
+		readConfig()
 		cmd.Flag.Usage = func() { cmd.Usage() }
 		cmd.Flag.Parse(args[1:])
 		args = cmd.Flag.Args()
 		if err := cmd.Run(args); err != nil {
-			log.Fatal(err)
+			errExit("%s: %v\n", cmdName, err)
 		}
 		return
 	}
 
-	switch args[0] {
+	switch cmdName {
 	default:
-		log.Printf("Unrecognised command '%s'\n\n", args[0])
+		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmdName)
 		flag.Usage()
 		os.Exit(2)
 	}
