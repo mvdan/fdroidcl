@@ -137,7 +137,7 @@ func getAbis(props map[string]string) []string {
 var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
 
 func withOpts(cmd string, opts []string, args ...string) []string {
-	v := append([]string{"install"}, opts...)
+	v := append([]string{cmd}, opts...)
 	return append(v, args...)
 }
 
