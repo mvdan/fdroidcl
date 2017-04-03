@@ -13,6 +13,15 @@ While the Android client integrates with the system with regular update checks
 and notifications, this is a command line client that talks to connected
 devices via [ADB](https://developer.android.com/tools/help/adb.html).
 
+### Go dependency
+
+Example of go setup on debian based systems:
+
+    sudo apt-get install golang-go
+    # put these in a shell startup file to persist them:
+    export GOPATH=$HOME/go
+    PATH="$GOPATH/bin:$PATH"
+
 ### Quickstart
 
 Download the index:
@@ -49,6 +58,42 @@ located in `fdroidcl`'s config directory. This will be
 
 You can run `fdroidcl defaults` to create the config with the default
 settings.
+
+### Automation
+
+Example script to automate install & update of apps:
+
+    #!/bin/bash
+    set -e
+
+    # Example list of apps to install/update.
+    #
+    # You can create a list like this from existing manually installed apps
+    # by doing fdroidcl search -i, then manually removing automatically
+    # installed and preinstalled apps
+    fdroid_pkgs=(
+        at.bitfire.davdroid
+        com.nutomic.syncthingandroid
+        org.dmfs.tasks # gui name: OpenTasks
+        org.fdroid.fdroid
+        org.smssecure.smssecure
+    )
+
+    declare -A installed updated
+    fdroidcl update
+    for p in $(fdroidcl search -i| grep -o "^\S\+"); do
+        installed[$p]=true
+    done
+    for p in $(fdroidcl search -u| grep -o "^\S\+"); do
+        updated[$p]=false
+    done
+    for p in ${fdroid_pkgs[@]}; do
+        ${installed[$p]:-false} || fdroidcl install $p
+    done
+    for p in ${!installed[@]}; do
+        ${updated[$p]:-true} || fdroidcl upgrade $p
+    done
+
 
 ### Missing features
 
