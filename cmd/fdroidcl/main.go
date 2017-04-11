@@ -16,6 +16,8 @@ import (
 
 const cmdName = "fdroidcl"
 
+var version = "v0.3.1"
+
 func errExit(format string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, format, a...)
 	os.Exit(1)
@@ -156,6 +158,17 @@ var commands = []*Command{
 	cmdUpgrade,
 	cmdUninstall,
 	cmdDefaults,
+	{
+		UsageLine: "version",
+		Short:     "Print version information",
+		Run: func(args []string) error {
+			if len(args) > 0 {
+				return fmt.Errorf("no arguments allowed")
+			}
+			fmt.Println(version)
+			return nil
+		},
+	},
 }
 
 func main() {
