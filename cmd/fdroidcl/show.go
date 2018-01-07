@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mvdan/fdroidcl"
+	"mvdan.cc/fdroidcl"
 )
 
 var cmdShow = &Command{

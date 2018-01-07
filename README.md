@@ -1,11 +1,11 @@
 # fdroidcl
 
-[![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/github.com/mvdan/fdroidcl)
+[![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/mvdan.cc/fdroidcl)
 [![Build Status](https://travis-ci.org/mvdan/fdroidcl.svg?branch=master)](https://travis-ci.org/mvdan/fdroidcl)
 
 [F-Droid](https://f-droid.org/) desktop client.
 
-	go get -u github.com/mvdan/fdroidcl/cmd/fdroidcl
+	go get -u mvdan.cc/fdroidcl/cmd/fdroidcl
 
 This is **not** a replacement for the [Android client](https://gitlab.com/fdroid/fdroidclient).
 

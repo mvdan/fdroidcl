@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/mvdan/fdroidcl/adb"
+	"mvdan.cc/fdroidcl/adb"
 )
 
 type Index struct {

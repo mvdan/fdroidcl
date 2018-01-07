@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mvdan/fdroidcl"
-	"github.com/mvdan/fdroidcl/adb"
+	"mvdan.cc/fdroidcl"
+	"mvdan.cc/fdroidcl/adb"
 )
 
 var cmdSearch = &Command{

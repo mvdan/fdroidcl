@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/mvdan/fdroidcl"
+	"mvdan.cc/fdroidcl"
 )
 
 var cmdUpdate = &Command{

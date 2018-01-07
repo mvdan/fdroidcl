@@ -6,7 +6,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/mvdan/fdroidcl/adb"
+	"mvdan.cc/fdroidcl/adb"
 )
 
 var cmdDevices = &Command{

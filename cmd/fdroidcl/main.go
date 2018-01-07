@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mvdan/basedir"
+	"mvdan.cc/fdroidcl/basedir"
 )
 
 const cmdName = "fdroidcl"

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/mvdan/fdroidcl"
+	"mvdan.cc/fdroidcl"
 )
 
 var cmdDownload = &Command{
