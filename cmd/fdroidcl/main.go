@@ -31,7 +31,12 @@ func subdir(dir, name string) string {
 	return p
 }
 
+var testBasedir = ""
+
 func mustCache() string {
+	if testBasedir != "" {
+		return subdir(testBasedir, "cache")
+	}
 	dir := basedir.Cache()
 	if dir == "" {
 		errExit("Could not determine cache dir\n")
@@ -40,6 +45,9 @@ func mustCache() string {
 }
 
 func mustData() string {
+	if testBasedir != "" {
+		return subdir(testBasedir, "data")
+	}
 	dir := basedir.Data()
 	if dir == "" {
 		errExit("Could not determine data dir\n")
