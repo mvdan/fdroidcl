@@ -40,7 +40,7 @@ func runDownload(args []string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("APK available in %s\n", path)
+		fmt.Fprintf(stdout, "APK available in %s\n", path)
 	}
 	return nil
 }

@@ -42,7 +42,7 @@ func runList(args []string) error {
 	}
 	sort.Strings(result)
 	for _, s := range result {
-		fmt.Println(s)
+		fmt.Fprintln(stdout, s)
 	}
 	return nil
 }

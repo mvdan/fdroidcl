@@ -69,7 +69,7 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Dev
 }
 
 func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) error {
-	fmt.Printf("Installing %s\n", apk.AppID)
+	fmt.Fprintf(stdout, "Installing %s\n", apk.AppID)
 	if err := device.Install(path); err != nil {
 		return fmt.Errorf("could not install %s: %v", apk.AppID, err)
 	}

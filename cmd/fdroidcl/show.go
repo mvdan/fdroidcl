@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -31,7 +30,7 @@ func runShow(args []string) error {
 	}
 	for i, app := range apps {
 		if i > 0 {
-			fmt.Printf("\n--\n\n")
+			fmt.Fprintf(stdout, "\n--\n\n")
 		}
 		printAppDetailed(*app)
 	}
@@ -91,9 +90,9 @@ func findApps(ids []string) ([]*fdroidcl.App, error) {
 func printAppDetailed(app fdroidcl.App) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
-			fmt.Println(title)
+			fmt.Fprintln(stdout, title)
 		} else {
-			fmt.Printf("%s %s\n", title, fmt.Sprintf(format, args...))
+			fmt.Fprintf(stdout, "%s %s\n", title, fmt.Sprintf(format, args...))
 		}
 	}
 	p("Package          :", "%s", app.ID)
@@ -130,14 +129,14 @@ func printAppDetailed(app fdroidcl.App) {
 	if app.FlattrID != "" {
 		p("Flattr           :", "https://flattr.com/thing/%s", app.FlattrID)
 	}
-	fmt.Println()
+	fmt.Fprintln(stdout)
 	p("Description :", "")
-	fmt.Println()
-	app.TextDesc(os.Stdout)
-	fmt.Println()
+	fmt.Fprintln(stdout)
+	app.TextDesc(stdout)
+	fmt.Fprintln(stdout)
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
-		fmt.Println()
+		fmt.Fprintln(stdout)
 		p("    Version :", "%s (%d)", apk.VName, apk.VCode)
 		p("    Size    :", "%d", apk.Size)
 		p("    MinSdk  :", "%d", apk.MinSdk)

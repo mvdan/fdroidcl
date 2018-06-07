@@ -77,7 +77,7 @@ func runSearch(args []string) error {
 	}
 	if *quiet {
 		for _, app := range apps {
-			fmt.Println(app.ID)
+			fmt.Fprintln(stdout, app.ID)
 		}
 	} else {
 		printApps(apps, inst, device)
@@ -151,9 +151,9 @@ func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string
 }
 
 func printApp(app fdroidcl.App, IDLen int, inst *adb.Package, device *adb.Device) {
-	fmt.Printf("%s%s %s - %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
+	fmt.Fprintf(stdout, "%s%s %s - %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
 		app.Name, descVersion(app, inst, device))
-	fmt.Printf("    %s\n", app.Summary)
+	fmt.Fprintf(stdout, "    %s\n", app.Summary)
 }
 
 func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdroidcl.App {

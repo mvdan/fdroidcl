@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
+
+	"mvdan.cc/fdroidcl/adb"
 )
 
 // chosenApp is the app that will be installed and uninstalled on a connected
@@ -23,7 +23,7 @@ import (
 // any data.
 const chosenApp = "org.vi_server.red_screen"
 
-func TestEndToEnd(t *testing.T) {
+func TestCommands(t *testing.T) {
 	url := config.Repos[0].URL
 	client := http.Client{Timeout: 2 * time.Second}
 	if _, err := client.Get(url); err != nil {
@@ -35,72 +35,62 @@ func TestEndToEnd(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
+	testBasedir = dir
 
-	// Build fdroidcl in the temporary directory.
-	fdroidcl := filepath.Join(dir, "fdroidcl")
-	if out, err := exec.Command("go", "build",
-		"-ldflags=-X main.testBasedir="+dir,
-		"-o", fdroidcl).CombinedOutput(); err != nil {
-		t.Fatalf("%s", out)
+	mustSucceed := func(t *testing.T, want string, cmd *Command, args ...string) {
+		mustRun(t, true, want, cmd, args...)
+	}
+	mustFail := func(t *testing.T, want string, cmd *Command, args ...string) {
+		mustRun(t, false, want, cmd, args...)
 	}
 
-	mustSucceed := func(t *testing.T, want string, args ...string) {
-		mustRun(t, true, want, fdroidcl, args...)
-	}
-	mustFail := func(t *testing.T, want string, args ...string) {
-		mustRun(t, false, want, fdroidcl, args...)
-	}
-
-	t.Run("Help", func(t *testing.T) {
-		mustFail(t, `Usage: fdroidcl`, "-h")
-	})
-	t.Run("UnknownCommand", func(t *testing.T) {
-		mustFail(t, `Unrecognised command`, "unknown")
-	})
 	t.Run("Version", func(t *testing.T) {
-		mustSucceed(t, `^v`, "version")
+		mustSucceed(t, `^v`, cmdVersion)
 	})
 
 	t.Run("SearchBeforeUpdate", func(t *testing.T) {
-		mustFail(t, `could not open index`, "search")
+		mustFail(t, `could not open index`, cmdSearch)
 	})
 	t.Run("UpdateFirst", func(t *testing.T) {
-		mustSucceed(t, `done`, "update")
+		mustSucceed(t, `done`, cmdUpdate)
 	})
 	t.Run("UpdateCached", func(t *testing.T) {
-		mustSucceed(t, `not modified`, "update")
+		mustSucceed(t, `not modified`, cmdUpdate)
 	})
 
 	t.Run("SearchNoArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, "search")
+		mustSucceed(t, `F-Droid`, cmdSearch)
 	})
 	t.Run("SearchWithArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, "search", "fdroid.fdroid")
+		mustSucceed(t, `F-Droid`, cmdSearch, "fdroid.fdroid")
 	})
 	t.Run("SearchWithArgsNone", func(t *testing.T) {
-		mustSucceed(t, `^$`, "search", "nomatches")
+		mustSucceed(t, `^$`, cmdSearch, "nomatches")
 	})
 	t.Run("SearchOnlyPackageNames", func(t *testing.T) {
-		mustSucceed(t, `^[^ ]*$`, "search", "-q", "fdroid.fdroid")
+		mustSucceed(t, `^[^ ]*$`, cmdSearch, "-q", "fdroid.fdroid")
 	})
 
 	t.Run("ShowOne", func(t *testing.T) {
-		mustSucceed(t, `fdroid/fdroidclient`, "show", "org.fdroid.fdroid")
+		mustSucceed(t, `fdroid/fdroidclient`, cmdShow, "org.fdroid.fdroid")
 	})
 	t.Run("ShowMany", func(t *testing.T) {
 		mustSucceed(t, `fdroid/fdroidclient.*fdroid/privileged-extension`,
-			"show", "org.fdroid.fdroid", "org.fdroid.fdroid.privileged")
+			cmdShow, "org.fdroid.fdroid", "org.fdroid.fdroid.privileged")
 	})
 
 	t.Run("ListCategories", func(t *testing.T) {
-		mustSucceed(t, `Development`, "list", "categories")
+		mustSucceed(t, `Development`, cmdList, "categories")
 	})
 
-	out, err := exec.Command(fdroidcl, "devices").CombinedOutput()
+	if err := startAdbIfNeeded(); err != nil {
+		t.Fatal(err)
+	}
+	devices, err := adb.Devices()
 	if err != nil {
 		t.Fatal(err)
 	}
-	switch bytes.Count(out, []byte("\n")) {
+	switch len(devices) {
 	case 0:
 		t.Log("skipping the device tests as none was found via ADB")
 	case 1:
@@ -110,38 +100,43 @@ func TestEndToEnd(t *testing.T) {
 	}
 
 	// try to uninstall the app first
-	exec.Command(fdroidcl, "uninstall", chosenApp).Run()
+	devices[0].Uninstall(chosenApp)
 	t.Run("UninstallMissing", func(t *testing.T) {
-		mustFail(t, `not installed$`, "uninstall", chosenApp)
+		mustFail(t, `not installed$`, cmdUninstall, chosenApp)
 	})
 	t.Run("InstallVersioned", func(t *testing.T) {
 		mustSucceed(t, `Installing `+regexp.QuoteMeta(chosenApp),
-			"install", chosenApp+":1")
+			cmdInstall, chosenApp+":1")
 	})
 	t.Run("Upgrade", func(t *testing.T) {
 		mustSucceed(t, `Upgrading `+regexp.QuoteMeta(chosenApp),
-			"upgrade", chosenApp)
+			cmdUpgrade, chosenApp)
 	})
 	t.Run("UpgradeAlreadyInstalled", func(t *testing.T) {
-		mustFail(t, `is up to date$`, "upgrade", chosenApp)
+		mustFail(t, `is up to date$`, cmdUpgrade, chosenApp)
 	})
 	t.Run("UninstallExisting", func(t *testing.T) {
 		mustSucceed(t, `Uninstalling `+regexp.QuoteMeta(chosenApp),
-			"uninstall", chosenApp)
+			cmdUninstall, chosenApp)
 	})
 }
 
-func mustRun(t *testing.T, success bool, wantRe, name string, args ...string) {
-	cmd := exec.Command(name, args...)
-	out, err := cmd.CombinedOutput()
+func mustRun(t *testing.T, success bool, wantRe string, cmd *Command, args ...string) {
+	var buf bytes.Buffer
+	stdout, stderr = &buf, &buf
+	err := cmd.Run(args)
+	out := buf.String()
 	if success && err != nil {
 		t.Fatalf("unexpected error: %v\n%s", err, out)
 	} else if !success && err == nil {
 		t.Fatalf("expected error, got none\n%s", out)
 	}
+	if err != nil {
+		out += err.Error()
+	}
 	// Let '.' match newlines, and treat the output as a single line.
 	wantRe = "(?sm)" + wantRe
-	if !regexp.MustCompile(wantRe).Match(out) {
+	if !regexp.MustCompile(wantRe).MatchString(out) {
 		t.Fatalf("output does not match %#q:\n%s", wantRe, out)
 	}
 }

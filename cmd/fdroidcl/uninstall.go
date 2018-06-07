@@ -31,7 +31,7 @@ func runUninstall(args []string) error {
 	}
 	for _, id := range args {
 		var err error
-		fmt.Printf("Uninstalling %s\n", id)
+		fmt.Fprintf(stdout, "Uninstalling %s\n", id)
 		if _, installed := inst[id]; installed {
 			err = device.Uninstall(id)
 		} else {

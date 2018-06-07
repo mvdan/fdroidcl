@@ -52,7 +52,7 @@ func runUpgrade(args []string) error {
 }
 
 func upgradeApk(device *adb.Device, apk *fdroidcl.Apk, path string) error {
-	fmt.Printf("Upgrading %s\n", apk.AppID)
+	fmt.Fprintf(stdout, "Upgrading %s\n", apk.AppID)
 	if err := device.Upgrade(path); err != nil {
 		return fmt.Errorf("could not upgrade %s: %v", apk.AppID, err)
 	}

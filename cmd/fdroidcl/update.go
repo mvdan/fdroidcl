@@ -78,8 +78,8 @@ func respEtag(resp *http.Response) string {
 var errNotModified = fmt.Errorf("not modified")
 
 func downloadEtag(url, path string, sum []byte) error {
-	fmt.Printf("Downloading %s... ", url)
-	defer fmt.Println()
+	fmt.Fprintf(stdout, "Downloading %s... ", url)
+	defer fmt.Fprintln(stdout)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func downloadEtag(url, path string, sum []byte) error {
 			resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	if resp.StatusCode == http.StatusNotModified {
-		fmt.Printf("not modified")
+		fmt.Fprintf(stdout, "not modified")
 		return errNotModified
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
@@ -131,7 +131,7 @@ func downloadEtag(url, path string, sum []byte) error {
 	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644); err != nil {
 		return err
 	}
-	fmt.Printf("done")
+	fmt.Fprintf(stdout, "done")
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,7 +20,7 @@ const cmdName = "fdroidcl"
 var version = "v0.3.1"
 
 func errExit(format string, a ...interface{}) {
-	fmt.Fprintf(os.Stderr, format, a...)
+	fmt.Fprintf(stderr, format, a...)
 	os.Exit(1)
 }
 
@@ -31,7 +32,12 @@ func subdir(dir, name string) string {
 	return p
 }
 
-var testBasedir = ""
+var (
+	stdout io.Writer = os.Stdout
+	stderr io.Writer = os.Stderr
+
+	testBasedir = ""
+)
 
 func mustCache() string {
 	if testBasedir != "" {
@@ -125,11 +131,11 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) Usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s %s [-h]\n", cmdName, c.UsageLine)
+	fmt.Fprintf(stderr, "Usage: %s %s [-h]\n", cmdName, c.UsageLine)
 	anyFlags := false
 	c.Flag.VisitAll(func(f *flag.Flag) { anyFlags = true })
 	if anyFlags {
-		fmt.Fprintf(os.Stderr, "\nAvailable options:\n")
+		fmt.Fprintf(stderr, "\nAvailable options:\n")
 		c.Flag.PrintDefaults()
 	}
 	os.Exit(2)
@@ -137,8 +143,8 @@ func (c *Command) Usage() {
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [-h] <command> [<args>]\n\n", cmdName)
-		fmt.Fprintf(os.Stderr, "Available commands:\n")
+		fmt.Fprintf(stderr, "Usage: %s [-h] <command> [<args>]\n\n", cmdName)
+		fmt.Fprintf(stderr, "Available commands:\n")
 		maxUsageLen := 0
 		for _, c := range commands {
 			if len(c.UsageLine) > maxUsageLen {
@@ -146,11 +152,11 @@ func init() {
 			}
 		}
 		for _, c := range commands {
-			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
+			fmt.Fprintf(stderr, "   %s%s  %s\n", c.UsageLine,
 				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
 		}
-		fmt.Fprintf(os.Stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
-		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more info\n", cmdName)
+		fmt.Fprintf(stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
+		fmt.Fprintf(stderr, "\nUse %s <command> -h for more info\n", cmdName)
 	}
 }
 
@@ -166,16 +172,18 @@ var commands = []*Command{
 	cmdUpgrade,
 	cmdUninstall,
 	cmdDefaults,
-	{
-		UsageLine: "version",
-		Short:     "Print version information",
-		Run: func(args []string) error {
-			if len(args) > 0 {
-				return fmt.Errorf("no arguments allowed")
-			}
-			fmt.Println(version)
-			return nil
-		},
+	cmdVersion,
+}
+
+var cmdVersion = &Command{
+	UsageLine: "version",
+	Short:     "Print version information",
+	Run: func(args []string) error {
+		if len(args) > 0 {
+			return fmt.Errorf("no arguments allowed")
+		}
+		fmt.Fprintln(stdout, version)
+		return nil
 	},
 }
 
@@ -205,7 +213,7 @@ func main() {
 
 	switch cmdName {
 	default:
-		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmdName)
+		fmt.Fprintf(stderr, "Unrecognised command '%s'\n\n", cmdName)
 		flag.Usage()
 		os.Exit(2)
 	}
