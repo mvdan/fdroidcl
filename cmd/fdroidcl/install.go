@@ -12,7 +12,7 @@ import (
 
 var cmdInstall = &Command{
 	UsageLine: "install <appid...>",
-	Short:     "Install an app",
+	Short:     "Install or upgrade an app",
 }
 
 func init() {
@@ -35,15 +35,30 @@ func runInstall(args []string) error {
 	if err != nil {
 		return err
 	}
+	var toInstall []*fdroidcl.App
 	for _, app := range apps {
-		if _, e := inst[app.ID]; e {
-			return fmt.Errorf("%s is already installed", app.ID)
+		p, e := inst[app.ID]
+		if !e {
+			// installing an app from scratch
+			toInstall = append(toInstall, app)
+			continue
 		}
+		suggested := app.SuggestedApk(device)
+		if suggested == nil {
+			return fmt.Errorf("no suitable APKs found for %s", app.ID)
+		}
+		if p.VCode >= suggested.VCode {
+			fmt.Fprintf(stdout, "%s is up to date\n", app.ID)
+			// app is already up to date
+			continue
+		}
+		// upgrading an existing app
+		toInstall = append(toInstall, app)
 	}
-	return downloadAndDo(apps, device, installApk)
+	return downloadAndDo(toInstall, device)
 }
 
-func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Device, *fdroidcl.Apk, string) error) error {
+func downloadAndDo(apps []*fdroidcl.App, device *adb.Device) error {
 	type downloaded struct {
 		apk  *fdroidcl.Apk
 		path string
@@ -61,7 +76,7 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device, doApk func(*adb.Dev
 		toInstall[i] = downloaded{apk: apk, path: path}
 	}
 	for _, t := range toInstall {
-		if err := doApk(device, t.apk, t.path); err != nil {
+		if err := installApk(device, t.apk, t.path); err != nil {
 			return err
 		}
 	}

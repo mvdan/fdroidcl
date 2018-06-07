@@ -128,15 +128,15 @@ func TestCommands(t *testing.T) {
 	t.Run("SearchUpgradable", func(t *testing.T) {
 		mustSucceed(t, regexp.QuoteMeta(chosenApp), ``, cmdSearch, "-u", "-q")
 	})
-	t.Run("Upgrade", func(t *testing.T) {
-		mustSucceed(t, `Upgrading `+regexp.QuoteMeta(chosenApp), ``,
-			cmdUpgrade, chosenApp)
+	t.Run("InstallUpgrade", func(t *testing.T) {
+		mustSucceed(t, `Installing `+regexp.QuoteMeta(chosenApp), ``,
+			cmdInstall, chosenApp)
 	})
 	t.Run("SearchUpgradableUpToDate", func(t *testing.T) {
 		mustSucceed(t, ``, regexp.QuoteMeta(chosenApp), cmdSearch, "-u", "-q")
 	})
-	t.Run("UpgradeAlreadyInstalled", func(t *testing.T) {
-		mustFail(t, `is up to date$`, ``, cmdUpgrade, chosenApp)
+	t.Run("InstallUpToDate", func(t *testing.T) {
+		mustSucceed(t, `is up to date$`, ``, cmdInstall, chosenApp)
 	})
 	t.Run("UninstallExisting", func(t *testing.T) {
 		mustSucceed(t, `Uninstalling `+regexp.QuoteMeta(chosenApp), ``,
@@ -149,13 +149,13 @@ func mustRun(t *testing.T, success bool, wantRe, negRe string, cmd *Command, arg
 	stdout, stderr = &buf, &buf
 	err := cmd.Run(args)
 	out := buf.String()
+	if err != nil {
+		out += err.Error()
+	}
 	if success && err != nil {
 		t.Fatalf("unexpected error: %v\n%s", err, out)
 	} else if !success && err == nil {
 		t.Fatalf("expected error, got none\n%s", out)
-	}
-	if err != nil {
-		out += err.Error()
 	}
 	// Let '.' match newlines, and treat the output as a single line.
 	wantRe = "(?sm)" + wantRe
