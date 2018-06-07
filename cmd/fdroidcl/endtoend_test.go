@@ -84,7 +84,8 @@ func TestCommands(t *testing.T) {
 	})
 
 	if err := startAdbIfNeeded(); err != nil {
-		t.Fatal(err)
+		t.Log("skipping the device tests as ADB is not installed")
+		return
 	}
 	devices, err := adb.Devices()
 	if err != nil {
@@ -93,10 +94,12 @@ func TestCommands(t *testing.T) {
 	switch len(devices) {
 	case 0:
 		t.Log("skipping the device tests as none was found via ADB")
+		return
 	case 1:
 		// continue below
 	default:
 		t.Log("skipping the device tests as too many were found via ADB")
+		return
 	}
 
 	t.Run("DevicesOne", func(t *testing.T) {
