@@ -5,14 +5,22 @@ package main
 
 import (
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"testing"
+	"time"
 )
 
 func TestEndToEnd(t *testing.T) {
+	url := config.Repos[0].URL
+	client := http.Client{Timeout: 2 * time.Second}
+	if _, err := client.Get(url); err != nil {
+		t.Skipf("skipping since %s is unreachable: %v", url, err)
+	}
+
 	dir, err := ioutil.TempDir("", "fdroidcl")
 	if err != nil {
 		t.Fatal(err)
@@ -52,6 +60,19 @@ func TestEndToEnd(t *testing.T) {
 	})
 	t.Run("UpdateCached", func(t *testing.T) {
 		mustSucceed(t, `not modified`, "update")
+	})
+
+	t.Run("SearchNoArgs", func(t *testing.T) {
+		mustSucceed(t, `F-Droid`, "search")
+	})
+	t.Run("SearchWithArgs", func(t *testing.T) {
+		mustSucceed(t, `F-Droid`, "search", "fdroid.fdroid")
+	})
+	t.Run("SearchWithArgsNone", func(t *testing.T) {
+		mustSucceed(t, `^$`, "search", "nomatches")
+	})
+	t.Run("SearchOnlyPackageNames", func(t *testing.T) {
+		mustSucceed(t, `^[^ ]*$`, "search", "-q", "fdroid.fdroid")
 	})
 }
 
