@@ -4,6 +4,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"regexp"
 	"sort"
@@ -19,20 +20,22 @@ var cmdSearch = &Command{
 	Short:     "Search available apps",
 }
 
-var (
-	quiet     = cmdSearch.Flag.Bool("q", false, "Print package names only")
-	installed = cmdSearch.Flag.Bool("i", false, "Filter installed apps")
-	updates   = cmdSearch.Flag.Bool("u", false, "Filter apps with updates")
-	days      = cmdSearch.Flag.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
-	category  = cmdSearch.Flag.String("c", "", "Filter apps by category")
-	sortBy    = cmdSearch.Flag.String("o", "", "Sort order (added, updated)")
-)
-
 func init() {
 	cmdSearch.Run = runSearch
 }
 
 func runSearch(args []string) error {
+	var fset flag.FlagSet
+	var (
+		quiet     = fset.Bool("q", false, "Print package names only")
+		installed = fset.Bool("i", false, "Filter installed apps")
+		updates   = fset.Bool("u", false, "Filter apps with updates")
+		days      = fset.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
+		category  = fset.String("c", "", "Filter apps by category")
+		sortBy    = fset.String("o", "", "Sort order (added, updated)")
+	)
+	fset.Parse(args)
+	args = fset.Args()
 	if *installed && *updates {
 		return fmt.Errorf("-i is redundant if -u is specified")
 	}
@@ -137,8 +140,7 @@ func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Dev
 }
 
 func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string {
-	// With "-u" or "-i" option there must be a connected device
-	if *updates || *installed {
+	if inst != nil {
 		suggested := app.SuggestedApk(device)
 		if suggested != nil && inst.VCode < suggested.VCode {
 			return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VName, inst.VCode,
@@ -146,7 +148,6 @@ func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string
 		}
 		return fmt.Sprintf("%s (%d)", inst.VName, inst.VCode)
 	}
-	// Without "-u" or "-i" we only have repositories indices
 	return fmt.Sprintf("%s (%d)", app.CVName, app.CVCode)
 }
 

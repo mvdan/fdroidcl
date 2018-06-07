@@ -37,50 +37,50 @@ func TestCommands(t *testing.T) {
 	defer os.RemoveAll(dir)
 	testBasedir = dir
 
-	mustSucceed := func(t *testing.T, want string, cmd *Command, args ...string) {
-		mustRun(t, true, want, cmd, args...)
+	mustSucceed := func(t *testing.T, wantRe, negRe string, cmd *Command, args ...string) {
+		mustRun(t, true, wantRe, negRe, cmd, args...)
 	}
-	mustFail := func(t *testing.T, want string, cmd *Command, args ...string) {
-		mustRun(t, false, want, cmd, args...)
+	mustFail := func(t *testing.T, wantRe, negRe string, cmd *Command, args ...string) {
+		mustRun(t, false, wantRe, negRe, cmd, args...)
 	}
 
 	t.Run("Version", func(t *testing.T) {
-		mustSucceed(t, `^v`, cmdVersion)
+		mustSucceed(t, `^v`, ``, cmdVersion)
 	})
 
 	t.Run("SearchBeforeUpdate", func(t *testing.T) {
-		mustFail(t, `could not open index`, cmdSearch)
+		mustFail(t, `could not open index`, ``, cmdSearch)
 	})
 	t.Run("UpdateFirst", func(t *testing.T) {
-		mustSucceed(t, `done`, cmdUpdate)
+		mustSucceed(t, `done`, ``, cmdUpdate)
 	})
 	t.Run("UpdateCached", func(t *testing.T) {
-		mustSucceed(t, `not modified`, cmdUpdate)
+		mustSucceed(t, `not modified`, ``, cmdUpdate)
 	})
 
 	t.Run("SearchNoArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, cmdSearch)
+		mustSucceed(t, `F-Droid`, ``, cmdSearch)
 	})
 	t.Run("SearchWithArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, cmdSearch, "fdroid.fdroid")
+		mustSucceed(t, `F-Droid`, ``, cmdSearch, "fdroid.fdroid")
 	})
 	t.Run("SearchWithArgsNone", func(t *testing.T) {
-		mustSucceed(t, `^$`, cmdSearch, "nomatches")
+		mustSucceed(t, `^$`, ``, cmdSearch, "nomatches")
 	})
 	t.Run("SearchOnlyPackageNames", func(t *testing.T) {
-		mustSucceed(t, `^[^ ]*$`, cmdSearch, "-q", "fdroid.fdroid")
+		mustSucceed(t, `^[^ ]*$`, ``, cmdSearch, "-q", "fdroid.fdroid")
 	})
 
 	t.Run("ShowOne", func(t *testing.T) {
-		mustSucceed(t, `fdroid/fdroidclient`, cmdShow, "org.fdroid.fdroid")
+		mustSucceed(t, `fdroid/fdroidclient`, ``, cmdShow, "org.fdroid.fdroid")
 	})
 	t.Run("ShowMany", func(t *testing.T) {
-		mustSucceed(t, `fdroid/fdroidclient.*fdroid/privileged-extension`,
+		mustSucceed(t, `fdroid/fdroidclient.*fdroid/privileged-extension`, ``,
 			cmdShow, "org.fdroid.fdroid", "org.fdroid.fdroid.privileged")
 	})
 
 	t.Run("ListCategories", func(t *testing.T) {
-		mustSucceed(t, `Development`, cmdList, "categories")
+		mustSucceed(t, `Development`, ``, cmdList, "categories")
 	})
 
 	if err := startAdbIfNeeded(); err != nil {
@@ -99,29 +99,49 @@ func TestCommands(t *testing.T) {
 		t.Log("skipping the device tests as too many were found via ADB")
 	}
 
+	t.Run("DevicesOne", func(t *testing.T) {
+		mustSucceed(t, `\n`, ``, cmdDevices)
+	})
+
 	// try to uninstall the app first
 	devices[0].Uninstall(chosenApp)
 	t.Run("UninstallMissing", func(t *testing.T) {
-		mustFail(t, `not installed$`, cmdUninstall, chosenApp)
+		mustFail(t, `not installed$`, ``, cmdUninstall, chosenApp)
+	})
+	t.Run("SearchInstalledMissing", func(t *testing.T) {
+		mustSucceed(t, ``, regexp.QuoteMeta(chosenApp), cmdSearch, "-i", "-q")
+	})
+	t.Run("SearchUpgradableMissing", func(t *testing.T) {
+		mustSucceed(t, ``, regexp.QuoteMeta(chosenApp), cmdSearch, "-u", "-q")
 	})
 	t.Run("InstallVersioned", func(t *testing.T) {
-		mustSucceed(t, `Installing `+regexp.QuoteMeta(chosenApp),
+		mustSucceed(t, `Installing `+regexp.QuoteMeta(chosenApp), ``,
 			cmdInstall, chosenApp+":1")
 	})
+	t.Run("SearchInstalled", func(t *testing.T) {
+		time.Sleep(3 * time.Second)
+		mustSucceed(t, regexp.QuoteMeta(chosenApp), ``, cmdSearch, "-i", "-q")
+	})
+	t.Run("SearchUpgradable", func(t *testing.T) {
+		mustSucceed(t, regexp.QuoteMeta(chosenApp), ``, cmdSearch, "-u", "-q")
+	})
 	t.Run("Upgrade", func(t *testing.T) {
-		mustSucceed(t, `Upgrading `+regexp.QuoteMeta(chosenApp),
+		mustSucceed(t, `Upgrading `+regexp.QuoteMeta(chosenApp), ``,
 			cmdUpgrade, chosenApp)
 	})
+	t.Run("SearchUpgradableUpToDate", func(t *testing.T) {
+		mustSucceed(t, ``, regexp.QuoteMeta(chosenApp), cmdSearch, "-u", "-q")
+	})
 	t.Run("UpgradeAlreadyInstalled", func(t *testing.T) {
-		mustFail(t, `is up to date$`, cmdUpgrade, chosenApp)
+		mustFail(t, `is up to date$`, ``, cmdUpgrade, chosenApp)
 	})
 	t.Run("UninstallExisting", func(t *testing.T) {
-		mustSucceed(t, `Uninstalling `+regexp.QuoteMeta(chosenApp),
+		mustSucceed(t, `Uninstalling `+regexp.QuoteMeta(chosenApp), ``,
 			cmdUninstall, chosenApp)
 	})
 }
 
-func mustRun(t *testing.T, success bool, wantRe string, cmd *Command, args ...string) {
+func mustRun(t *testing.T, success bool, wantRe, negRe string, cmd *Command, args ...string) {
 	var buf bytes.Buffer
 	stdout, stderr = &buf, &buf
 	err := cmd.Run(args)
@@ -138,5 +158,11 @@ func mustRun(t *testing.T, success bool, wantRe string, cmd *Command, args ...st
 	wantRe = "(?sm)" + wantRe
 	if !regexp.MustCompile(wantRe).MatchString(out) {
 		t.Fatalf("output does not match %#q:\n%s", wantRe, out)
+	}
+	if negRe != "" {
+		negRe = "(?sm)" + negRe
+		if regexp.MustCompile(negRe).MatchString(out) {
+			t.Fatalf("output does match %#q:\n%s", negRe, out)
+		}
 	}
 }

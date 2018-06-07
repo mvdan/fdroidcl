@@ -115,9 +115,6 @@ type Command struct {
 
 	// Short is the short description.
 	Short string
-
-	// Flag is a set of flags specific to this command.
-	Flag flag.FlagSet
 }
 
 // Name returns the command's name: the first word in the usage line.
@@ -130,13 +127,13 @@ func (c *Command) Name() string {
 	return name
 }
 
-func (c *Command) Usage() {
+func (c *Command) usage(flagSet *flag.FlagSet) {
 	fmt.Fprintf(stderr, "Usage: %s %s [-h]\n", cmdName, c.UsageLine)
 	anyFlags := false
-	c.Flag.VisitAll(func(f *flag.Flag) { anyFlags = true })
+	flagSet.VisitAll(func(f *flag.Flag) { anyFlags = true })
 	if anyFlags {
 		fmt.Fprintf(stderr, "\nAvailable options:\n")
-		c.Flag.PrintDefaults()
+		flagSet.PrintDefaults()
 	}
 	os.Exit(2)
 }
@@ -202,10 +199,7 @@ func main() {
 			continue
 		}
 		readConfig()
-		cmd.Flag.Usage = func() { cmd.Usage() }
-		cmd.Flag.Parse(args[1:])
-		args = cmd.Flag.Args()
-		if err := cmd.Run(args); err != nil {
+		if err := cmd.Run(args[1:]); err != nil {
 			errExit("%s: %v\n", cmdName, err)
 		}
 		return
