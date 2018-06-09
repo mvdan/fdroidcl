@@ -9,8 +9,7 @@ _fdroidcl() {
   'list:list all known values of a kind'
   'devices:list connected devices'
   'download:download an app'
-  'install:install an app'
-  'upgrade:upgrade an app'
+  'install:install or upgrade an app'
   'uninstall:uninstall an app'
   'defaults:reset to the default settings')
 
@@ -36,7 +35,7 @@ _fdroidcl_options() {
         '-d[filter apps by last updated]:updated since (days):' \
         '-c[filter apps by category]:category:_fdroidcl_categories'
       ;;
-    (show|download|install|upgrade|uninstall)
+    (show|download|install|uninstall)
       packages=(${(f)"$(fdroidcl search -q 2> /dev/null)"})
       _describe -t packages package packages
       ;;
