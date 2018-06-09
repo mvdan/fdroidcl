@@ -80,7 +80,7 @@ func runSearch(args []string) error {
 	}
 	if *quiet {
 		for _, app := range apps {
-			fmt.Fprintln(stdout, app.ID)
+			fmt.Fprintln(stdout, app.PackageName)
 		}
 	} else {
 		printApps(apps, inst, device)
@@ -96,10 +96,10 @@ func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
 	var result []fdroidcl.App
 	for _, app := range apps {
 		fields := []string{
-			strings.ToLower(app.ID),
+			strings.ToLower(app.PackageName),
 			strings.ToLower(app.Name),
 			strings.ToLower(app.Summary),
-			strings.ToLower(app.Desc),
+			strings.ToLower(app.Description),
 		}
 		if !appMatches(fields, regexes) {
 			continue
@@ -125,13 +125,13 @@ fieldLoop:
 func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) {
 	maxIDLen := 0
 	for _, app := range apps {
-		if len(app.ID) > maxIDLen {
-			maxIDLen = len(app.ID)
+		if len(app.PackageName) > maxIDLen {
+			maxIDLen = len(app.PackageName)
 		}
 	}
 	for _, app := range apps {
 		var pkg *adb.Package
-		p, e := inst[app.ID]
+		p, e := inst[app.PackageName]
 		if e {
 			pkg = &p
 		}
@@ -142,17 +142,17 @@ func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Dev
 func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string {
 	if inst != nil {
 		suggested := app.SuggestedApk(device)
-		if suggested != nil && inst.VCode < suggested.VCode {
-			return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VName, inst.VCode,
-				suggested.VName, suggested.VCode)
+		if suggested != nil && inst.VersCode < suggested.VersCode {
+			return fmt.Sprintf("%s (%d) -> %s (%d)", inst.VersName, inst.VersCode,
+				suggested.VersName, suggested.VersCode)
 		}
-		return fmt.Sprintf("%s (%d)", inst.VName, inst.VCode)
+		return fmt.Sprintf("%s (%d)", inst.VersName, inst.VersCode)
 	}
-	return fmt.Sprintf("%s (%d)", app.CVName, app.CVCode)
+	return fmt.Sprintf("%s (%d)", app.SugVersName, app.SugVersCode)
 }
 
 func printApp(app fdroidcl.App, IDLen int, inst *adb.Package, device *adb.Device) {
-	fmt.Fprintf(stdout, "%s%s %s - %s\n", app.ID, strings.Repeat(" ", IDLen-len(app.ID)),
+	fmt.Fprintf(stdout, "%s%s %s - %s\n", app.PackageName, strings.Repeat(" ", IDLen-len(app.PackageName)),
 		app.Name, descVersion(app, inst, device))
 	fmt.Fprintf(stdout, "    %s\n", app.Summary)
 }
@@ -160,7 +160,7 @@ func printApp(app fdroidcl.App, IDLen int, inst *adb.Package, device *adb.Device
 func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdroidcl.App {
 	var result []fdroidcl.App
 	for _, app := range apps {
-		if _, e := inst[app.ID]; !e {
+		if _, e := inst[app.PackageName]; !e {
 			continue
 		}
 		result = append(result, app)
@@ -171,7 +171,7 @@ func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdr
 func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) []fdroidcl.App {
 	var result []fdroidcl.App
 	for _, app := range apps {
-		p, e := inst[app.ID]
+		p, e := inst[app.PackageName]
 		if !e {
 			continue
 		}
@@ -179,7 +179,7 @@ func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package, device 
 		if suggested == nil {
 			continue
 		}
-		if p.VCode >= suggested.VCode {
+		if p.VersCode >= suggested.VersCode {
 			continue
 		}
 		result = append(result, app)
@@ -216,7 +216,7 @@ func contains(l []string, s string) bool {
 func filterAppsCategory(apps []fdroidcl.App, categ string) []fdroidcl.App {
 	var result []fdroidcl.App
 	for _, app := range apps {
-		if !contains(app.Categs, categ) {
+		if !contains(app.Categories, categ) {
 			continue
 		}
 		result = append(result, app)

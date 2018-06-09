@@ -10,12 +10,12 @@ import (
 	"regexp"
 )
 
-const indexPath = "index.xml"
+const indexPath = "index-v1.json"
 
 var (
 	sigRegex = regexp.MustCompile(`^META-INF/.*\.(DSA|EC|RSA)$`)
 
-	ErrNoIndex     = errors.New("no xml index found inside jar")
+	ErrNoIndex     = errors.New("no json index found inside jar")
 	ErrNoSigs      = errors.New("no jar signatures found")
 	ErrTooManySigs = errors.New("multiple jar signatures found")
 )
@@ -58,5 +58,5 @@ func LoadIndexJar(r io.ReaderAt, size int64, pubkey []byte) (*Index, error) {
 	if err := verifySignature(pubkey, sig); err != nil {
 		return nil, err
 	}
-	return LoadIndexXML(index)
+	return LoadIndexJSON(index)
 }

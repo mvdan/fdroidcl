@@ -37,7 +37,7 @@ func runInstall(args []string) error {
 	}
 	var toInstall []*fdroidcl.App
 	for _, app := range apps {
-		p, e := inst[app.ID]
+		p, e := inst[app.PackageName]
 		if !e {
 			// installing an app from scratch
 			toInstall = append(toInstall, app)
@@ -45,10 +45,10 @@ func runInstall(args []string) error {
 		}
 		suggested := app.SuggestedApk(device)
 		if suggested == nil {
-			return fmt.Errorf("no suitable APKs found for %s", app.ID)
+			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
 		}
-		if p.VCode >= suggested.VCode {
-			fmt.Fprintf(stdout, "%s is up to date\n", app.ID)
+		if p.VersCode >= suggested.VersCode {
+			fmt.Fprintf(stdout, "%s is up to date\n", app.PackageName)
 			// app is already up to date
 			continue
 		}
@@ -67,7 +67,7 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device) error {
 	for i, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
-			return fmt.Errorf("no suitable APKs found for %s", app.ID)
+			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
 		}
 		path, err := downloadApk(apk)
 		if err != nil {

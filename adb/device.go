@@ -180,9 +180,9 @@ func (d *Device) Uninstall(pkg string) error {
 }
 
 type Package struct {
-	ID    string
-	VCode int
-	VName string
+	ID       string
+	VersCode int
+	VersName string
 }
 
 var (
@@ -219,9 +219,9 @@ func (d *Device) Installed() (map[string]Package, error) {
 			if err != nil {
 				panic(err)
 			}
-			cur.VCode = n
+			cur.VersCode = n
 		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
-			cur.VName = m[1]
+			cur.VersName = m[1]
 		}
 	}
 	if !first {

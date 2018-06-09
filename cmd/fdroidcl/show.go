@@ -41,7 +41,7 @@ func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
 	m := make(map[string]*fdroidcl.App, len(apps))
 	for i := range apps {
 		app := &apps[i]
-		m[app.ID] = app
+		m[app.PackageName] = app
 	}
 	return m
 }
@@ -73,8 +73,8 @@ func findApps(ids []string) ([]*fdroidcl.App, error) {
 		if vcode > -1 {
 			found := false
 			for _, apk := range app.Apks {
-				if apk.VCode == vcode {
-					app.Apks = []fdroidcl.Apk{apk}
+				if apk.VersCode == vcode {
+					app.Apks = []*fdroidcl.Apk{apk}
 					found = true
 				}
 			}
@@ -95,24 +95,24 @@ func printAppDetailed(app fdroidcl.App) {
 			fmt.Fprintf(stdout, "%s %s\n", title, fmt.Sprintf(format, args...))
 		}
 	}
-	p("Package          :", "%s", app.ID)
+	p("Package          :", "%s", app.PackageName)
 	p("Name             :", "%s", app.Name)
 	p("Summary          :", "%s", app.Summary)
 	p("Added            :", "%s", app.Added.String())
 	p("Last Updated     :", "%s", app.Updated.String())
-	p("Version          :", "%s (%d)", app.CVName, app.CVCode)
+	p("Version          :", "%s (%d)", app.SugVersName, app.SugVersCode)
 	p("License          :", "%s", app.License)
-	if app.Categs != nil {
-		p("Categories       :", "%s", strings.Join(app.Categs, ", "))
+	if app.Categories != nil {
+		p("Categories       :", "%s", strings.Join(app.Categories, ", "))
 	}
 	if app.Website != "" {
 		p("Website          :", "%s", app.Website)
 	}
-	if app.Source != "" {
-		p("Source           :", "%s", app.Source)
+	if app.SourceCode != "" {
+		p("Source Code      :", "%s", app.SourceCode)
 	}
-	if app.Tracker != "" {
-		p("Tracker          :", "%s", app.Tracker)
+	if app.IssueTracker != "" {
+		p("Issue Tracker    :", "%s", app.IssueTracker)
 	}
 	if app.Changelog != "" {
 		p("Changelog        :", "%s", app.Changelog)
@@ -137,7 +137,7 @@ func printAppDetailed(app fdroidcl.App) {
 	p("Available Versions :", "")
 	for _, apk := range app.Apks {
 		fmt.Fprintln(stdout)
-		p("    Version :", "%s (%d)", apk.VName, apk.VCode)
+		p("    Version :", "%s (%d)", apk.VersName, apk.VersCode)
 		p("    Size    :", "%d", apk.Size)
 		p("    MinSdk  :", "%d", apk.MinSdk)
 		if apk.MaxSdk > 0 {

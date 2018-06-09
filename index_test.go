@@ -45,7 +45,7 @@ func TestTextDesc(t *testing.T) {
 			"Links: foo1[0] bar1[1]\n\n[0] foo\n[1] bar\n",
 		},
 	} {
-		app := App{Desc: c.in}
+		app := App{Description: c.in}
 		var b bytes.Buffer
 		app.TextDesc(&b)
 		got := b.String()
@@ -56,66 +56,85 @@ func TestTextDesc(t *testing.T) {
 	}
 }
 
-func TestLoadIndexXML(t *testing.T) {
-	tests := []struct {
-		in   string
-		want Index
-	}{
+func TestLoadIndexJSON(t *testing.T) {
+	in := `
+{
+	"repo": {
+		"name": "Foo",
+		"version": 19,
+		"timestamp": 1528184950000
+	},
+	"requests": {
+		"install": [],
+		"uninstall": []
+	},
+	"apps": [
 		{
-			`<fdroid>
-			<repo name="Foo" version="14"/>
-			<application>
-				<id>foo.bar</id>
-				<name>Foo bar</name>
-				<categories>Cat1,Cat2</categories>
-				<added>2015-10-02</added>
-				<package>
-					<version>1.0</version>
-					<versioncode>1</versioncode>
-					<sig>0123456789abcdef</sig>
-				</package>
-			</application>
-			</fdroid>`,
-			Index{
-				Repo: Repo{
-					Name:    "Foo",
-					Version: 14,
-				},
-				Apps: []App{
-					{
-						ID:     "foo.bar",
-						Name:   "Foo bar",
-						Categs: []string{"Cat1", "Cat2"},
-						Added:  DateVal{time.Date(2015, 10, 2, 0, 0, 0, 0, time.UTC)},
-						Apks: []Apk{
-							{
-								VName: "1.0",
-								VCode: 1,
-								Sig:   []byte{1, 35, 69, 103, 137, 171, 205, 239},
-							},
-						},
-					},
-				},
+			"packageName": "foo.bar",
+			"name": "Foo bar",
+			"categories": ["Cat1", "Cat2"],
+			"added": 1443734950000,
+			"suggestedVersionName": "1.0",
+			"suggestedVersionCode": "1"
+		}
+	],
+	"packages": {
+		"foo.bar": [
+			{
+				"versionName": "1.0",
+				"versionCode": 1,
+				"hash": "1e4c77d8c9fa03b3a9c42360dc55468f378bbacadeaf694daea304fe1a2750f4",
+				"hashType": "sha256",
+				"sig": "c0f3a6d46025bf41613c5e81781e517a",
+				"signer": "573c2762a2ff87c4c1ef104b35147c8c316676e5d072ec636fc718f35df6cf22"
+			}
+		]
+	}
+}
+`
+	want := Index{
+		Repo: Repo{
+			Name:      "Foo",
+			Version:   19,
+			Timestamp: UnixDate{time.Unix(1528184950, 0).UTC()},
+		},
+		Apps: []App{
+			{
+				PackageName: "foo.bar",
+				Name:        "Foo bar",
+				Categories:  []string{"Cat1", "Cat2"},
+				Added:       UnixDate{time.Unix(1443734950, 0).UTC()},
+				SugVersName: "1.0",
+				SugVersCode: 1,
+				Apks:        []*Apk{nil},
 			},
 		},
+		Packages: map[string][]Apk{"foo.bar": {
+			{
+				VersName: "1.0",
+				VersCode: 1,
+				Sig:      HexVal{0xc0, 0xf3, 0xa6, 0xd4, 0x60, 0x25, 0xbf, 0x41, 0x61, 0x3c, 0x5e, 0x81, 0x78, 0x1e, 0x51, 0x7a},
+				Signer:   HexVal{0x57, 0x3c, 0x27, 0x62, 0xa2, 0xff, 0x87, 0xc4, 0xc1, 0xef, 0x10, 0x4b, 0x35, 0x14, 0x7c, 0x8c, 0x31, 0x66, 0x76, 0xe5, 0xd0, 0x72, 0xec, 0x63, 0x6f, 0xc7, 0x18, 0xf3, 0x5d, 0xf6, 0xcf, 0x22},
+				Hash:     HexVal{0x1e, 0x4c, 0x77, 0xd8, 0xc9, 0xfa, 0x3, 0xb3, 0xa9, 0xc4, 0x23, 0x60, 0xdc, 0x55, 0x46, 0x8f, 0x37, 0x8b, 0xba, 0xca, 0xde, 0xaf, 0x69, 0x4d, 0xae, 0xa3, 0x4, 0xfe, 0x1a, 0x27, 0x50, 0xf4},
+				HashType: "sha256",
+			},
+		}},
 	}
-	for _, c := range tests {
-		r := strings.NewReader(c.in)
-		index, err := LoadIndexXML(r)
-		if err != nil {
-			t.Fatalf("Unexpected error: %v", err)
+	want.Apps[0].Apks[0] = &want.Packages["foo.bar"][0]
+	r := strings.NewReader(in)
+	index, err := LoadIndexJSON(r)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	got := *index
+	for i := range want.Apps {
+		app := &want.Apps[i]
+		for _, apk := range app.Apks {
+			apk.AppID = app.PackageName
 		}
-		got := *index
-		for i := range c.want.Apps {
-			app := &c.want.Apps[i]
-			for i := range app.Apks {
-				apk := &app.Apks[i]
-				apk.AppID = app.ID
-			}
-		}
-		if !reflect.DeepEqual(got, c.want) {
-			t.Fatalf("Unexpected index.\nGot:\n%v\nWant:\n%v\n",
-				got, c.want)
-		}
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Unexpected index.\nGot:\n%#v\nWant:\n%#v\n",
+			got, want)
 	}
 }

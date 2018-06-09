@@ -29,7 +29,7 @@ func runList(args []string) error {
 	switch args[0] {
 	case "categories":
 		for _, app := range apps {
-			for _, c := range app.Categs {
+			for _, c := range app.Categories {
 				values[c] = struct{}{}
 			}
 		}

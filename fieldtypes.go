@@ -5,25 +5,9 @@ package fdroidcl
 
 import (
 	"encoding/hex"
-	"strings"
+	"strconv"
 	"time"
 )
-
-type CommaList []string
-
-func (cl *CommaList) String() string {
-	return strings.Join(*cl, ",")
-}
-
-func (cl *CommaList) UnmarshalText(text []byte) error {
-	*cl = strings.Split(string(text), ",")
-	return nil
-}
-
-type HexHash struct {
-	Type string `xml:"type,attr"`
-	Data HexVal `xml:",chardata"`
-}
 
 type HexVal []byte
 
@@ -40,21 +24,23 @@ func (hv *HexVal) UnmarshalText(text []byte) error {
 	return nil
 }
 
-type DateVal struct {
+// UnixDate is F-Droid's timestamp format. It's a unix time, but in
+// milliseconds. We can ignore the extra digits, as they're always zero, and
+// won't be displayed anyway.
+type UnixDate struct {
 	time.Time
 }
 
-const dateFormat = "2006-01-02"
-
-func (dv *DateVal) String() string {
-	return dv.Format(dateFormat)
+func (ud *UnixDate) String() string {
+	return ud.Format("2006-01-02")
 }
 
-func (dv *DateVal) UnmarshalText(text []byte) error {
-	t, err := time.Parse(dateFormat, string(text))
+func (ud *UnixDate) UnmarshalJSON(data []byte) error {
+	msec, err := strconv.ParseInt(string(data), 10, 64)
 	if err != nil {
 		return err
 	}
-	*dv = DateVal{t}
+	t := time.Unix(msec/1000, 0).UTC()
+	*ud = UnixDate{t}
 	return nil
 }

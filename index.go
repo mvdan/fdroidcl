@@ -4,6 +4,7 @@
 package fdroidcl
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -14,42 +15,44 @@ import (
 )
 
 type Index struct {
-	Repo Repo  `xml:"repo"`
-	Apps []App `xml:"application"`
+	Repo     Repo             `json:"repo"`
+	Apps     []App            `json:"apps"`
+	Packages map[string][]Apk `json:"packages"`
 }
 
 type Repo struct {
-	Name        string `xml:"name,attr"`
-	PubKey      string `xml:"pubkey,attr"`
-	Timestamp   int    `xml:"timestamp,attr"`
-	URL         string `xml:"url,attr"`
-	Version     int    `xml:"version,attr"`
-	MaxAge      int    `xml:"maxage,attr"`
-	Description string `xml:"description"`
+	Name        string   `json:"name"`
+	Timestamp   UnixDate `json:"timestamp"`
+	Address     string   `json:"address"`
+	Icon        string   `json:"icon"`
+	Version     int      `json:"version"`
+	MaxAge      int      `json:"maxage"`
+	Description string   `json:"description"`
 }
 
 // App is an Android application
 type App struct {
-	ID        string    `xml:"id"`
-	Name      string    `xml:"name"`
-	Summary   string    `xml:"summary"`
-	Added     DateVal   `xml:"added"`
-	Updated   DateVal   `xml:"lastupdated"`
-	Icon      string    `xml:"icon"`
-	Desc      string    `xml:"desc"`
-	License   string    `xml:"license"`
-	Categs    CommaList `xml:"categories"`
-	Website   string    `xml:"web"`
-	Source    string    `xml:"source"`
-	Tracker   string    `xml:"tracker"`
-	Changelog string    `xml:"changelog"`
-	Donate    string    `xml:"donate"`
-	Bitcoin   string    `xml:"bitcoin"`
-	Litecoin  string    `xml:"litecoin"`
-	FlattrID  string    `xml:"flattr"`
-	Apks      []Apk     `xml:"package"`
-	CVName    string    `xml:"marketversion"`
-	CVCode    int       `xml:"marketvercode"`
+	PackageName  string   `json:"packageName"`
+	Name         string   `json:"name"`
+	Summary      string   `json:"summary"`
+	Added        UnixDate `json:"added"`
+	Updated      UnixDate `json:"lastUpdated"`
+	Icon         string   `json:"icon"`
+	Description  string   `json:"description"`
+	License      string   `json:"license"`
+	Categories   []string `json:"categories"`
+	Website      string   `json:"webSite"`
+	SourceCode   string   `json:"sourceCode"`
+	IssueTracker string   `json:"issueTracker"`
+	Changelog    string   `json:"changelog"`
+	Donate       string   `json:"donate"`
+	Bitcoin      string   `json:"bitcoin"`
+	Litecoin     string   `json:"litecoin"`
+	FlattrID     string   `json:"flattr"`
+	SugVersName  string   `json:"suggestedVersionName"`
+	SugVersCode  int      `json:"suggestedVersionCode,string"`
+
+	Apks []*Apk `json:"-"`
 }
 
 type IconDensity uint
@@ -95,7 +98,7 @@ func (a *App) IconURL() string {
 }
 
 func (a *App) TextDesc(w io.Writer) {
-	reader := strings.NewReader(a.Desc)
+	reader := strings.NewReader(a.Description)
 	decoder := xml.NewDecoder(reader)
 	firstParagraph := true
 	linePrefix := ""
@@ -181,22 +184,24 @@ func (a *App) TextDesc(w io.Writer) {
 
 // Apk is an Android package
 type Apk struct {
-	VName   string    `xml:"version"`
-	VCode   int       `xml:"versioncode"`
-	Size    int64     `xml:"size"`
-	MinSdk  int       `xml:"sdkver"`
-	MaxSdk  int       `xml:"maxsdkver"`
-	ABIs    CommaList `xml:"nativecode"`
-	ApkName string    `xml:"apkname"`
-	SrcName string    `xml:"srcname"`
-	Sig     HexVal    `xml:"sig"`
-	Added   DateVal   `xml:"added"`
-	Perms   CommaList `xml:"permissions"`
-	Feats   CommaList `xml:"features"`
-	Hash    HexHash   `xml:"hash"`
+	VersName string   `json:"versionName"`
+	VersCode int      `json:"versionCode"`
+	Size     int64    `json:"size"`
+	MinSdk   int      `json:"sdkver"`
+	MaxSdk   int      `json:"maxsdkver"`
+	ABIs     []string `json:"nativecode"`
+	ApkName  string   `json:"apkname"`
+	SrcName  string   `json:"srcname"`
+	Sig      HexVal   `json:"sig"`
+	Signer   HexVal   `json:"signer"`
+	Added    UnixDate `json:"added"`
+	Perms    []string `json:"permissions"`
+	Feats    []string `json:"features"`
+	Hash     HexVal   `json:"hash"`
+	HashType string   `json:"hashType"`
 
-	AppID   string `xml:"-"`
-	RepoURL string `xml:"-"`
+	AppID   string `json:"-"`
+	RepoURL string `json:"-"`
 }
 
 func (a *Apk) URL() string {
@@ -237,17 +242,17 @@ type AppList []App
 
 func (al AppList) Len() int           { return len(al) }
 func (al AppList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al AppList) Less(i, j int) bool { return al[i].ID < al[j].ID }
+func (al AppList) Less(i, j int) bool { return al[i].PackageName < al[j].PackageName }
 
 type ApkList []Apk
 
 func (al ApkList) Len() int           { return len(al) }
 func (al ApkList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
-func (al ApkList) Less(i, j int) bool { return al[i].VCode > al[j].VCode }
+func (al ApkList) Less(i, j int) bool { return al[i].VersCode > al[j].VersCode }
 
-func LoadIndexXML(r io.Reader) (*Index, error) {
+func LoadIndexJSON(r io.Reader) (*Index, error) {
 	var index Index
-	decoder := xml.NewDecoder(r)
+	decoder := json.NewDecoder(r)
 	if err := decoder.Decode(&index); err != nil {
 		return nil, err
 	}
@@ -256,26 +261,25 @@ func LoadIndexXML(r io.Reader) (*Index, error) {
 
 	for i := range index.Apps {
 		app := &index.Apps[i]
-		sort.Sort(ApkList(app.Apks))
-		for j := range app.Apks {
-			apk := &app.Apks[j]
-			apk.AppID = app.ID
-			apk.RepoURL = index.Repo.URL
+		sort.Sort(ApkList(index.Packages[app.PackageName]))
+		for i := range index.Packages[app.PackageName] {
+			apk := &index.Packages[app.PackageName][i]
+			apk.AppID = app.PackageName
+			apk.RepoURL = index.Repo.Address
+			app.Apks = append(app.Apks, apk)
 		}
 	}
 	return &index, nil
 }
 
 func (a *App) SuggestedApk(device *adb.Device) *Apk {
-	for i := range a.Apks {
-		apk := &a.Apks[i]
-		if a.CVCode >= apk.VCode && apk.IsCompatible(device) {
+	for _, apk := range a.Apks {
+		if a.SugVersCode >= apk.VersCode && apk.IsCompatible(device) {
 			return apk
 		}
 	}
 	// fall back to the first compatible apk
-	for i := range a.Apks {
-		apk := &a.Apks[i]
+	for _, apk := range a.Apks {
 		if apk.IsCompatible(device) {
 			return apk
 		}

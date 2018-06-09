@@ -47,7 +47,7 @@ func runUpdate(args []string) error {
 	return nil
 }
 
-const jarFile = "index.jar"
+const jarFile = "index-v1.jar"
 
 func (r *repo) updateIndex() error {
 	url := fmt.Sprintf("%s/%s", r.URL, jarFile)
@@ -146,6 +146,12 @@ type cache struct {
 	Apps    []fdroidcl.App
 }
 
+type apkPtrList []*fdroidcl.Apk
+
+func (al apkPtrList) Len() int           { return len(al) }
+func (al apkPtrList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
+func (al apkPtrList) Less(i, j int) bool { return al[i].VersCode > al[j].VersCode }
+
 func loadIndexes() ([]fdroidcl.App, error) {
 	cachePath := filepath.Join(mustCache(), "cache-gob")
 	if f, err := os.Open(cachePath); err == nil {
@@ -166,17 +172,17 @@ func loadIndexes() ([]fdroidcl.App, error) {
 		}
 		for i := range index.Apps {
 			app := index.Apps[i]
-			orig, e := m[app.ID]
+			orig, e := m[app.PackageName]
 			if !e {
-				m[app.ID] = &app
+				m[app.PackageName] = &app
 				continue
 			}
 			apks := append(orig.Apks, app.Apks...)
 			// We use a stable sort so that repository order
 			// (priority) is preserved amongst apks with the same
 			// vercode on apps
-			sort.Stable(fdroidcl.ApkList(apks))
-			m[app.ID].Apks = apks
+			sort.Stable(apkPtrList(apks))
+			m[app.PackageName].Apks = apks
 		}
 	}
 	apps := make([]fdroidcl.App, 0, len(m))

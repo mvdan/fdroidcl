@@ -34,7 +34,7 @@ func runDownload(args []string) error {
 	for _, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
-			return fmt.Errorf("no suggested APK found for %s", app.ID)
+			return fmt.Errorf("no suggested APK found for %s", app.PackageName)
 		}
 		path, err := downloadApk(apk)
 		if err != nil {
@@ -48,7 +48,7 @@ func runDownload(args []string) error {
 func downloadApk(apk *fdroidcl.Apk) (string, error) {
 	url := apk.URL()
 	path := apkPath(apk.ApkName)
-	if err := downloadEtag(url, path, apk.Hash.Data); err == errNotModified {
+	if err := downloadEtag(url, path, apk.Hash); err == errNotModified {
 	} else if err != nil {
 		return "", fmt.Errorf("could not download %s: %v", apk.AppID, err)
 	}
