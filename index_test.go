@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kr/pretty"
 )
 
 func TestTextDesc(t *testing.T) {
@@ -76,6 +78,14 @@ func TestLoadIndexJSON(t *testing.T) {
 			"added": 1443734950000,
 			"suggestedVersionName": "1.0",
 			"suggestedVersionCode": "1"
+		},
+		{
+			"packageName": "localized.app",
+			"localized": {
+				"en": {
+					"summary": "summary in english\n"
+				}
+			}
 		}
 	],
 	"packages": {
@@ -108,6 +118,13 @@ func TestLoadIndexJSON(t *testing.T) {
 				SugVersCode: 1,
 				Apks:        []*Apk{nil},
 			},
+			{
+				PackageName: "localized.app",
+				Summary:     "summary in english",
+				Localized: map[string]Localization{
+					"en": {Summary: "summary in english\n"},
+				},
+			},
 		},
 		Packages: map[string][]Apk{"foo.bar": {
 			{
@@ -134,7 +151,7 @@ func TestLoadIndexJSON(t *testing.T) {
 		}
 	}
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("Unexpected index.\nGot:\n%#v\nWant:\n%#v\n",
-			got, want)
+		t.Fatalf("Unexpected index.\n%s",
+			strings.Join(pretty.Diff(want, got), "\n"))
 	}
 }

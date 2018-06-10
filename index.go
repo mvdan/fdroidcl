@@ -52,7 +52,14 @@ type App struct {
 	SugVersName  string   `json:"suggestedVersionName"`
 	SugVersCode  int      `json:"suggestedVersionCode,string"`
 
+	Localized map[string]Localization `json:"localized"`
+
 	Apks []*Apk `json:"-"`
+}
+
+type Localization struct {
+	Summary     string `json:"summary"`
+	Description string `json:"description"`
 }
 
 type IconDensity uint
@@ -261,6 +268,17 @@ func LoadIndexJSON(r io.Reader) (*Index, error) {
 
 	for i := range index.Apps {
 		app := &index.Apps[i]
+		english, enOK := app.Localized["en"]
+		if !enOK {
+			english, enOK = app.Localized["en-US"]
+		}
+		if app.Summary == "" && enOK {
+			app.Summary = english.Summary
+		}
+		if app.Description == "" && enOK {
+			app.Description = english.Description
+		}
+		app.Summary = strings.TrimSpace(app.Summary)
 		sort.Sort(ApkList(index.Packages[app.PackageName]))
 		for i := range index.Packages[app.PackageName] {
 			apk := &index.Packages[app.PackageName][i]
