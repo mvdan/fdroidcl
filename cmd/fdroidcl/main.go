@@ -17,7 +17,7 @@ import (
 
 const cmdName = "fdroidcl"
 
-var version = "v0.3.1"
+const version = "v0.4.0"
 
 func errExit(format string, a ...interface{}) {
 	fmt.Fprintf(stderr, format, a...)
