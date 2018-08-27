@@ -5,3 +5,13 @@ go:
   - 1.10.x
 
 go_import_path: mvdan.cc/fdroidcl
+
+env:
+  - GO11MODULE=on
+
+install: true
+
+script:
+  - go get -t -d ./...
+  - go build ./...
+  - go test ./...
