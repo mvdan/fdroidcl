@@ -39,6 +39,17 @@ Install an app:
 A specific version of an app can be selected by following the appid with an
 colon (:) and the version code of the app to select.
 
+### List of search options
+
+    fdroidcl search [option]
+
+	-q      Print package names only
+	-i      Filter installed apps
+	-u      Filter apps with updates
+	-d      Select apps last updated in the last <n> days; a negative value drops them instead
+	-c      Filter apps by category
+	-o      Sort order (added, updated)
+
 ### Config
 
 You can configure what repositories to use in the `config.json` file. On Linux,
