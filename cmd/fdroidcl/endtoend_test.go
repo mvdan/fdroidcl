@@ -49,7 +49,7 @@ func TestCommands(t *testing.T) {
 	})
 
 	t.Run("SearchBeforeUpdate", func(t *testing.T) {
-		mustFail(t, `could not open index`, ``, cmdSearch)
+		mustFail(t, `index does not exist`, ``, cmdSearch)
 	})
 	t.Run("UpdateFirst", func(t *testing.T) {
 		mustSucceed(t, `done`, ``, cmdUpdate)
