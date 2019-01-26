@@ -4,7 +4,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"regexp"
 	"sort"
@@ -20,26 +19,24 @@ var cmdSearch = &Command{
 	Short:     "Search available apps",
 }
 
+var (
+	searchQuiet     = cmdSearch.Fset.Bool("q", false, "Print package names only")
+	searchInstalled = cmdSearch.Fset.Bool("i", false, "Filter installed apps")
+	searchUpdates   = cmdSearch.Fset.Bool("u", false, "Filter apps with updates")
+	searchDays      = cmdSearch.Fset.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
+	searchCategory  = cmdSearch.Fset.String("c", "", "Filter apps by category")
+	searchSortBy    = cmdSearch.Fset.String("o", "", "Sort order (added, updated)")
+)
+
 func init() {
 	cmdSearch.Run = runSearch
 }
 
 func runSearch(args []string) error {
-	var fset flag.FlagSet
-	var (
-		quiet     = fset.Bool("q", false, "Print package names only")
-		installed = fset.Bool("i", false, "Filter installed apps")
-		updates   = fset.Bool("u", false, "Filter apps with updates")
-		days      = fset.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
-		category  = fset.String("c", "", "Filter apps by category")
-		sortBy    = fset.String("o", "", "Sort order (added, updated)")
-	)
-	fset.Parse(args)
-	args = fset.Args()
-	if *installed && *updates {
+	if *searchInstalled && *searchUpdates {
 		return fmt.Errorf("-i is redundant if -u is specified")
 	}
-	sfunc, err := sortFunc(*sortBy)
+	sfunc, err := sortFunc(*searchSortBy)
 	if err != nil {
 		return err
 	}
@@ -47,10 +44,10 @@ func runSearch(args []string) error {
 	if err != nil {
 		return err
 	}
-	if len(apps) > 0 && *category != "" {
-		apps = filterAppsCategory(apps, *category)
+	if len(apps) > 0 && *searchCategory != "" {
+		apps = filterAppsCategory(apps, *searchCategory)
 		if apps == nil {
-			return fmt.Errorf("no such category: %s", *category)
+			return fmt.Errorf("no such category: %s", *searchCategory)
 		}
 	}
 	if len(apps) > 0 && len(args) > 0 {
@@ -58,7 +55,7 @@ func runSearch(args []string) error {
 	}
 	var device *adb.Device
 	var inst map[string]adb.Package
-	if *installed || *updates {
+	if *searchInstalled || *searchUpdates {
 		if device, err = oneDevice(); err != nil {
 			return err
 		}
@@ -66,19 +63,19 @@ func runSearch(args []string) error {
 			return err
 		}
 	}
-	if len(apps) > 0 && *installed {
+	if len(apps) > 0 && *searchInstalled {
 		apps = filterAppsInstalled(apps, inst)
 	}
-	if len(apps) > 0 && *updates {
+	if len(apps) > 0 && *searchUpdates {
 		apps = filterAppsUpdates(apps, inst, device)
 	}
-	if len(apps) > 0 && *days != 0 {
-		apps = filterAppsLastUpdated(apps, *days)
+	if len(apps) > 0 && *searchDays != 0 {
+		apps = filterAppsLastUpdated(apps, *searchDays)
 	}
 	if sfunc != nil {
 		apps = sortApps(apps, sfunc)
 	}
-	if *quiet {
+	if *searchQuiet {
 		for _, app := range apps {
 			fmt.Fprintln(stdout, app.PackageName)
 		}
