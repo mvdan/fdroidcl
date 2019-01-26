@@ -57,7 +57,9 @@ func (r *repo) updateIndex() error {
 func (r *repo) loadIndex() (*fdroidcl.Index, error) {
 	p := indexPath(r.ID)
 	f, err := os.Open(p)
-	if err != nil {
+	if os.IsNotExist(err) {
+		return nil, fmt.Errorf("index does not exist; try 'fdroidcl update'")
+	} else if err != nil {
 		return nil, fmt.Errorf("could not open index: %v", err)
 	}
 	stat, err := f.Stat()
