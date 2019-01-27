@@ -5,3 +5,6 @@ cmd/fdroidcl/fdroidcl
 *.xml
 *.jar
 *-etag
+
+# Allow testdata/staticrepo
+!/testdata/staticrepo/*
