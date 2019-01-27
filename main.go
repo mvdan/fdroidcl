@@ -185,9 +185,16 @@ func main1() int {
 		if cmd.Name() != cmdName {
 			continue
 		}
-		cmd.Fset.Init(cmdName, flag.ExitOnError)
+		cmd.Fset.Init(cmdName, flag.ContinueOnError)
 		cmd.Fset.Usage = cmd.usage
-		cmd.Fset.Parse(args[1:])
+		if err := cmd.Fset.Parse(args[1:]); err != nil {
+			if err != flag.ErrHelp {
+				fmt.Fprintf(os.Stderr, "flag: %v\n", err)
+				cmd.Fset.Usage()
+			}
+			return 2
+		}
+
 		readConfig()
 		if err := cmd.Run(cmd.Fset.Args()); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", cmdName, err)
