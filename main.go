@@ -45,9 +45,6 @@ func mustData() string {
 }
 
 func configPath() string {
-	if path := os.Getenv("FDROIDCL_CONFIG"); path != "" {
-		return path
-	}
 	return filepath.Join(mustData(), "config.json")
 }
 

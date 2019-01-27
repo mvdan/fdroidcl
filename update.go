@@ -79,6 +79,8 @@ func respEtag(resp *http.Response) string {
 
 var errNotModified = fmt.Errorf("not modified")
 
+var httpClient = &http.Client{}
+
 func downloadEtag(url, path string, sum []byte) error {
 	fmt.Printf("Downloading %s... ", url)
 	defer fmt.Println()
@@ -93,8 +95,7 @@ func downloadEtag(url, path string, sum []byte) error {
 		req.Header.Add("If-None-Match", string(etag))
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}

@@ -6,15 +6,33 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
-	"text/template"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 func TestMain(m *testing.M) {
 	if os.Getenv("TESTSCRIPT_COMMAND") == "" {
-		startStaticRepo()
+		// start the static http server once
+		path := filepath.Join("testdata", "staticrepo")
+		fs := http.FileServer(http.Dir(path))
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// The files are static, so add a unique etag for each file.
+			w.Header().Set("Etag", strconv.Quote(r.URL.Path))
+			fs.ServeHTTP(w, r)
+		})
+		ln, err := net.Listen("tcp", ":0")
+		if err != nil {
+			panic(err)
+		}
+		server := &http.Server{Handler: handler}
+		go server.Serve(ln)
+		// Save it to a global, which will be added as an env var to be
+		// picked up by the children processes.
+		staticRepoHost = ln.Addr().String()
+	} else {
+		httpClient.Transport = repoTransport{os.Getenv("REPO_HOST")}
 	}
 
 	os.Exit(testscript.RunMain(m, map[string]func() int{
@@ -22,35 +40,19 @@ func TestMain(m *testing.M) {
 	}))
 }
 
-var staticRepoURL string
-
-func startStaticRepo() {
-	path := filepath.Join("testdata", "staticrepo")
-	fs := http.FileServer(http.Dir(path))
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// The files are static, so add a unique etag for each file.
-		w.Header().Set("Etag", strconv.Quote(r.URL.Path))
-		fs.ServeHTTP(w, r)
-	})
-	ln, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
-	}
-	go http.Serve(ln, handler)
-	staticRepoURL = "http://" + ln.Addr().String()
+type repoTransport struct {
+	repoHost string
 }
 
-var testConfigTmpl = template.Must(template.New("").Parse(`
-{
-	"repos": [
-		{
-			"id": "local f-droid",
-			"url": "{{.}}",
-			"enabled": true
-		}
-	]
+func (t repoTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// replace https://f-droid.org/repo/foo with http://localhost:1234/foo
+	req.URL.Scheme = "http"
+	req.URL.Host = t.repoHost
+	req.URL.Path = strings.TrimPrefix(req.URL.Path, "/repo")
+	return http.DefaultClient.Do(req)
 }
-`[1:]))
+
+var staticRepoHost string
 
 func TestScripts(t *testing.T) {
 	t.Parallel()
@@ -62,20 +64,7 @@ func TestScripts(t *testing.T) {
 				return err
 			}
 			e.Vars = append(e.Vars, "HOME="+home)
-			e.Vars = append(e.Vars, "REPOURL="+staticRepoURL)
-
-			config := home + "/config.json"
-			f, err := os.Create(config)
-			if err != nil {
-				return err
-			}
-			if err := testConfigTmpl.Execute(f, staticRepoURL); err != nil {
-				return err
-			}
-			if err := f.Close(); err != nil {
-				return err
-			}
-			e.Vars = append(e.Vars, "FDROIDCL_CONFIG="+config)
+			e.Vars = append(e.Vars, "REPO_HOST="+staticRepoHost)
 			return nil
 		},
 	})
