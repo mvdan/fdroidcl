@@ -1,0 +1,10 @@
+env HOME=$WORK/home
+
+! fdroidcl search
+stderr 'index does not exist'
+
+fdroidcl update
+stdout 'done'
+
+fdroidcl update
+stdout 'not modified'

@@ -48,7 +48,7 @@ func runInstall(args []string) error {
 			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
 		}
 		if p.VersCode >= suggested.VersCode {
-			fmt.Fprintf(stdout, "%s is up to date\n", app.PackageName)
+			fmt.Printf("%s is up to date\n", app.PackageName)
 			// app is already up to date
 			continue
 		}
@@ -84,7 +84,7 @@ func downloadAndDo(apps []*fdroid.App, device *adb.Device) error {
 }
 
 func installApk(device *adb.Device, apk *fdroid.Apk, path string) error {
-	fmt.Fprintf(stdout, "Installing %s\n", apk.AppID)
+	fmt.Printf("Installing %s\n", apk.AppID)
 	if err := device.Install(path); err != nil {
 		return fmt.Errorf("could not install %s: %v", apk.AppID, err)
 	}

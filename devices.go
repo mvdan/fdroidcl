@@ -27,7 +27,7 @@ func runDevices(args []string) error {
 		return fmt.Errorf("could not get devices: %v", err)
 	}
 	for _, device := range devices {
-		fmt.Fprintf(stdout, "%s - %s (%s)\n", device.ID, device.Model, device.Product)
+		fmt.Printf("%s - %s (%s)\n", device.ID, device.Model, device.Product)
 	}
 	return nil
 }

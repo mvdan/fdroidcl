@@ -1,0 +1,23 @@
+env HOME=$WORK/home
+
+! fdroidcl
+stderr '^usage: fdroidcl \[-h'
+
+! fdroidcl -h
+stderr '^usage: fdroidcl \[-h'
+! stderr 'test\.' # don't include flags from testing
+! stderr 'command not specified'
+! stdout .
+
+fdroidcl version
+stdout '^v0\.4'
+
+! fdroidcl -badflag -- somepkg
+stderr '-badflag'
+stderr '^usage: fdroidcl \[-h'
+
+! fdroidcl search -h
+stderr '^usage: fdroidcl search .*regexp'
+stderr '-i.*Filter installed apps'
+
+! fdroidcl

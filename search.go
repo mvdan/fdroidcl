@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -77,7 +78,7 @@ func runSearch(args []string) error {
 	}
 	if *searchQuiet {
 		for _, app := range apps {
-			fmt.Fprintln(stdout, app.PackageName)
+			fmt.Fprintln(os.Stdout, app.PackageName)
 		}
 	} else {
 		printApps(apps, inst, device)
@@ -149,9 +150,9 @@ func descVersion(app fdroid.App, inst *adb.Package, device *adb.Device) string {
 }
 
 func printApp(app fdroid.App, IDLen int, inst *adb.Package, device *adb.Device) {
-	fmt.Fprintf(stdout, "%s%s %s - %s\n", app.PackageName, strings.Repeat(" ", IDLen-len(app.PackageName)),
+	fmt.Printf("%s%s %s - %s\n", app.PackageName, strings.Repeat(" ", IDLen-len(app.PackageName)),
 		app.Name, descVersion(app, inst, device))
-	fmt.Fprintf(stdout, "    %s\n", app.Summary)
+	fmt.Printf("    %s\n", app.Summary)
 }
 
 func filterAppsInstalled(apps []fdroid.App, inst map[string]adb.Package) []fdroid.App {

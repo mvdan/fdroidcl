@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,49 +18,36 @@ const cmdName = "fdroidcl"
 
 const version = "v0.4.0"
 
-func errExit(format string, a ...interface{}) {
-	fmt.Fprintf(stderr, format, a...)
-	os.Exit(1)
-}
-
 func subdir(dir, name string) string {
 	p := filepath.Join(dir, name)
 	if err := os.MkdirAll(p, 0755); err != nil {
-		errExit("Could not create dir '%s': %v\n", p, err)
+		fmt.Fprintf(os.Stderr, "Could not create dir '%s': %v\n", p, err)
 	}
 	return p
 }
 
-var (
-	stdout io.Writer = os.Stdout
-	stderr io.Writer = os.Stderr
-
-	testBasedir = ""
-)
-
 func mustCache() string {
-	if testBasedir != "" {
-		return subdir(testBasedir, "cache")
-	}
 	dir := basedir.Cache()
 	if dir == "" {
-		errExit("Could not determine cache dir\n")
+		fmt.Fprintln(os.Stderr, "could not determine cache dir")
+		panic("TODO: return an error")
 	}
 	return subdir(dir, cmdName)
 }
 
 func mustData() string {
-	if testBasedir != "" {
-		return subdir(testBasedir, "data")
-	}
 	dir := basedir.Data()
 	if dir == "" {
-		errExit("Could not determine data dir\n")
+		fmt.Fprintln(os.Stderr, "Could not determine data dir")
+		panic("TODO: return an error")
 	}
 	return subdir(dir, cmdName)
 }
 
 func configPath() string {
+	if path := os.Getenv("FDROIDCL_CONFIG"); path != "" {
+		return path
+	}
 	return filepath.Join(mustData(), "config.json")
 }
 
@@ -130,20 +116,19 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) usage() {
-	fmt.Fprintf(stderr, "Usage: %s %s [-h]\n", cmdName, c.UsageLine)
+	fmt.Fprintf(os.Stderr, "usage: %s %s\n", cmdName, c.UsageLine)
 	anyFlags := false
 	c.Fset.VisitAll(func(f *flag.Flag) { anyFlags = true })
 	if anyFlags {
-		fmt.Fprintf(stderr, "\nAvailable options:\n")
+		fmt.Fprintf(os.Stderr, "\nAvailable options:\n")
 		c.Fset.PrintDefaults()
 	}
-	os.Exit(2)
 }
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintf(stderr, "Usage: %s [-h] <command> [<args>]\n\n", cmdName)
-		fmt.Fprintf(stderr, "Available commands:\n")
+		fmt.Fprintf(os.Stderr, "usage: %s [-h] <command> [<args>]\n\n", cmdName)
+		fmt.Fprintf(os.Stderr, "Available commands:\n")
 		maxUsageLen := 0
 		for _, c := range commands {
 			if len(c.UsageLine) > maxUsageLen {
@@ -151,11 +136,11 @@ func init() {
 			}
 		}
 		for _, c := range commands {
-			fmt.Fprintf(stderr, "   %s%s  %s\n", c.UsageLine,
+			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
 				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
 		}
-		fmt.Fprintf(stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
-		fmt.Fprintf(stderr, "\nUse %s <command> -h for more info\n", cmdName)
+		fmt.Fprintf(os.Stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
+		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more info\n", cmdName)
 	}
 }
 
@@ -180,18 +165,22 @@ var cmdVersion = &Command{
 		if len(args) > 0 {
 			return fmt.Errorf("no arguments allowed")
 		}
-		fmt.Fprintln(stdout, version)
+		fmt.Println(version)
 		return nil
 	},
 }
 
 func main() {
+	os.Exit(main1())
+}
+
+func main1() int {
 	flag.Parse()
 	args := flag.Args()
 
 	if len(args) < 1 {
 		flag.Usage()
-		os.Exit(2)
+		return 2
 	}
 
 	cmdName := args[0]
@@ -204,15 +193,17 @@ func main() {
 		cmd.Fset.Parse(args[1:])
 		readConfig()
 		if err := cmd.Run(cmd.Fset.Args()); err != nil {
-			errExit("%s: %v\n", cmdName, err)
+			fmt.Fprintf(os.Stderr, "%s: %v\n", cmdName, err)
+			return 1
 		}
-		return
+		return 0
 	}
 
 	switch cmdName {
 	default:
-		fmt.Fprintf(stderr, "Unrecognised command '%s'\n\n", cmdName)
+		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmdName)
 		flag.Usage()
-		os.Exit(2)
+		return 2
 	}
+	return 0
 }

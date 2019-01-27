@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sort"
 )
 
@@ -42,7 +43,7 @@ func runList(args []string) error {
 	}
 	sort.Strings(result)
 	for _, s := range result {
-		fmt.Fprintln(stdout, s)
+		fmt.Fprintln(os.Stdout, s)
 	}
 	return nil
 }

@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,7 @@ func runShow(args []string) error {
 	}
 	for i, app := range apps {
 		if i > 0 {
-			fmt.Fprintf(stdout, "\n--\n\n")
+			fmt.Printf("\n--\n\n")
 		}
 		printAppDetailed(*app)
 	}
@@ -88,66 +89,59 @@ func findApps(ids []string) ([]*fdroid.App, error) {
 }
 
 func printAppDetailed(app fdroid.App) {
-	p := func(title string, format string, args ...interface{}) {
-		if format == "" {
-			fmt.Fprintln(stdout, title)
-		} else {
-			fmt.Fprintf(stdout, "%s %s\n", title, fmt.Sprintf(format, args...))
-		}
-	}
-	p("Package          :", "%s", app.PackageName)
-	p("Name             :", "%s", app.Name)
-	p("Summary          :", "%s", app.Summary)
-	p("Added            :", "%s", app.Added.String())
-	p("Last Updated     :", "%s", app.Updated.String())
-	p("Version          :", "%s (%d)", app.SugVersName, app.SugVersCode)
-	p("License          :", "%s", app.License)
+	fmt.Printf("Package          : %s", app.PackageName)
+	fmt.Printf("Name             : %s", app.Name)
+	fmt.Printf("Summary          : %s", app.Summary)
+	fmt.Printf("Added            : %s", app.Added.String())
+	fmt.Printf("Last Updated     : %s", app.Updated.String())
+	fmt.Printf("Version          : %s (%d)", app.SugVersName, app.SugVersCode)
+	fmt.Printf("License          : %s", app.License)
 	if app.Categories != nil {
-		p("Categories       :", "%s", strings.Join(app.Categories, ", "))
+		fmt.Printf("Categories       : %s", strings.Join(app.Categories, ", "))
 	}
 	if app.Website != "" {
-		p("Website          :", "%s", app.Website)
+		fmt.Printf("Website          : %s", app.Website)
 	}
 	if app.SourceCode != "" {
-		p("Source Code      :", "%s", app.SourceCode)
+		fmt.Printf("Source Code      : %s", app.SourceCode)
 	}
 	if app.IssueTracker != "" {
-		p("Issue Tracker    :", "%s", app.IssueTracker)
+		fmt.Printf("Issue Tracker    : %s", app.IssueTracker)
 	}
 	if app.Changelog != "" {
-		p("Changelog        :", "%s", app.Changelog)
+		fmt.Printf("Changelog        : %s", app.Changelog)
 	}
 	if app.Donate != "" {
-		p("Donate           :", "%s", app.Donate)
+		fmt.Printf("Donate           : %s", app.Donate)
 	}
 	if app.Bitcoin != "" {
-		p("Bitcoin          :", "bitcoin:%s", app.Bitcoin)
+		fmt.Printf("Bitcoin          : bitcoin:%s", app.Bitcoin)
 	}
 	if app.Litecoin != "" {
-		p("Litecoin         :", "litecoin:%s", app.Litecoin)
+		fmt.Printf("Litecoin         : litecoin:%s", app.Litecoin)
 	}
 	if app.FlattrID != "" {
-		p("Flattr           :", "https://flattr.com/thing/%s", app.FlattrID)
+		fmt.Printf("Flattr           : https://flattr.com/thing/%s", app.FlattrID)
 	}
-	fmt.Fprintln(stdout)
-	p("Description :", "")
-	fmt.Fprintln(stdout)
-	app.TextDesc(stdout)
-	fmt.Fprintln(stdout)
-	p("Available Versions :", "")
+	fmt.Println()
+	fmt.Println("Description :")
+	fmt.Println()
+	app.TextDesc(os.Stdout)
+	fmt.Println()
+	fmt.Println("Available Versions :")
 	for _, apk := range app.Apks {
-		fmt.Fprintln(stdout)
-		p("    Version :", "%s (%d)", apk.VersName, apk.VersCode)
-		p("    Size    :", "%d", apk.Size)
-		p("    MinSdk  :", "%d", apk.MinSdk)
+		fmt.Println()
+		fmt.Printf("    Version : %s (%d)", apk.VersName, apk.VersCode)
+		fmt.Printf("    Size    : %d", apk.Size)
+		fmt.Printf("    MinSdk  : %d", apk.MinSdk)
 		if apk.MaxSdk > 0 {
-			p("    MaxSdk  :", "%d", apk.MaxSdk)
+			fmt.Printf("    MaxSdk  : %d", apk.MaxSdk)
 		}
 		if apk.ABIs != nil {
-			p("    ABIs    :", "%s", strings.Join(apk.ABIs, ", "))
+			fmt.Printf("    ABIs    : %s", strings.Join(apk.ABIs, ", "))
 		}
 		if apk.Perms != nil {
-			p("    Perms   :", "%s", strings.Join(apk.Perms, ", "))
+			fmt.Printf("    Perms   : %s", strings.Join(apk.Perms, ", "))
 		}
 	}
 }
