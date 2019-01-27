@@ -27,10 +27,8 @@ func runDownload(args []string) error {
 	if err != nil {
 		return err
 	}
-	device, err := maybeOneDevice()
-	if err != nil {
-		return err
-	}
+	// don't fail a download if adb is not installed
+	device, _ := maybeOneDevice()
 	for _, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
