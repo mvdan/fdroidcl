@@ -1,0 +1,55 @@
+env HOME=$WORK/home
+
+[!device] skip
+
+fdroidcl update
+
+# we have exactly one device
+fdroidcl devices
+stdout .
+
+# We'll use a really small app, red_screen, to test interacting with a device.
+# Besides being tiny, it requires no permissions, is compatible with virtually
+# every device, and cannot hold data. So it's fine to uninstall.
+
+# ensure that the app isn't installed to begin with
+! fdroidcl uninstall org.vi_server.red_screen
+stderr 'not installed'
+
+# missing app is not installed
+fdroidcl search -i -q
+! stdout 'org\.vi_server\.red_screen'
+
+# missing app is not upgradable
+fdroidcl search -u -q
+! stdout 'org\.vi_server\.red_screen'
+
+# install version code 1
+fdroidcl install org.vi_server.red_screen:1
+stdout 'Downloading.*red_screen_1.apk'
+stdout 'done'
+stdout 'Installing'
+
+# app shows up as installed and upgradable
+fdroidcl search -i -q
+stdout 'org\.vi_server\.red_screen'
+fdroidcl search -u -q
+stdout 'org\.vi_server\.red_screen'
+
+# upgrade app to version code 2
+fdroidcl install org.vi_server.red_screen
+stdout 'Downloading.*red_screen_2.apk'
+stdout 'done'
+stdout 'Installing'
+
+# app does not show up as upgradable
+fdroidcl search -u -q
+! stdout 'org\.vi_server\.red_screen'
+
+# nothing to install or upgrade
+fdroidcl install org.vi_server.red_screen
+! stdout 'Downloading'
+stdout 'is up to date'
+
+# uninstall an app that exists
+fdroidcl uninstall org.vi_server.red_screen

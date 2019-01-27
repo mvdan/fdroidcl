@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
+	"mvdan.cc/fdroidcl/adb"
 )
 
 func TestMain(m *testing.M) {
@@ -66,6 +68,14 @@ func TestScripts(t *testing.T) {
 			e.Vars = append(e.Vars, "HOME="+home)
 			e.Vars = append(e.Vars, "REPO_HOST="+staticRepoHost)
 			return nil
+		},
+		Condition: func(cond string) (bool, error) {
+			switch cond {
+			case "device":
+				devices, err := adb.Devices()
+				return err == nil && len(devices) == 1, nil
+			}
+			return false, fmt.Errorf("unknown condition %q", cond)
 		},
 	})
 }
