@@ -6,8 +6,8 @@ package main
 import (
 	"fmt"
 
-	"mvdan.cc/fdroidcl"
 	"mvdan.cc/fdroidcl/adb"
+	"mvdan.cc/fdroidcl/fdroid"
 )
 
 var cmdInstall = &Command{
@@ -35,7 +35,7 @@ func runInstall(args []string) error {
 	if err != nil {
 		return err
 	}
-	var toInstall []*fdroidcl.App
+	var toInstall []*fdroid.App
 	for _, app := range apps {
 		p, e := inst[app.PackageName]
 		if !e {
@@ -58,9 +58,9 @@ func runInstall(args []string) error {
 	return downloadAndDo(toInstall, device)
 }
 
-func downloadAndDo(apps []*fdroidcl.App, device *adb.Device) error {
+func downloadAndDo(apps []*fdroid.App, device *adb.Device) error {
 	type downloaded struct {
-		apk  *fdroidcl.Apk
+		apk  *fdroid.Apk
 		path string
 	}
 	toInstall := make([]downloaded, len(apps))
@@ -83,7 +83,7 @@ func downloadAndDo(apps []*fdroidcl.App, device *adb.Device) error {
 	return nil
 }
 
-func installApk(device *adb.Device, apk *fdroidcl.Apk, path string) error {
+func installApk(device *adb.Device, apk *fdroid.Apk, path string) error {
 	fmt.Fprintf(stdout, "Installing %s\n", apk.AppID)
 	if err := device.Install(path); err != nil {
 		return fmt.Errorf("could not install %s: %v", apk.AppID, err)

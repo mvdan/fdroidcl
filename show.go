@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"mvdan.cc/fdroidcl"
+	"mvdan.cc/fdroidcl/fdroid"
 )
 
 var cmdShow = &Command{
@@ -37,8 +37,8 @@ func runShow(args []string) error {
 	return nil
 }
 
-func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
-	m := make(map[string]*fdroidcl.App, len(apps))
+func appsMap(apps []fdroid.App) map[string]*fdroid.App {
+	m := make(map[string]*fdroid.App, len(apps))
 	for i := range apps {
 		app := &apps[i]
 		m[app.PackageName] = app
@@ -46,13 +46,13 @@ func appsMap(apps []fdroidcl.App) map[string]*fdroidcl.App {
 	return m
 }
 
-func findApps(ids []string) ([]*fdroidcl.App, error) {
+func findApps(ids []string) ([]*fdroid.App, error) {
 	apps, err := loadIndexes()
 	if err != nil {
 		return nil, err
 	}
 	byId := appsMap(apps)
-	result := make([]*fdroidcl.App, len(ids))
+	result := make([]*fdroid.App, len(ids))
 	for i, id := range ids {
 		var vcode = -1
 		j := strings.Index(id, ":")
@@ -74,7 +74,7 @@ func findApps(ids []string) ([]*fdroidcl.App, error) {
 			found := false
 			for _, apk := range app.Apks {
 				if apk.VersCode == vcode {
-					app.Apks = []*fdroidcl.Apk{apk}
+					app.Apks = []*fdroid.Apk{apk}
 					found = true
 				}
 			}
@@ -87,7 +87,7 @@ func findApps(ids []string) ([]*fdroidcl.App, error) {
 	return result, nil
 }
 
-func printAppDetailed(app fdroidcl.App) {
+func printAppDetailed(app fdroid.App) {
 	p := func(title string, format string, args ...interface{}) {
 		if format == "" {
 			fmt.Fprintln(stdout, title)

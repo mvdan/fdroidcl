@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"mvdan.cc/fdroidcl"
+	"mvdan.cc/fdroidcl/fdroid"
 )
 
 var cmdDownload = &Command{
@@ -45,7 +45,7 @@ func runDownload(args []string) error {
 	return nil
 }
 
-func downloadApk(apk *fdroidcl.Apk) (string, error) {
+func downloadApk(apk *fdroid.Apk) (string, error) {
 	url := apk.URL()
 	path := apkPath(apk.ApkName)
 	if err := downloadEtag(url, path, apk.Hash); err == errNotModified {

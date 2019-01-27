@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"mvdan.cc/fdroidcl"
+	"mvdan.cc/fdroidcl/fdroid"
 )
 
 var cmdUpdate = &Command{
@@ -54,7 +54,7 @@ func (r *repo) updateIndex() error {
 	return downloadEtag(url, indexPath(r.ID), nil)
 }
 
-func (r *repo) loadIndex() (*fdroidcl.Index, error) {
+func (r *repo) loadIndex() (*fdroid.Index, error) {
 	p := indexPath(r.ID)
 	f, err := os.Open(p)
 	if os.IsNotExist(err) {
@@ -66,7 +66,7 @@ func (r *repo) loadIndex() (*fdroidcl.Index, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not stat index: %v", err)
 	}
-	return fdroidcl.LoadIndexJar(f, stat.Size(), nil)
+	return fdroid.LoadIndexJar(f, stat.Size(), nil)
 }
 
 func respEtag(resp *http.Response) string {
@@ -145,16 +145,16 @@ const cacheVersion = 2
 
 type cache struct {
 	Version int
-	Apps    []fdroidcl.App
+	Apps    []fdroid.App
 }
 
-type apkPtrList []*fdroidcl.Apk
+type apkPtrList []*fdroid.Apk
 
 func (al apkPtrList) Len() int           { return len(al) }
 func (al apkPtrList) Swap(i, j int)      { al[i], al[j] = al[j], al[i] }
 func (al apkPtrList) Less(i, j int) bool { return al[i].VersCode > al[j].VersCode }
 
-func loadIndexes() ([]fdroidcl.App, error) {
+func loadIndexes() ([]fdroid.App, error) {
 	cachePath := filepath.Join(mustCache(), "cache-gob")
 	if f, err := os.Open(cachePath); err == nil {
 		defer f.Close()
@@ -163,7 +163,7 @@ func loadIndexes() ([]fdroidcl.App, error) {
 			return c.Apps, nil
 		}
 	}
-	m := make(map[string]*fdroidcl.App)
+	m := make(map[string]*fdroid.App)
 	for _, r := range config.Repos {
 		if !r.Enabled {
 			continue
@@ -187,11 +187,11 @@ func loadIndexes() ([]fdroidcl.App, error) {
 			m[app.PackageName].Apks = apks
 		}
 	}
-	apps := make([]fdroidcl.App, 0, len(m))
+	apps := make([]fdroid.App, 0, len(m))
 	for _, a := range m {
 		apps = append(apps, *a)
 	}
-	sort.Sort(fdroidcl.AppList(apps))
+	sort.Sort(fdroid.AppList(apps))
 	if f, err := os.Create(cachePath); err == nil {
 		defer f.Close()
 		gob.NewEncoder(f).Encode(cache{

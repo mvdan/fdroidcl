@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"mvdan.cc/fdroidcl"
 	"mvdan.cc/fdroidcl/adb"
+	"mvdan.cc/fdroidcl/fdroid"
 )
 
 var cmdSearch = &Command{
@@ -85,12 +85,12 @@ func runSearch(args []string) error {
 	return nil
 }
 
-func filterAppsSearch(apps []fdroidcl.App, terms []string) []fdroidcl.App {
+func filterAppsSearch(apps []fdroid.App, terms []string) []fdroid.App {
 	regexes := make([]*regexp.Regexp, len(terms))
 	for i, term := range terms {
 		regexes[i] = regexp.MustCompile(term)
 	}
-	var result []fdroidcl.App
+	var result []fdroid.App
 	for _, app := range apps {
 		fields := []string{
 			strings.ToLower(app.PackageName),
@@ -119,7 +119,7 @@ fieldLoop:
 	return false
 }
 
-func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) {
+func printApps(apps []fdroid.App, inst map[string]adb.Package, device *adb.Device) {
 	maxIDLen := 0
 	for _, app := range apps {
 		if len(app.PackageName) > maxIDLen {
@@ -136,7 +136,7 @@ func printApps(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Dev
 	}
 }
 
-func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string {
+func descVersion(app fdroid.App, inst *adb.Package, device *adb.Device) string {
 	if inst != nil {
 		suggested := app.SuggestedApk(device)
 		if suggested != nil && inst.VersCode < suggested.VersCode {
@@ -148,14 +148,14 @@ func descVersion(app fdroidcl.App, inst *adb.Package, device *adb.Device) string
 	return fmt.Sprintf("%s (%d)", app.SugVersName, app.SugVersCode)
 }
 
-func printApp(app fdroidcl.App, IDLen int, inst *adb.Package, device *adb.Device) {
+func printApp(app fdroid.App, IDLen int, inst *adb.Package, device *adb.Device) {
 	fmt.Fprintf(stdout, "%s%s %s - %s\n", app.PackageName, strings.Repeat(" ", IDLen-len(app.PackageName)),
 		app.Name, descVersion(app, inst, device))
 	fmt.Fprintf(stdout, "    %s\n", app.Summary)
 }
 
-func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdroidcl.App {
-	var result []fdroidcl.App
+func filterAppsInstalled(apps []fdroid.App, inst map[string]adb.Package) []fdroid.App {
+	var result []fdroid.App
 	for _, app := range apps {
 		if _, e := inst[app.PackageName]; !e {
 			continue
@@ -165,8 +165,8 @@ func filterAppsInstalled(apps []fdroidcl.App, inst map[string]adb.Package) []fdr
 	return result
 }
 
-func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package, device *adb.Device) []fdroidcl.App {
-	var result []fdroidcl.App
+func filterAppsUpdates(apps []fdroid.App, inst map[string]adb.Package, device *adb.Device) []fdroid.App {
+	var result []fdroid.App
 	for _, app := range apps {
 		p, e := inst[app.PackageName]
 		if !e {
@@ -184,8 +184,8 @@ func filterAppsUpdates(apps []fdroidcl.App, inst map[string]adb.Package, device 
 	return result
 }
 
-func filterAppsLastUpdated(apps []fdroidcl.App, days int) []fdroidcl.App {
-	var result []fdroidcl.App
+func filterAppsLastUpdated(apps []fdroid.App, days int) []fdroid.App {
+	var result []fdroid.App
 	newer := true
 	if days < 0 {
 		days = -days
@@ -210,8 +210,8 @@ func contains(l []string, s string) bool {
 	return false
 }
 
-func filterAppsCategory(apps []fdroidcl.App, categ string) []fdroidcl.App {
-	var result []fdroidcl.App
+func filterAppsCategory(apps []fdroid.App, categ string) []fdroid.App {
+	var result []fdroid.App
 	for _, app := range apps {
 		if !contains(app.Categories, categ) {
 			continue
@@ -221,15 +221,15 @@ func filterAppsCategory(apps []fdroidcl.App, categ string) []fdroidcl.App {
 	return result
 }
 
-func cmpAdded(a, b *fdroidcl.App) bool {
+func cmpAdded(a, b *fdroid.App) bool {
 	return a.Added.Before(b.Added.Time)
 }
 
-func cmpUpdated(a, b *fdroidcl.App) bool {
+func cmpUpdated(a, b *fdroid.App) bool {
 	return a.Updated.Before(b.Updated.Time)
 }
 
-func sortFunc(sortBy string) (func(a, b *fdroidcl.App) bool, error) {
+func sortFunc(sortBy string) (func(a, b *fdroid.App) bool, error) {
 	switch sortBy {
 	case "added":
 		return cmpAdded, nil
@@ -242,15 +242,15 @@ func sortFunc(sortBy string) (func(a, b *fdroidcl.App) bool, error) {
 }
 
 type appList struct {
-	l []fdroidcl.App
-	f func(a, b *fdroidcl.App) bool
+	l []fdroid.App
+	f func(a, b *fdroid.App) bool
 }
 
 func (al appList) Len() int           { return len(al.l) }
 func (al appList) Swap(i, j int)      { al.l[i], al.l[j] = al.l[j], al.l[i] }
 func (al appList) Less(i, j int) bool { return al.f(&al.l[i], &al.l[j]) }
 
-func sortApps(apps []fdroidcl.App, f func(a, b *fdroidcl.App) bool) []fdroidcl.App {
+func sortApps(apps []fdroid.App, f func(a, b *fdroid.App) bool) []fdroid.App {
 	sort.Sort(appList{l: apps, f: f})
 	return apps
 }

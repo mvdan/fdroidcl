@@ -5,7 +5,7 @@
 
 [F-Droid](https://f-droid.org/) desktop client.
 
-	go get -u mvdan.cc/fdroidcl/cmd/fdroidcl
+	go get -u mvdan.cc/fdroidcl
 
 While the Android client integrates with the system with regular update checks
 and notifications, this is a simple command line client that talks to connected
