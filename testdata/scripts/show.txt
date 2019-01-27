@@ -1,0 +1,11 @@
+env HOME=$WORK/home
+
+fdroidcl update
+
+fdroidcl show org.fdroid.fdroid
+stdout 'fdroid/fdroidclient'
+! stdout 'fdroid/privileged-extension'
+
+fdroidcl show org.fdroid.fdroid org.fdroid.fdroid.privileged
+stdout 'fdroid/fdroidclient'
+stdout 'fdroid/privileged-extension'

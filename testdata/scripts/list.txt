@@ -1,0 +1,6 @@
+env HOME=$WORK/home
+
+fdroidcl update
+
+fdroidcl list categories
+stdout 'Development'

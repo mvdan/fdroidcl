@@ -44,31 +44,6 @@ func TestCommands(t *testing.T) {
 		mustRun(t, false, wantRe, negRe, cmd, args...)
 	}
 
-	t.Run("SearchNoArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, ``, cmdSearch)
-	})
-	t.Run("SearchWithArgs", func(t *testing.T) {
-		mustSucceed(t, `F-Droid`, ``, cmdSearch, "fdroid.fdroid")
-	})
-	t.Run("SearchWithArgsNone", func(t *testing.T) {
-		mustSucceed(t, `^$`, ``, cmdSearch, "nomatches")
-	})
-	t.Run("SearchOnlyPackageNames", func(t *testing.T) {
-		mustSucceed(t, `^[^ ]*$`, ``, cmdSearch, "-q", "fdroid.fdroid")
-	})
-
-	t.Run("ShowOne", func(t *testing.T) {
-		mustSucceed(t, `fdroid/fdroidclient`, ``, cmdShow, "org.fdroid.fdroid")
-	})
-	t.Run("ShowMany", func(t *testing.T) {
-		mustSucceed(t, `fdroid/fdroidclient.*fdroid/privileged-extension`, ``,
-			cmdShow, "org.fdroid.fdroid", "org.fdroid.fdroid.privileged")
-	})
-
-	t.Run("ListCategories", func(t *testing.T) {
-		mustSucceed(t, `Development`, ``, cmdList, "categories")
-	})
-
 	if err := startAdbIfNeeded(); err != nil {
 		t.Log("skipping the device tests as ADB is not installed")
 		return

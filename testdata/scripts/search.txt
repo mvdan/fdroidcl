@@ -1,0 +1,15 @@
+env HOME=$WORK/home
+
+fdroidcl update
+
+fdroidcl search
+stdout 'F-Droid'
+
+fdroidcl search fdroid.fdroid
+stdout 'F-Droid'
+
+fdroidcl search nomatches
+! stdout .
+
+fdroidcl search -q fdroid.fdroid
+! stdout ' '
