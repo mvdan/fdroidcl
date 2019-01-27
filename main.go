@@ -195,12 +195,7 @@ func main1() int {
 		}
 		return 0
 	}
-
-	switch cmdName {
-	default:
-		fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmdName)
-		flag.Usage()
-		return 2
-	}
-	return 0
+	fmt.Fprintf(os.Stderr, "Unrecognised command '%s'\n\n", cmdName)
+	flag.Usage()
+	return 2
 }
