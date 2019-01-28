@@ -89,39 +89,39 @@ func findApps(ids []string) ([]*fdroid.App, error) {
 }
 
 func printAppDetailed(app fdroid.App) {
-	fmt.Printf("Package          : %s", app.PackageName)
-	fmt.Printf("Name             : %s", app.Name)
-	fmt.Printf("Summary          : %s", app.Summary)
-	fmt.Printf("Added            : %s", app.Added.String())
-	fmt.Printf("Last Updated     : %s", app.Updated.String())
-	fmt.Printf("Version          : %s (%d)", app.SugVersName, app.SugVersCode)
-	fmt.Printf("License          : %s", app.License)
+	fmt.Printf("Package          : %s\n", app.PackageName)
+	fmt.Printf("Name             : %s\n", app.Name)
+	fmt.Printf("Summary          : %s\n", app.Summary)
+	fmt.Printf("Added            : %s\n", app.Added.String())
+	fmt.Printf("Last Updated     : %s\n", app.Updated.String())
+	fmt.Printf("Version          : %s (%d)\n", app.SugVersName, app.SugVersCode)
+	fmt.Printf("License          : %s\n", app.License)
 	if app.Categories != nil {
-		fmt.Printf("Categories       : %s", strings.Join(app.Categories, ", "))
+		fmt.Printf("Categories       : %s\n", strings.Join(app.Categories, ", "))
 	}
 	if app.Website != "" {
-		fmt.Printf("Website          : %s", app.Website)
+		fmt.Printf("Website          : %s\n", app.Website)
 	}
 	if app.SourceCode != "" {
-		fmt.Printf("Source Code      : %s", app.SourceCode)
+		fmt.Printf("Source Code      : %s\n", app.SourceCode)
 	}
 	if app.IssueTracker != "" {
-		fmt.Printf("Issue Tracker    : %s", app.IssueTracker)
+		fmt.Printf("Issue Tracker    : %s\n", app.IssueTracker)
 	}
 	if app.Changelog != "" {
-		fmt.Printf("Changelog        : %s", app.Changelog)
+		fmt.Printf("Changelog        : %s\n", app.Changelog)
 	}
 	if app.Donate != "" {
-		fmt.Printf("Donate           : %s", app.Donate)
+		fmt.Printf("Donate           : %s\n", app.Donate)
 	}
 	if app.Bitcoin != "" {
-		fmt.Printf("Bitcoin          : bitcoin:%s", app.Bitcoin)
+		fmt.Printf("Bitcoin          : bitcoin:%s\n", app.Bitcoin)
 	}
 	if app.Litecoin != "" {
-		fmt.Printf("Litecoin         : litecoin:%s", app.Litecoin)
+		fmt.Printf("Litecoin         : litecoin:%s\n", app.Litecoin)
 	}
 	if app.FlattrID != "" {
-		fmt.Printf("Flattr           : https://flattr.com/thing/%s", app.FlattrID)
+		fmt.Printf("Flattr           : https://flattr.com/thing/%s\n", app.FlattrID)
 	}
 	fmt.Println()
 	fmt.Println("Description :")
@@ -131,17 +131,17 @@ func printAppDetailed(app fdroid.App) {
 	fmt.Println("Available Versions :")
 	for _, apk := range app.Apks {
 		fmt.Println()
-		fmt.Printf("    Version : %s (%d)", apk.VersName, apk.VersCode)
-		fmt.Printf("    Size    : %d", apk.Size)
-		fmt.Printf("    MinSdk  : %d", apk.MinSdk)
+		fmt.Printf("    Version : %s (%d)\n", apk.VersName, apk.VersCode)
+		fmt.Printf("    Size    : %d\n", apk.Size)
+		fmt.Printf("    MinSdk  : %d\n", apk.MinSdk)
 		if apk.MaxSdk > 0 {
-			fmt.Printf("    MaxSdk  : %d", apk.MaxSdk)
+			fmt.Printf("    MaxSdk  : %d\n", apk.MaxSdk)
 		}
 		if apk.ABIs != nil {
-			fmt.Printf("    ABIs    : %s", strings.Join(apk.ABIs, ", "))
+			fmt.Printf("    ABIs    : %s\n", strings.Join(apk.ABIs, ", "))
 		}
 		if apk.Perms != nil {
-			fmt.Printf("    Perms   : %s", strings.Join(apk.Perms, ", "))
+			fmt.Printf("    Perms   : %s\n", strings.Join(apk.Perms, ", "))
 		}
 	}
 }
