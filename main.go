@@ -27,9 +27,9 @@ func subdir(dir, name string) string {
 }
 
 func mustCache() string {
-	dir := basedir.Cache()
-	if dir == "" {
-		fmt.Fprintln(os.Stderr, "could not determine cache dir")
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		panic("TODO: return an error")
 	}
 	return subdir(dir, cmdName)

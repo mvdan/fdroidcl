@@ -5,15 +5,4 @@
 
 package basedir
 
-var (
-	cacheDir = firstGetenv(".cache", "XDG_CACHE_HOME")
-	dataDir  = firstGetenv(".config", "XDG_CONFIG_HOME")
-)
-
-func cache() string {
-	return cacheDir
-}
-
-func data() string {
-	return dataDir
-}
+var dataDir = firstGetenv(".config", "XDG_CONFIG_HOME")

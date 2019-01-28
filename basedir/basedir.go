@@ -9,16 +9,11 @@ import (
 	"path/filepath"
 )
 
-// TODO: replace with os.UserCacheDir once we require Go 1.11 or later.
-
-// Cache returns the base cache directory.
-func Cache() string {
-	return cache()
-}
+// TODO: replace with https://github.com/golang/go/issues/29960 if accepted.
 
 // Data returns the base data directory.
 func Data() string {
-	return data()
+	return dataDir
 }
 
 func firstGetenv(def string, evs ...string) string {
@@ -27,6 +22,7 @@ func firstGetenv(def string, evs ...string) string {
 			return v
 		}
 	}
+	// TODO: replace with os.UserHomeDir once we require Go 1.12 or later.
 	home := os.Getenv("HOME")
 	if home == "" {
 		curUser, err := user.Current()

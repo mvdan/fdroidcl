@@ -3,15 +3,4 @@
 
 package basedir
 
-var (
-	cacheDir = firstGetenv("Library/Caches")
-	dataDir  = firstGetenv("Library/Application Support")
-)
-
-func cache() string {
-	return cacheDir
-}
-
-func data() string {
-	return dataDir
-}
+var dataDir = firstGetenv("Library/Application Support")
