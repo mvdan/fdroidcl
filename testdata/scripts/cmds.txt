@@ -21,3 +21,6 @@ stderr '^usage: fdroidcl search .*regexp'
 stderr '-i.*Filter installed apps'
 
 ! fdroidcl
+
+! fdroidcl install -u some.app
+stderr 'without arguments'

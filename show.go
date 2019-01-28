@@ -33,7 +33,7 @@ func runShow(args []string) error {
 		if i > 0 {
 			fmt.Printf("\n--\n\n")
 		}
-		printAppDetailed(*app)
+		printAppDetailed(app)
 	}
 	return nil
 }
@@ -47,13 +47,13 @@ func appsMap(apps []fdroid.App) map[string]*fdroid.App {
 	return m
 }
 
-func findApps(ids []string) ([]*fdroid.App, error) {
+func findApps(ids []string) ([]fdroid.App, error) {
 	apps, err := loadIndexes()
 	if err != nil {
 		return nil, err
 	}
 	byId := appsMap(apps)
-	result := make([]*fdroid.App, len(ids))
+	result := make([]fdroid.App, len(ids))
 	for i, id := range ids {
 		var vcode = -1
 		j := strings.Index(id, ":")
@@ -83,7 +83,7 @@ func findApps(ids []string) ([]*fdroid.App, error) {
 				return nil, fmt.Errorf("could not find version %d for app with ID '%s'", vcode, id)
 			}
 		}
-		result[i] = app
+		result[i] = *app
 	}
 	return result, nil
 }

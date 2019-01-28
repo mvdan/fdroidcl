@@ -35,6 +35,8 @@ fdroidcl search -i -q
 stdout 'org\.vi_server\.red_screen'
 fdroidcl search -u -q
 stdout 'org\.vi_server\.red_screen'
+fdroidcl install -u -n
+stdout 'install org\.vi_server\.red_screen:2'
 
 # upgrade app to version code 2
 fdroidcl install org.vi_server.red_screen
@@ -45,6 +47,8 @@ stdout 'Installing'
 # app does not show up as upgradable
 fdroidcl search -u -q
 ! stdout 'org\.vi_server\.red_screen'
+fdroidcl install -u -n
+! stdout 'install org\.vi_server\.red_screen:2'
 
 # nothing to install or upgrade
 fdroidcl install org.vi_server.red_screen

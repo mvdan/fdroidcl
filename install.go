@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"mvdan.cc/fdroidcl/adb"
 	"mvdan.cc/fdroidcl/fdroid"
@@ -15,19 +16,24 @@ var cmdInstall = &Command{
 	Short:     "Install or upgrade an app",
 }
 
+var (
+	installUpdates = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
+	installDryRun  = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
+)
+
 func init() {
 	cmdInstall.Run = runInstall
 }
 
 func runInstall(args []string) error {
-	if len(args) < 1 {
+	if *installUpdates {
+		if len(args) > 0 {
+			return fmt.Errorf("-u can only be used without arguments")
+		}
+	} else if len(args) < 1 {
 		return fmt.Errorf("no package names given")
 	}
 	device, err := oneDevice()
-	if err != nil {
-		return err
-	}
-	apps, err := findApps(args)
 	if err != nil {
 		return err
 	}
@@ -35,7 +41,24 @@ func runInstall(args []string) error {
 	if err != nil {
 		return err
 	}
-	var toInstall []*fdroid.App
+
+	if *installUpdates {
+		apps, err := loadIndexes()
+		if err != nil {
+			return err
+		}
+		apps = filterAppsUpdates(apps, inst, device)
+		if len(apps) == 0 {
+			fmt.Fprintln(os.Stderr, "All apps up to date.")
+		}
+		return downloadAndDo(apps, device)
+	}
+
+	apps, err := findApps(args)
+	if err != nil {
+		return err
+	}
+	var toInstall []fdroid.App
 	for _, app := range apps {
 		p, e := inst[app.PackageName]
 		if !e {
@@ -58,7 +81,7 @@ func runInstall(args []string) error {
 	return downloadAndDo(toInstall, device)
 }
 
-func downloadAndDo(apps []*fdroid.App, device *adb.Device) error {
+func downloadAndDo(apps []fdroid.App, device *adb.Device) error {
 	type downloaded struct {
 		apk  *fdroid.Apk
 		path string
@@ -69,11 +92,18 @@ func downloadAndDo(apps []*fdroid.App, device *adb.Device) error {
 		if apk == nil {
 			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
 		}
+		if *installDryRun {
+			fmt.Printf("install %s:%d\n", app.PackageName, apk.VersCode)
+			continue
+		}
 		path, err := downloadApk(apk)
 		if err != nil {
 			return err
 		}
 		toInstall[i] = downloaded{apk: apk, path: path}
+	}
+	if *installDryRun {
+		return nil
 	}
 	for _, t := range toInstall {
 		if err := installApk(device, t.apk, t.path); err != nil {
