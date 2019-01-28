@@ -9,3 +9,9 @@ stdout 'fdroid/fdroidclient'
 fdroidcl show org.fdroid.fdroid org.fdroid.fdroid.privileged
 stdout 'fdroid/fdroidclient'
 stdout 'fdroid/privileged-extension'
+
+fdroidcl show org.pocketworkstation.pckeyboard info.metadude.android.bitsundbaeume.schedule
+! stdout '&apos'
+! stdout '&amp'
+stdout 'Name.*Hacker''s Keyboard'
+stdout 'Version.*Bits & Bäume'

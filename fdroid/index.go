@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"html"
 	"io"
 	"sort"
 	"strings"
@@ -272,6 +273,10 @@ func LoadIndexJSON(r io.Reader) (*Index, error) {
 		if !enOK {
 			english, enOK = app.Localized["en-US"]
 		}
+
+		// TODO: why does the json index contain html escapes?
+		app.Name = html.UnescapeString(app.Name)
+
 		if app.Summary == "" && enOK {
 			app.Summary = english.Summary
 		}
@@ -284,6 +289,10 @@ func LoadIndexJSON(r io.Reader) (*Index, error) {
 			apk := &index.Packages[app.PackageName][i]
 			apk.AppID = app.PackageName
 			apk.RepoURL = index.Repo.Address
+
+			// TODO: why does the json index contain html escapes?
+			apk.VersName = html.UnescapeString(apk.VersName)
+
 			app.Apks = append(app.Apks, apk)
 		}
 	}
