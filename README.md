@@ -36,8 +36,13 @@ Install an app:
 	uninstall <appid...>  Uninstall an app
 	defaults              Reset to the default settings
 
-A specific version of an app can be selected by following the appid with an
-colon (:) and the version code of the app to select.
+An appid is just an app's unique package name. A specific version of an app can
+be selected by following the appid with a colon and the version code. The
+'search' and 'show' commands can be used to find these strings. For example:
+
+	$ fdroidcl search redreader
+	$ fdroidcl show org.quantumbadger.redreader
+	$ fdroidcl install org.quantumbadger.redreader:85
 
 ### Config
 

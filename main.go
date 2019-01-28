@@ -136,8 +136,16 @@ func init() {
 			fmt.Fprintf(os.Stderr, "   %s%s  %s\n", c.UsageLine,
 				strings.Repeat(" ", maxUsageLen-len(c.UsageLine)), c.Short)
 		}
-		fmt.Fprintf(os.Stderr, "\nA specific version of an app can be selected by following the appid with an colon (:) and the version code of the app to select.\n")
-		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more info\n", cmdName)
+		fmt.Fprintf(os.Stderr, `
+An appid is just an app's unique package name. A specific version of an app can
+be selected by following the appid with a colon and the version code. The
+'search' and 'show' commands can be used to find these strings. For example:
+
+	$ fdroidcl search redreader
+	$ fdroidcl show org.quantumbadger.redreader
+	$ fdroidcl install org.quantumbadger.redreader:85
+`)
+		fmt.Fprintf(os.Stderr, "\nUse %s <command> -h for more information.\n", cmdName)
 	}
 }
 
