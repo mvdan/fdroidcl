@@ -18,7 +18,11 @@ stderr '^usage: fdroidcl \[-h'
 
 ! fdroidcl search -h
 stderr '^usage: fdroidcl search .*regexp'
+stderr '^Search available apps.'
 stderr '-i.*Filter installed apps'
+
+! fdroidcl install -h
+stderr 'When given no arguments'
 
 ! fdroidcl
 

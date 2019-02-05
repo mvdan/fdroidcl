@@ -4,7 +4,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"os"
 
 	"mvdan.cc/fdroidcl/adb"
@@ -12,8 +14,15 @@ import (
 )
 
 var cmdInstall = &Command{
-	UsageLine: "install <appid...>",
+	UsageLine: "install [<appid...>]",
 	Short:     "Install or upgrade apps",
+	Long: `
+Install or upgrade apps. When given no arguments, it reads a comma-separated
+list of apps to install from standard input, like:
+
+	packageName,versionCode,versionName
+	foo.bar,120,1.2.0
+`[1:],
 }
 
 var (
@@ -26,12 +35,8 @@ func init() {
 }
 
 func runInstall(args []string) error {
-	if *installUpdates {
-		if len(args) > 0 {
-			return fmt.Errorf("-u can only be used without arguments")
-		}
-	} else if len(args) < 1 {
-		return fmt.Errorf("no package names given")
+	if *installUpdates && len(args) > 0 {
+		return fmt.Errorf("-u can only be used without arguments")
 	}
 	device, err := oneDevice()
 	if err != nil {
@@ -52,6 +57,29 @@ func runInstall(args []string) error {
 			fmt.Fprintln(os.Stderr, "All apps up to date.")
 		}
 		return downloadAndDo(apps, device)
+	}
+
+	if len(args) == 0 {
+		// The CSV input is as follows:
+		//
+		// packageName,versionCode,versionName
+		// foo.bar,120,1.2.0
+		// ...
+
+		r := csv.NewReader(os.Stdin)
+		r.FieldsPerRecord = 3
+		r.Read()
+		for {
+			record, err := r.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return fmt.Errorf("error parsing CSV: %v", err)
+			}
+			// convert "foo.bar,120" into "foo.bar:120" for findApps
+			args = append(args, record[0]+":"+record[1])
+		}
 	}
 
 	apps, err := findApps(args)

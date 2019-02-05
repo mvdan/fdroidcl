@@ -96,8 +96,11 @@ type Command struct {
 	// The first word in the line is taken to be the command name.
 	UsageLine string
 
-	// Short is the short description.
+	// Short is the short, single-line description.
 	Short string
+
+	// Long is an optional longer version of the Short description.
+	Long string
 
 	Fset flag.FlagSet
 }
@@ -113,7 +116,12 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s %s\n", cmdName, c.UsageLine)
+	fmt.Fprintf(os.Stderr, "usage: %s %s\n\n", cmdName, c.UsageLine)
+	if c.Long == "" {
+		fmt.Fprintf(os.Stderr, "%s.\n", c.Short)
+	} else {
+		fmt.Fprint(os.Stderr, c.Long)
+	}
 	anyFlags := false
 	c.Fset.VisitAll(func(f *flag.Flag) { anyFlags = true })
 	if anyFlags {

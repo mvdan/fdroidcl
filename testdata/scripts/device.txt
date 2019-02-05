@@ -24,6 +24,11 @@ fdroidcl search -i -q
 fdroidcl search -u -q
 ! stdout 'org\.vi_server\.red_screen'
 
+# install via csv input works as expected
+stdin applist.csv
+fdroidcl install -n
+stdout 'install org\.vi_server\.red_screen:1'
+
 # install version code 1
 fdroidcl install org.vi_server.red_screen:1
 stdout 'Downloading.*red_screen_1.apk'
@@ -57,3 +62,7 @@ stdout 'is up to date'
 
 # uninstall an app that exists
 fdroidcl uninstall org.vi_server.red_screen
+
+-- applist.csv --
+packageName,versionCode,versionName
+org.vi_server.red_screen,1,1.0

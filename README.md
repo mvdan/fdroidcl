@@ -30,7 +30,7 @@ Install an app:
 	update                Update the index
 	search [<regexp...>]  Search available apps
 	show <appid...>       Show detailed info about an app
-	install <appid...>    Install or upgrade apps
+	install [<appid...>]  Install or upgrade apps
 	uninstall <appid...>  Uninstall an app
 	download <appid...>   Download an app
 	devices               List connected devices
