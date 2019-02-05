@@ -28,13 +28,16 @@ Install an app:
 ### Commands
 
 	update                Update the index
-	search <regexp...>    Search available apps
+	search [<regexp...>]  Search available apps
 	show <appid...>       Show detailed info about an app
-	devices               List connected devices
-	download <appid...>   Download an app
-	install <appid...>    Install or upgrade app
+	install <appid...>    Install or upgrade apps
 	uninstall <appid...>  Uninstall an app
+	download <appid...>   Download an app
+	devices               List connected devices
+	list (categories)     List all known values of a kind
 	defaults              Reset to the default settings
+	version               Print version information
+
 
 An appid is just an app's unique package name. A specific version of an app can
 be selected by following the appid with a colon and the version code. The

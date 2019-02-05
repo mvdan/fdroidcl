@@ -13,7 +13,7 @@ import (
 
 var cmdInstall = &Command{
 	UsageLine: "install <appid...>",
-	Short:     "Install or upgrade an app",
+	Short:     "Install or upgrade apps",
 }
 
 var (
