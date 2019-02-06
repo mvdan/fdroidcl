@@ -71,3 +71,16 @@ You can run `fdroidcl defaults` to create the config with the default settings.
 * Index verification relies on HTTPS (not the JAR signature)
 * The tool can only interact with one device at a time
 * Hardware compatibility of packages is not checked
+
+### FAQ
+
+* What's the point of a desktop client?
+
+This client works with Android devices connected via ADB; it does not install
+apps on the host machine.
+
+* Why not just use the f-droid.org website to download APKs?
+
+That's always an option. However, an F-Droid client supports multiple
+repositories, searching for apps, filtering by compatibility with your device,
+showing available updates, et cetera.
