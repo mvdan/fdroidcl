@@ -25,6 +25,11 @@ Install an app:
 
 	fdroidcl install org.adaway
 
+Show all available updates, and install them:
+
+	fdroidcl search -u
+	fdroidcl install -u
+
 ### Commands
 
 	update                Update the index
