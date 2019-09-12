@@ -55,7 +55,7 @@ func findApps(ids []string) ([]fdroid.App, error) {
 	byId := appsMap(apps)
 	result := make([]fdroid.App, len(ids))
 	for i, id := range ids {
-		var vcode = -1
+		vcode := -1
 		j := strings.Index(id, ":")
 		if j > -1 {
 			var err error
