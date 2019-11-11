@@ -5,7 +5,9 @@ jobs:
     strategy:
       matrix:
         go-version: [1.12.9, 1.13]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # platform: [ubuntu-latest, macos-latest, windows-latest]
+        # TODO: reenable windows once %LocalAppData% is set
+        platform: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
