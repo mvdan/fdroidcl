@@ -66,6 +66,7 @@ func TestScripts(t *testing.T) {
 				return err
 			}
 			e.Vars = append(e.Vars, "HOME="+home)
+			e.Vars = append(e.Vars, "LocalAppData="+home)
 			e.Vars = append(e.Vars, "REPO_HOST="+staticRepoHost)
 			return nil
 		},
