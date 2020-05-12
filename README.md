@@ -29,6 +29,8 @@ Show all available updates, and install them:
 	fdroidcl search -u
 	fdroidcl install -u
 
+Unofficial packages are available on: [Debian](https://packages.debian.org/buster/fdroidcl) and [Ubuntu](https://packages.ubuntu.com/eoan/fdroidcl).
+
 ### Commands
 
 	update                Update the index
