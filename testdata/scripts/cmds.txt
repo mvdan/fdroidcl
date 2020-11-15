@@ -3,11 +3,12 @@ env HOME=$WORK/home
 ! fdroidcl
 stderr '^usage: fdroidcl \[-h'
 
-! fdroidcl -h
-stderr '^usage: fdroidcl \[-h'
-! stderr 'test\.' # don't include flags from testing
-! stderr 'command not specified'
-! stdout .
+# TODO: reenable with ?
+# ! fdroidcl -h
+# stderr '^usage: fdroidcl \[-h'
+# ! stderr 'test\.' # don't include flags from testing
+# ! stderr 'command not specified'
+# ! stdout .
 
 fdroidcl version
 stdout '^v0\.5'
