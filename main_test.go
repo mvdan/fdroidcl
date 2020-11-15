@@ -62,7 +62,7 @@ func TestScripts(t *testing.T) {
 		Dir: filepath.Join("testdata", "scripts"),
 		Setup: func(e *testscript.Env) error {
 			home := e.WorkDir + "/home"
-			if err := os.MkdirAll(home, 0777); err != nil {
+			if err := os.MkdirAll(home, 0o777); err != nil {
 				return err
 			}
 			e.Vars = append(e.Vars, "HOME="+home)

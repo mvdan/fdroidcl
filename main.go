@@ -20,7 +20,7 @@ const version = "v0.5.0"
 
 func subdir(dir, name string) string {
 	p := filepath.Join(dir, name)
-	if err := os.MkdirAll(p, 0755); err != nil {
+	if err := os.MkdirAll(p, 0o755); err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create dir '%s': %v\n", p, err)
 	}
 	return p

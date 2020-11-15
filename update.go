@@ -108,7 +108,7 @@ func downloadEtag(url, path string, sum []byte) error {
 		fmt.Printf("not modified")
 		return errNotModified
 	}
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func downloadEtag(url, path string, sum []byte) error {
 			return err
 		}
 	}
-	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0644); err != nil {
+	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0o644); err != nil {
 		return err
 	}
 	fmt.Printf("done")

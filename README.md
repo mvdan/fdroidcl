@@ -2,9 +2,9 @@
 
 [![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/mvdan.cc/fdroidcl)
 
-[F-Droid](https://f-droid.org/) desktop client. Requires Go 1.13 or later.
+[F-Droid](https://f-droid.org/) desktop client. Requires Go 1.14 or later.
 
-	go get -u mvdan.cc/fdroidcl
+	go get mvdan.cc/fdroidcl
 
 While the Android client integrates with the system with regular update checks
 and notifications, this is a simple command line client that talks to connected
