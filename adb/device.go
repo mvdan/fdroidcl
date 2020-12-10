@@ -191,6 +191,20 @@ var (
 	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
 )
 
+func parseLine(pkg *Package, l string) {
+	if m := packageRegex.FindStringSubmatch(l); m != nil {
+		pkg.ID = m[1]
+	} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
+		n, err := strconv.Atoi(m[1])
+		if err != nil {
+			panic(err)
+		}
+		pkg.VersCode = n
+	} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
+		pkg.VersName = m[1]
+	}
+}
+
 func (d *Device) Installed() (map[string]Package, error) {
 	cmd := d.AdbShell("dumpsys", "package", "packages")
 	stdout, err := cmd.StdoutPipe()
@@ -204,27 +218,37 @@ func (d *Device) Installed() (map[string]Package, error) {
 	packages := make(map[string]Package)
 	scanner := bufio.NewScanner(stdout)
 
-	var cur Package
+	cur := Package{}
 	for scanner.Scan() {
-		l := scanner.Text()
-		if m := packageRegex.FindStringSubmatch(l); m != nil {
-			cur = Package{}
-			cur.ID = m[1]
-		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
-			n, err := strconv.Atoi(m[1])
-			if err != nil {
-				panic(err)
-			}
-			cur.VersCode = n
-		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
-			cur.VersName = m[1]
-		}
-
-		if cur.ID != "" && cur.VersCode != 0 && cur.VersName != "" {
+		parseLine(&cur, scanner.Text())
+		if cur.ID != "" && cur.VersName != "" && cur.VersCode != 0 {
 			packages[cur.ID] = cur
-			continue
+			cur = Package{}
 		}
 	}
 
 	return packages, nil
+}
+
+func (d *Device) GetPackage(id string) (*Package, error) {
+	cmd := d.AdbShell("dumpsys", "package", id)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(stdout)
+
+	pkg := Package{}
+	for scanner.Scan() {
+		parseLine(&pkg, scanner.Text())
+		if pkg.ID != "" && pkg.VersName != "" && pkg.VersCode != 0 {
+			return &pkg, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Failed to parse package", id)
 }
