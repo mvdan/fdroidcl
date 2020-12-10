@@ -200,19 +200,15 @@ func (d *Device) Installed() (map[string]Package, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+
 	packages := make(map[string]Package)
 	scanner := bufio.NewScanner(stdout)
+
 	var cur Package
-	first := true
 	for scanner.Scan() {
 		l := scanner.Text()
 		if m := packageRegex.FindStringSubmatch(l); m != nil {
-			if first {
-				first = false
-			} else {
-				packages[cur.ID] = cur
-				cur = Package{}
-			}
+			cur = Package{}
 			cur.ID = m[1]
 		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
 			n, err := strconv.Atoi(m[1])
@@ -223,9 +219,12 @@ func (d *Device) Installed() (map[string]Package, error) {
 		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
 			cur.VersName = m[1]
 		}
+
+		if cur.ID != "" && cur.VersCode != 0 && cur.VersName != "" {
+			packages[cur.ID] = cur
+			continue
+		}
 	}
-	if !first {
-		packages[cur.ID] = cur
-	}
+
 	return packages, nil
 }
