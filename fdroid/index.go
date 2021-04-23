@@ -59,6 +59,7 @@ type App struct {
 }
 
 type Localization struct {
+	Name        string `json:"name"`
 	Summary     string `json:"summary"`
 	Description string `json:"description"`
 }
@@ -274,6 +275,9 @@ func LoadIndexJSON(r io.Reader) (*Index, error) {
 			english, enOK = app.Localized["en-US"]
 		}
 
+		if app.Name == "" && enOK {
+			app.Name = english.Name
+		}
 		// TODO: why does the json index contain html escapes?
 		app.Name = html.UnescapeString(app.Name)
 
