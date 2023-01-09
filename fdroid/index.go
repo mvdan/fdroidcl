@@ -49,7 +49,7 @@ type App struct {
 	Donate       string   `json:"donate"`
 	Bitcoin      string   `json:"bitcoin"`
 	Litecoin     string   `json:"litecoin"`
-	FlattrID     string   `json:"flattr"`
+	FlattrID     string   `json:"flattrID"`
 	SugVersName  string   `json:"suggestedVersionName"`
 	SugVersCode  int      `json:"suggestedVersionCode,string"`
 
@@ -193,24 +193,44 @@ func (a *App) TextDesc(w io.Writer) {
 
 // Apk is an Android package
 type Apk struct {
-	VersName string   `json:"versionName"`
-	VersCode int      `json:"versionCode"`
-	Size     int64    `json:"size"`
-	MinSdk   int      `json:"sdkver"`
-	MaxSdk   int      `json:"maxsdkver"`
-	ABIs     []string `json:"nativecode"`
-	ApkName  string   `json:"apkname"`
-	SrcName  string   `json:"srcname"`
-	Sig      HexVal   `json:"sig"`
-	Signer   HexVal   `json:"signer"`
-	Added    UnixDate `json:"added"`
-	Perms    []string `json:"permissions"`
-	Feats    []string `json:"features"`
-	Hash     HexVal   `json:"hash"`
-	HashType string   `json:"hashType"`
+	VersName string       `json:"versionName"`
+	VersCode int          `json:"versionCode"`
+	Size     int64        `json:"size"`
+	MinSdk   int          `json:"minSdkVersion"`
+	MaxSdk   int          `json:"maxSdkVersion"`
+	ABIs     []string     `json:"nativecode"`
+	ApkName  string       `json:"apkName"`
+	SrcName  string       `json:"srcname"`
+	Sig      HexVal       `json:"sig"`
+	Signer   HexVal       `json:"signer"`
+	Added    UnixDate     `json:"added"`
+	Perms    []Permission `json:"uses-permission"`
+	Feats    []string     `json:"features"`
+	Hash     HexVal       `json:"hash"`
+	HashType string       `json:"hashType"`
 
 	AppID   string `json:"-"`
 	RepoURL string `json:"-"`
+}
+
+type Permission struct {
+	Name   string
+	MaxSdk string
+}
+
+func (p *Permission) UnmarshalJSON(data []byte) error {
+	var v []interface{}
+	if err := json.Unmarshal(data, &v); err != nil {
+		fmt.Printf("Error while decoding %v\n", err)
+		return err
+	}
+	p.Name = string(v[0].(string))
+	if v[1] == nil {
+		p.MaxSdk = ""
+	} else {
+		p.MaxSdk = fmt.Sprint(v[1].(float64))
+	}
+	return nil
 }
 
 func (a *Apk) URL() string {

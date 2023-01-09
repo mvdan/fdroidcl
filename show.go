@@ -140,8 +140,18 @@ func printAppDetailed(app fdroid.App) {
 		if apk.ABIs != nil {
 			fmt.Printf("    ABIs    : %s\n", strings.Join(apk.ABIs, ", "))
 		}
-		if apk.Perms != nil {
-			fmt.Printf("    Perms   : %s\n", strings.Join(apk.Perms, ", "))
+		if apk.Perms != nil && len(apk.Perms) > 0 {
+			fmt.Printf("    Perms   : ")
+			for i, value := range apk.Perms {
+				fmt.Print(value.Name)
+				if value.MaxSdk != "" {
+					fmt.Printf(" (MaxSdk %s)", value.MaxSdk)
+				}
+				if i != len(apk.Perms)-1 {
+					fmt.Print(", ")
+				}
+			}
+			fmt.Println()
 		}
 	}
 }
