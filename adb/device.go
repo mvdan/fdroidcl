@@ -149,6 +149,19 @@ func (d *Device) Install(path string) error {
 	return parseError(getFailureCode(installFailureRegex, line))
 }
 
+func (d *Device) InstallUser(path, user string) error {
+	cmd := d.AdbCmd(append([]string{"install", "-r", "--user"}, user, path)...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	line := getResultLine(output)
+	if line == "Success" {
+		return nil
+	}
+	return parseError(getFailureCode(installFailureRegex, line))
+}
+
 func getResultLine(output []byte) string {
 	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {

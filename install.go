@@ -28,6 +28,7 @@ list of apps to install from standard input, like:
 var (
 	installUpdates = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
 	installDryRun  = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
+	installUser    = cmdInstall.Fset.String("user", "", "Only install for specified user")
 )
 
 func init() {
@@ -143,8 +144,14 @@ func downloadAndDo(apps []fdroid.App, device *adb.Device) error {
 
 func installApk(device *adb.Device, apk *fdroid.Apk, path string) error {
 	fmt.Printf("Installing %s\n", apk.AppID)
-	if err := device.Install(path); err != nil {
-		return fmt.Errorf("could not install %s: %v", apk.AppID, err)
+	if *installUser != "" {
+		if err := device.InstallUser(path, *installUser); err != nil {
+			return fmt.Errorf("could not install %s: %v", apk.AppID, err)
+		}
+	} else {
+		if err := device.Install(path); err != nil {
+			return fmt.Errorf("could not install %s: %v", apk.AppID, err)
+		}
 	}
 	return nil
 }
