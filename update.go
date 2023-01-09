@@ -9,12 +9,15 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
+	"runtime"
 	"sort"
+	"time"
 
+	"github.com/schollz/progressbar/v3"
 	"mvdan.cc/fdroidcl/fdroid"
 )
 
@@ -81,17 +84,15 @@ var errNotModified = fmt.Errorf("not modified")
 
 var httpClient = &http.Client{}
 
-func downloadEtag(url, path string, sum []byte) error {
-	fmt.Printf("Downloading %s... ", url)
-	defer fmt.Println()
+func downloadEtag(url, target_path string, sum []byte) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
 
-	etagPath := path + "-etag"
-	if _, err := os.Stat(path); err == nil {
-		etag, _ := ioutil.ReadFile(etagPath)
+	etagPath := target_path + "-etag"
+	if _, err := os.Stat(target_path); err == nil {
+		etag, _ := os.ReadFile(etagPath)
 		req.Header.Add("If-None-Match", string(etag))
 	}
 
@@ -100,41 +101,54 @@ func downloadEtag(url, path string, sum []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
+	filename := path.Base(url)
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("download failed: %d %s",
-			resp.StatusCode, http.StatusText(resp.StatusCode))
+		return fmt.Errorf("%s download failed: %d %s",
+			filename, resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	if resp.StatusCode == http.StatusNotModified {
-		fmt.Printf("not modified")
+		fmt.Printf("%s not modified\n", filename)
 		return errNotModified
 	}
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
+	f, err := os.OpenFile(target_path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+	bar := progressbar.NewOptions64(
+		resp.ContentLength,
+		progressbar.OptionSetDescription(fmt.Sprintf("%-50s", filename)),
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionThrottle(50*time.Millisecond),
+		progressbar.OptionShowCount(),
+		progressbar.OptionOnCompletion(func() {
+			fmt.Fprint(os.Stdout, "\n")
+		}),
+		progressbar.OptionSpinnerType(14),
+		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionUseANSICodes(runtime.GOOS != "windows"),
+		progressbar.OptionFullWidth(),
+	)
 	if sum == nil {
-		_, err := io.Copy(f, resp.Body)
+		_, err := io.Copy(io.MultiWriter(f, bar), resp.Body)
 		if err != nil {
 			return err
 		}
 	} else {
-		data, err := ioutil.ReadAll(resp.Body)
+		hash := sha256.New()
+		_, err := io.Copy(io.MultiWriter(f, bar, hash), resp.Body)
 		if err != nil {
 			return err
 		}
-		got := sha256.Sum256(data)
+		got := hash.Sum(nil)
 		if !bytes.Equal(sum, got[:]) {
-			return fmt.Errorf("sha256 mismatch")
-		}
-		if _, err := f.Write(data); err != nil {
-			return err
+			return fmt.Errorf("%s sha256 mismatch", filename)
 		}
 	}
-	if err := ioutil.WriteFile(etagPath, []byte(respEtag(resp)), 0o644); err != nil {
+	if err := os.WriteFile(etagPath, []byte(respEtag(resp)), 0o644); err != nil {
 		return err
 	}
-	fmt.Printf("done")
 	return nil
 }
 
