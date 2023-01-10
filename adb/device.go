@@ -65,7 +65,7 @@ func Devices() ([]*Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		device.ABIs = getAbis(props)
+		device.ABIs = getAbis(device, props)
 		if len(device.ABIs) == 0 {
 			return nil, fmt.Errorf("failed to get device ABIs")
 		}
@@ -113,22 +113,42 @@ func (d *Device) AdbProps() (map[string]string, error) {
 	return props, nil
 }
 
+func (d *Device) AdbProp(property string) (string, error) {
+	cmd := d.AdbShell("getprop", property)
+	stdout, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	result := string(stdout)
+	if result == "" {
+		return "", fmt.Errorf("could not get property %s", property)
+	}
+	return result, nil
+}
+
+func AdbPropFallback(device *Device, props map[string]string, property string) (string, error) {
+	if value, e := props[property]; e {
+		return value, nil
+	}
+	return device.AdbProp(property)
+}
+
 func getFailureCode(r *regexp.Regexp, line string) string {
 	return r.FindStringSubmatch(line)[1]
 }
 
-func getAbis(props map[string]string) []string {
+func getAbis(device *Device, props map[string]string) []string {
 	// Android 5.0 and later specify a list of ABIs
-	if abilist, e := props["ro.product.cpu.abilist"]; e {
+	if abilist, err := AdbPropFallback(device, props, "ro.product.cpu.abilist"); err == nil {
 		return strings.Split(abilist, ",")
 	}
 	// Older Android versions specify one primary ABI and optionally
 	// one secondary ABI
-	abi, e := props["ro.product.cpu.abi"]
-	if !e {
+	abi, err := AdbPropFallback(device, props, "ro.product.cpu.abi")
+	if err != nil {
 		return nil
 	}
-	if abi2, e := props["ro.product.cpu.abi2"]; e {
+	if abi2, err := AdbPropFallback(device, props, "ro.product.cpu.abi2"); err == nil {
 		return []string{abi, abi2}
 	}
 	return []string{abi}
