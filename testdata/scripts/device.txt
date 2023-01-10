@@ -32,7 +32,7 @@ stdout 'install org\.vi_server\.red_screen:1'
 # install version code 1
 fdroidcl install org.vi_server.red_screen:1
 stdout 'Downloading.*red_screen_1.apk'
-stdout 'done'
+stdout '100%'
 stdout 'Installing'
 
 # app shows up as installed and upgradable
@@ -46,7 +46,7 @@ stdout 'install org\.vi_server\.red_screen:2'
 # upgrade app to version code 2
 fdroidcl install org.vi_server.red_screen
 stdout 'Downloading.*red_screen_2.apk'
-stdout 'done'
+stdout '100%'
 stdout 'Installing'
 
 # app does not show up as upgradable

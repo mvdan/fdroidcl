@@ -4,7 +4,7 @@ env HOME=$WORK/home
 stderr 'index does not exist'
 
 fdroidcl update
-stdout 'done'
+stdout '100%'
 
 fdroidcl update
 stdout 'not modified'

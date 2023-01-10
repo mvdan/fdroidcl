@@ -3,6 +3,6 @@ env HOME=$WORK/home
 fdroidcl update
 
 fdroidcl download org.vi_server.red_screen
-stdout 'Downloading.*red_screen_2.apk'
-stdout 'done'
+stdout 'red_screen_2.apk'
+stdout '100%'
 stdout 'APK available in .*fdroidcl.*apks.*red_screen_2.apk$'

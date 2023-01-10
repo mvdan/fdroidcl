@@ -29,3 +29,21 @@ stderr 'When given no arguments'
 
 ! fdroidcl install -u some.app
 stderr 'without arguments'
+
+! fdroidcl clean a b
+stderr 'wrong amount of arguments'
+
+! fdroidcl clean a
+stderr 'pass either index or cache as parameter, or no parameter at all'
+
+fdroidcl clean index
+stdout 'Cleaned index\.'
+! stderr .
+
+fdroidcl clean cache
+stdout 'Cleaned cache\.'
+! stderr .
+
+fdroidcl clean
+stdout 'Cleaned index and cache\.'
+! stderr .
