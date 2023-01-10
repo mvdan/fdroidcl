@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"mvdan.cc/fdroidcl/adb"
 	"mvdan.cc/fdroidcl/fdroid"
@@ -26,10 +27,11 @@ list of apps to install from standard input, like:
 }
 
 var (
-	installUpdates   = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
-	installDryRun    = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
-	installSkipError = cmdInstall.Fset.Bool("s", false, "Skip to the next application if a download or install error occurs")
-	installUser      = cmdInstall.Fset.String("user", "", "Only install for specified user")
+	installUpdates        = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
+	installDryRun         = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
+	installUpdatesExclude = cmdInstall.Fset.String("e", "", "Exclude apps from upgrading (comma-separated list)")
+	installSkipError      = cmdInstall.Fset.Bool("s", false, "Skip to the next application if a download or install error occurs")
+	installUser           = cmdInstall.Fset.String("user", "", "Only install for specified user")
 )
 
 func init() {
@@ -39,6 +41,9 @@ func init() {
 func runInstall(args []string) error {
 	if *installUpdates && len(args) > 0 {
 		return fmt.Errorf("-u can only be used without arguments")
+	}
+	if *installUpdatesExclude != "" && !*installUpdates {
+		return fmt.Errorf("-e can only be used for upgrading (i.e. -u)")
 	}
 	device, err := oneDevice()
 	if err != nil {
@@ -55,6 +60,24 @@ func runInstall(args []string) error {
 			return err
 		}
 		apps = filterAppsUpdates(apps, inst, device)
+		if *installUpdatesExclude != "" {
+			excludeApps := strings.Split(*installUpdatesExclude, ",")
+			installApps := make([]fdroid.App, 0)
+			for _, app := range apps {
+				shouldExclude := false
+				for _, exclude := range excludeApps {
+					if app.PackageName == exclude {
+						shouldExclude = true
+						break
+					}
+				}
+				if shouldExclude {
+					continue
+				}
+				installApps = append(installApps, app)
+			}
+			apps = installApps
+		}
 		if len(apps) == 0 {
 			fmt.Fprintln(os.Stderr, "All apps up to date.")
 		}

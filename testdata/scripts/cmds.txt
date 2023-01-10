@@ -30,6 +30,9 @@ stderr 'When given no arguments'
 ! fdroidcl install -u some.app
 stderr 'without arguments'
 
+! fdroidcl install -e com.fsck.k9,org.videolan.vlc
+stderr '-e can only be used for upgrading'
+
 ! fdroidcl clean a b
 stderr 'wrong amount of arguments'
 
