@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/mvdan/fdroidcl?status.svg)](https://godoc.org/mvdan.cc/fdroidcl)
 
-[F-Droid](https://f-droid.org/) desktop client. Requires Go 1.14 or later.
+[F-Droid](https://f-droid.org/) desktop client. Requires Go 1.18 or later.
 
 	go get mvdan.cc/fdroidcl
 
