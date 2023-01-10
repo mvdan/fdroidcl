@@ -26,9 +26,10 @@ list of apps to install from standard input, like:
 }
 
 var (
-	installUpdates = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
-	installDryRun  = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
-	installUser    = cmdInstall.Fset.String("user", "", "Only install for specified user")
+	installUpdates   = cmdInstall.Fset.Bool("u", false, "Upgrade all installed apps")
+	installDryRun    = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
+	installSkipError = cmdInstall.Fset.Bool("s", false, "Skip to the next application if a download or install error occurs")
+	installUser      = cmdInstall.Fset.String("user", "", "Only install for specified user")
 )
 
 func init() {
@@ -115,8 +116,8 @@ func downloadAndDo(apps []fdroid.App, device *adb.Device) error {
 		apk  *fdroid.Apk
 		path string
 	}
-	toInstall := make([]downloaded, len(apps))
-	for i, app := range apps {
+	toInstall := make([]downloaded, 0)
+	for _, app := range apps {
 		apk := app.SuggestedApk(device)
 		if apk == nil {
 			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
@@ -127,15 +128,23 @@ func downloadAndDo(apps []fdroid.App, device *adb.Device) error {
 		}
 		path, err := downloadApk(apk)
 		if err != nil {
+			if *installSkipError {
+				fmt.Printf("Downloading %s failed, skipping...\n", app.PackageName)
+				continue
+			}
 			return err
 		}
-		toInstall[i] = downloaded{apk: apk, path: path}
+		toInstall = append(toInstall, downloaded{apk: apk, path: path})
 	}
 	if *installDryRun {
 		return nil
 	}
 	for _, t := range toInstall {
 		if err := installApk(device, t.apk, t.path); err != nil {
+			if *installSkipError {
+				fmt.Printf("Installing %s failed, skipping...\n", t.apk.AppID)
+				continue
+			}
 			return err
 		}
 	}
