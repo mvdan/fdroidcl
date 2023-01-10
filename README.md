@@ -35,7 +35,7 @@ Unofficial packages are available on: [Debian](https://packages.debian.org/buste
 
 	update                Update the index
 	search [<regexp...>]  Search available apps
-	show <appid...>       Show detailed info about an app
+	show <appid...>       Show detailed info about apps
 	install [<appid...>]  Install or upgrade apps
 	uninstall <appid...>  Uninstall an app
 	download <appid...>   Download an app
@@ -43,6 +43,7 @@ Unofficial packages are available on: [Debian](https://packages.debian.org/buste
 	list (categories)     List all known values of a kind
 	defaults              Reset to the default settings
 	version               Print version information
+	clean                 Clean index and/or cache
 
 
 An appid is just an app's unique package name. A specific version of an app can
