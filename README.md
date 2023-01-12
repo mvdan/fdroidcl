@@ -44,6 +44,7 @@ Unofficial packages are available on: [Debian](https://packages.debian.org/buste
 	defaults              Reset to the default settings
 	version               Print version information
 	clean                 Clean index and/or cache
+	repo                  Manage repositories
 
 
 An appid is just an app's unique package name. A specific version of an app can
@@ -60,6 +61,26 @@ You can configure what repositories to use in the `config.json` file. On Linux,
 you will likely find it at `~/.config/fdroidcl/config.json`.
 
 You can run `fdroidcl defaults` to create the config with the default settings.
+
+#### *new: you can manage the repositories now directly via cli*
+
+```
+usage: fdroidcl repo
+
+List, add, remove, enable or disable repositories.
+When a repository is added, it is enabled by default.
+
+List repositories:
+
+        $ fdroidcl repo
+
+Modify repositories:
+
+        $ fdroidcl repo add <NAME> <URL>
+        $ fdroidcl repo remove <NAME>
+        $ fdroidcl repo enable <NAME>
+        $ fdroidcl repo disable <NAME>
+```
 
 ### Advantages over the Android client
 
