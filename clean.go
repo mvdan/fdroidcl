@@ -17,6 +17,7 @@ var cmdClean = &Command{
 Clean index and/or cache.
 The index basically contains information about available APKs to download.
 The cache is where all downloaded APKs are cached.
+
 Usage:
 
 	$ fdroidcl clean
