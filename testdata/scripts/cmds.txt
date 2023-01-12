@@ -11,7 +11,7 @@ stderr '^usage: fdroidcl \[-h'
 # ! stdout .
 
 fdroidcl version
-stdout '^v0\.5'
+stdout '^v0\.6'
 
 ! fdroidcl -badflag -- somepkg
 stderr '-badflag'
