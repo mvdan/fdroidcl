@@ -133,9 +133,9 @@ func printAppDetailed(app fdroid.App) {
 		fmt.Println()
 		fmt.Printf("    Version : %s (%d)\n", apk.VersName, apk.VersCode)
 		fmt.Printf("    Size    : %d\n", apk.Size)
-		fmt.Printf("    MinSdk  : %d\n", apk.MinSdk)
-		if apk.MaxSdk > 0 {
-			fmt.Printf("    MaxSdk  : %d\n", apk.MaxSdk)
+		fmt.Printf("    MinSdk  : %d\n", apk.MinSdk.Value)
+		if apk.MaxSdk.Value > 0 {
+			fmt.Printf("    MaxSdk  : %d\n", apk.MaxSdk.Value)
 		}
 		if apk.ABIs != nil {
 			fmt.Printf("    ABIs    : %s\n", strings.Join(apk.ABIs, ", "))

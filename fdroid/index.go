@@ -10,6 +10,7 @@ import (
 	"html"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
 	"mvdan.cc/fdroidcl/adb"
@@ -193,21 +194,22 @@ func (a *App) TextDesc(w io.Writer) {
 
 // Apk is an Android package
 type Apk struct {
-	VersName string       `json:"versionName"`
-	VersCode int          `json:"versionCode"`
-	Size     int64        `json:"size"`
-	MinSdk   int          `json:"minSdkVersion"`
-	MaxSdk   int          `json:"maxSdkVersion"`
-	ABIs     []string     `json:"nativecode"`
-	ApkName  string       `json:"apkName"`
-	SrcName  string       `json:"srcname"`
-	Sig      HexVal       `json:"sig"`
-	Signer   HexVal       `json:"signer"`
-	Added    UnixDate     `json:"added"`
-	Perms    []Permission `json:"uses-permission"`
-	Feats    []string     `json:"features"`
-	Hash     HexVal       `json:"hash"`
-	HashType string       `json:"hashType"`
+	VersName  string       `json:"versionName"`
+	VersCode  int          `json:"versionCode"`
+	Size      int64        `json:"size"`
+	MinSdk    StringInt    `json:"minSdkVersion"`
+	MaxSdk    StringInt    `json:"maxSdkVersion"`
+	TargetSdk StringInt    `json:"targetSdkVersion"`
+	ABIs      []string     `json:"nativecode"`
+	ApkName   string       `json:"apkName"`
+	SrcName   string       `json:"srcname"`
+	Sig       HexVal       `json:"sig"`
+	Signer    HexVal       `json:"signer"`
+	Added     UnixDate     `json:"added"`
+	Perms     []Permission `json:"uses-permission"`
+	Feats     []string     `json:"features"`
+	Hash      HexVal       `json:"hash"`
+	HashType  string       `json:"hashType"`
 
 	AppID   string `json:"-"`
 	RepoURL string `json:"-"`
@@ -229,6 +231,37 @@ func (p *Permission) UnmarshalJSON(data []byte) error {
 		p.MaxSdk = ""
 	} else {
 		p.MaxSdk = fmt.Sprint(v[1].(float64))
+	}
+	return nil
+}
+
+// https://codesahara.com/blog/golang-cannot-unmarshal-string-into-go-value-of-type-int/
+type StringInt struct {
+	Value int
+}
+
+func (st *StringInt) UnmarshalJSON(b []byte) error {
+	// convert the bytes into an interface
+	// this will help us check the type of our value
+	// if it is a string that can be converted into an int we convert it
+	// otherwise we return an error
+	var item interface{}
+	if err := json.Unmarshal(b, &item); err != nil {
+		return err
+	}
+	switch v := item.(type) {
+	case int:
+		*st = StringInt{Value: v}
+	case float64:
+		*st = StringInt{Value: int(v)}
+	case string:
+		// here convert the string into an integer
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			// the string might not be of integer type, so return an error
+			return err
+		}
+		*st = StringInt{Value: i}
 	}
 	return nil
 }
@@ -256,7 +289,7 @@ func (a *Apk) IsCompatibleABI(ABIs []string) bool {
 }
 
 func (a *Apk) IsCompatibleAPILevel(sdk int) bool {
-	return sdk >= a.MinSdk && (a.MaxSdk == 0 || sdk <= a.MaxSdk)
+	return sdk >= a.MinSdk.Value && (a.MaxSdk.Value == 0 || sdk <= a.MaxSdk.Value)
 }
 
 func (a *Apk) IsCompatible(device *adb.Device) bool {
