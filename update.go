@@ -11,7 +11,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -101,13 +100,12 @@ func downloadEtag(url, target_path string, sum []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
-	filename := path.Base(url)
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("%s download failed: %d %s",
-			filename, resp.StatusCode, http.StatusText(resp.StatusCode))
+			url, resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 	if resp.StatusCode == http.StatusNotModified {
-		fmt.Printf("%s not modified\n", filename)
+		fmt.Printf("%s not modified\n", url)
 		return errNotModified
 	}
 	f, err := os.OpenFile(target_path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
@@ -117,7 +115,7 @@ func downloadEtag(url, target_path string, sum []byte) error {
 	defer f.Close()
 	bar := progressbar.NewOptions64(
 		resp.ContentLength,
-		progressbar.OptionSetDescription(fmt.Sprintf("%-50s", filename)),
+		progressbar.OptionSetDescription(url),
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionThrottle(50*time.Millisecond),
@@ -143,7 +141,7 @@ func downloadEtag(url, target_path string, sum []byte) error {
 		}
 		got := hash.Sum(nil)
 		if !bytes.Equal(sum, got[:]) {
-			return fmt.Errorf("%s sha256 mismatch", filename)
+			return fmt.Errorf("%s sha256 mismatch", url)
 		}
 	}
 	if err := os.WriteFile(etagPath, []byte(respEtag(resp)), 0o644); err != nil {
