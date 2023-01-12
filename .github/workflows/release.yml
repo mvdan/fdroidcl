@@ -1,0 +1,98 @@
+name: Build binaries
+
+on:
+  release:
+    types: [published]
+
+env:
+  PRODUCT: fdroidcl
+  CGO_ENABLED: 0
+  GO111MODULE: on
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ linux, darwin, windows ]
+        arch: [ amd64, 386 ]
+        include:
+          - os: linux
+            arch: arm
+            arm: 5
+          - os: linux
+            arch: arm
+            arm: 6
+          - os: linux
+            arch: arm
+            arm: 7
+          - os: linux
+            arch: arm64
+          - os: darwin
+            arch: arm64
+          - os: windows
+            arch: arm
+          - os: windows
+            arch: arm64
+        exclude:
+          - os: darwin
+            arch: 386
+    name: Build ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    env:
+      GOOS: ${{ matrix.os }}
+      GOARCH: ${{ matrix.arch }}
+      GOARM: ${{ matrix.arm }}
+    steps:
+      - name: Check out codebase
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.18.0'
+
+      - name: Build
+        id: builder
+        run: |
+          ARGS="${GOOS}_${GOARCH}"
+          if [[ -n "${GOARM}" ]]; then
+            ARGS="${ARGS}v${GOARM}"
+          fi
+          if [[ "${GOOS}" = "linux" ]] && [[ -n "${GOARM}" ]]; then
+            ARGS="${ARGS}_gnueabihf"
+            sudo apt-get install gcc-arm-linux-gnueabihf
+            export CC=arm-linux-gnueabihf-gcc
+          fi
+          if [[ "${GOOS}" = "linux" ]] && [[ "${GOARCH}" = "386" ]]; then
+            sudo apt-get install gcc-multilib
+          fi
+          ARGS_EXT="${ARGS}"
+          if [[ "${GOOS}" = "windows" ]]; then
+            ARGS_EXT="${ARGS}.exe"
+          fi
+          if [[ "${GOOS}" = "windows" ]] && [[ "${GOARCH}" = "arm64" ]]; then
+            go build -trimpath -mod=readonly -modcacherw -o target/release/${{ env.PRODUCT }}_${{ github.event.release.tag_name }}_${ARGS_EXT}
+          else
+            go build -trimpath -buildmode=pie -mod=readonly -modcacherw -o target/release/${{ env.PRODUCT }}_${{ github.event.release.tag_name }}_${ARGS_EXT}
+          fi
+          echo "basename=${{ env.PRODUCT }}_${{ github.event.release.tag_name }}_${ARGS}" >> $GITHUB_OUTPUT
+          echo "filename=${{ env.PRODUCT }}_${{ github.event.release.tag_name }}_${ARGS_EXT}" >> $GITHUB_OUTPUT
+
+      - name: Archive
+        run: |
+          if [[ "${GOOS}" = "windows" ]]; then
+            7z a -tzip -mm=Deflate ./target/release/${{ steps.builder.outputs.basename }}.zip ./target/release/${{ steps.builder.outputs.filename }}
+          else
+            gzip -c ./target/release/${{ steps.builder.outputs.filename }} > ./target/release/${{ steps.builder.outputs.basename }}.gz
+          fi
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/release/${{ steps.builder.outputs.filename }}
+            target/release/${{ steps.builder.outputs.basename }}.gz
+            target/release/${{ steps.builder.outputs.basename }}.zip
