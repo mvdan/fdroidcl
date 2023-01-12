@@ -73,16 +73,20 @@ var config = userConfig{
 	},
 }
 
-func readConfig() {
+func readConfig() error {
 	f, err := os.Open(configPath())
 	if err != nil {
-		return
+		// ignore error, if file does not exist
+		return nil
 	}
 	defer f.Close()
 	fileConfig := userConfig{}
-	if err := json.NewDecoder(f).Decode(&fileConfig); err == nil {
-		config = fileConfig
+	err = json.NewDecoder(f).Decode(&fileConfig)
+	if err != nil {
+		return err
 	}
+	config = fileConfig
+	return nil
 }
 
 // A Command is an implementation of a go command
@@ -212,7 +216,12 @@ func main1() int {
 			return 2
 		}
 
-		readConfig()
+		err := readConfig()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "config %s: %v\n", configPath(), err)
+			return 1
+		}
+
 		if err := cmd.Run(cmd.Fset.Args()); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", cmdName, err)
 			return 1
