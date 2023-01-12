@@ -174,6 +174,7 @@ var commands = []*Command{
 	cmdDefaults,
 	cmdVersion,
 	cmdClean,
+	cmdRepo,
 }
 
 var cmdVersion = &Command{
