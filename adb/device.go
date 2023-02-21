@@ -69,8 +69,9 @@ func Devices() ([]*Device, error) {
 		if len(device.ABIs) == 0 {
 			return nil, fmt.Errorf("failed to get device ABIs")
 		}
-		device.APILevel, _ = strconv.Atoi(props["ro.build.version.sdk"])
-		if device.APILevel == 0 {
+		api, err := AdbPropFallback(device, props, "ro.build.version.sdk")
+		device.APILevel, _ = strconv.Atoi(api)
+		if err != nil || device.APILevel == 0 {
 			return nil, fmt.Errorf("failed to get device API level")
 		}
 
