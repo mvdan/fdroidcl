@@ -171,10 +171,10 @@ var commands = []*Command{
 	cmdDownload,
 	cmdDevices,
 	cmdList,
+	cmdRepo,
+	cmdClean,
 	cmdDefaults,
 	cmdVersion,
-	cmdClean,
-	cmdRepo,
 }
 
 var cmdVersion = &Command{

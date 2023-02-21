@@ -41,10 +41,10 @@ Unofficial packages are available on: [Debian](https://packages.debian.org/buste
 	download <appid...>   Download an app
 	devices               List connected devices
 	list (categories)     List all known values of a kind
+	repo                  Manage repositories
+	clean                 Clean index and/or cache
 	defaults              Reset to the default settings
 	version               Print version information
-	clean                 Clean index and/or cache
-	repo                  Manage repositories
 
 
 An appid is just an app's unique package name. A specific version of an app can
