@@ -120,7 +120,7 @@ func (d *Device) AdbProp(property string) (string, error) {
 		return "", err
 	}
 	result := string(stdout)
-	if result == "" {
+	if result == "" || result == "\n" || result == "\r\n" || result == "\r" {
 		return "", fmt.Errorf("could not get property %s", property)
 	}
 	return result, nil
