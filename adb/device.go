@@ -120,7 +120,14 @@ func (d *Device) AdbProp(property string) (string, error) {
 		return "", err
 	}
 	result := string(stdout)
-	if result == "" || result == "\n" || result == "\r\n" || result == "\r" {
+	if strings.HasSuffix(result, "\r\n") {
+		result = strings.TrimSuffix(result, "\r\n")
+	} else if strings.HasSuffix(result, "\n") {
+		result = strings.TrimSuffix(result, "\n")
+	} else if strings.HasSuffix(result, "\r") {
+		result = strings.TrimSuffix(result, "\r")
+	}
+	if result == "" {
 		return "", fmt.Errorf("could not get property %s", property)
 	}
 	return result, nil
