@@ -132,9 +132,30 @@ func runInstall(args []string) error {
 			return fmt.Errorf("no suitable APKs found for %s", app.PackageName)
 		}
 		if p.VersCode >= suggested.VersCode {
-			fmt.Printf("%s is up to date\n", app.PackageName)
-			// app is already up to date
-			continue
+			if !(*installUser == "all" && len(p.NotInstalledForUsers) > 0) { // ensure that it can't install for other user
+				okSkip := *installUser == "all"
+				if !okSkip {
+					n, err := strconv.Atoi(*installUser)
+					if err != nil {
+						return err
+					}
+					isInstalledForUser := false
+					for _, uid := range p.InstalledForUsers {
+						if uid == n {
+							isInstalledForUser = true
+							break
+						}
+					}
+					if isInstalledForUser {
+						okSkip = true
+					}
+				}
+				if okSkip {
+					fmt.Printf("%s is up to date\n", app.PackageName)
+					// app is already up to date
+					continue
+				}
+			}
 		}
 		// upgrading an existing app
 		toInstall = append(toInstall, app)

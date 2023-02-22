@@ -238,19 +238,21 @@ func (d *Device) UninstallUser(pkg, user string) error {
 }
 
 type Package struct {
-	ID                string
-	VersCode          int
-	VersName          string
-	IsSystem          bool
-	InstalledForUsers []int
+	ID                   string
+	VersCode             int
+	VersName             string
+	IsSystem             bool
+	InstalledForUsers    []int
+	NotInstalledForUsers []int
 }
 
 var (
-	packageRegex        = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
-	verCodeRegex        = regexp.MustCompile(`^    versionCode=([0-9]+)`)
-	verNameRegex        = regexp.MustCompile(`^    versionName=(.+)`)
-	systemRegex         = regexp.MustCompile(`^    pkgFlags=\[.*\bSYSTEM\b.*\]`)
-	installedUsersRegex = regexp.MustCompile(`^    User (\d+): .*installed=true`)
+	packageRegex           = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
+	verCodeRegex           = regexp.MustCompile(`^    versionCode=([0-9]+)`)
+	verNameRegex           = regexp.MustCompile(`^    versionName=(.+)`)
+	systemRegex            = regexp.MustCompile(`^    pkgFlags=\[.*\bSYSTEM\b.*\]`)
+	installedUsersRegex    = regexp.MustCompile(`^    User (\d+): .*installed=true`)
+	notInstalledUsersRegex = regexp.MustCompile(`^    User (\d+): .*installed=false`)
 )
 
 func (d *Device) Installed() (map[string]Package, error) {
@@ -276,6 +278,7 @@ func (d *Device) Installed() (map[string]Package, error) {
 				cur = Package{}
 				cur.IsSystem = false
 				cur.InstalledForUsers = make([]int, 0)
+				cur.NotInstalledForUsers = make([]int, 0)
 			}
 			cur.ID = m[1]
 		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
@@ -294,6 +297,12 @@ func (d *Device) Installed() (map[string]Package, error) {
 				panic(err)
 			}
 			cur.InstalledForUsers = append(cur.InstalledForUsers, n)
+		} else if m := notInstalledUsersRegex.FindStringSubmatch(l); m != nil {
+			n, err := strconv.Atoi(m[1])
+			if err != nil {
+				panic(err)
+			}
+			cur.NotInstalledForUsers = append(cur.NotInstalledForUsers, n)
 		}
 	}
 	if !first {
