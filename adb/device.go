@@ -224,12 +224,14 @@ type Package struct {
 	ID       string
 	VersCode int
 	VersName string
+	IsSystem bool
 }
 
 var (
 	packageRegex = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
 	verCodeRegex = regexp.MustCompile(`^    versionCode=([0-9]+)`)
 	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
+	systemRegex  = regexp.MustCompile(`^    pkgFlags=\[.*\bSYSTEM\b.*\]`)
 )
 
 func (d *Device) Installed() (map[string]Package, error) {
@@ -253,6 +255,7 @@ func (d *Device) Installed() (map[string]Package, error) {
 			} else {
 				packages[cur.ID] = cur
 				cur = Package{}
+				cur.IsSystem = false
 			}
 			cur.ID = m[1]
 		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
@@ -263,6 +266,8 @@ func (d *Device) Installed() (map[string]Package, error) {
 			cur.VersCode = n
 		} else if m := verNameRegex.FindStringSubmatch(l); m != nil {
 			cur.VersName = m[1]
+		} else if systemRegex.MatchString(l) {
+			cur.IsSystem = true
 		}
 	}
 	if !first {

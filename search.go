@@ -158,7 +158,7 @@ func printApp(app fdroid.App, IDLen int, inst *adb.Package, device *adb.Device) 
 func filterAppsInstalled(apps []fdroid.App, inst map[string]adb.Package) []fdroid.App {
 	var result []fdroid.App
 	for _, app := range apps {
-		if _, e := inst[app.PackageName]; !e {
+		if p, e := inst[app.PackageName]; !e || p.IsSystem {
 			continue
 		}
 		result = append(result, app)
@@ -170,7 +170,7 @@ func filterAppsUpdates(apps []fdroid.App, inst map[string]adb.Package, device *a
 	var result []fdroid.App
 	for _, app := range apps {
 		p, e := inst[app.PackageName]
-		if !e {
+		if !e || p.IsSystem {
 			continue
 		}
 		suggested := app.SuggestedApk(device)
