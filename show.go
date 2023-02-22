@@ -89,40 +89,41 @@ func findApps(ids []string) ([]fdroid.App, error) {
 }
 
 func printAppDetailed(app fdroid.App) {
-	fmt.Printf("Package          : %s\n", app.PackageName)
-	fmt.Printf("Name             : %s\n", app.Name)
-	fmt.Printf("Summary          : %s\n", app.Summary)
-	fmt.Printf("Added            : %s\n", app.Added.String())
-	fmt.Printf("Last Updated     : %s\n", app.Updated.String())
-	fmt.Printf("Version          : %s (%d)\n", app.SugVersName, app.SugVersCode)
-	fmt.Printf("License          : %s\n", app.License)
+	fmt.Printf("Package              : %s\n", app.PackageName)
+	fmt.Printf("Name                 : %s\n", app.Name)
+	fmt.Printf("Summary              : %s\n", app.Summary)
+	fmt.Printf("Added                : %s\n", app.Added.String())
+	fmt.Printf("Last Updated         : %s\n", app.Updated.String())
+	fmt.Printf("Version              : %s (%d)\n", app.SugVersName, app.SugVersCode)
+	fmt.Printf("License              : %s\n", app.License)
 	if app.Categories != nil {
-		fmt.Printf("Categories       : %s\n", strings.Join(app.Categories, ", "))
+		fmt.Printf("Categories           : %s\n", strings.Join(app.Categories, ", "))
 	}
 	if app.Website != "" {
-		fmt.Printf("Website          : %s\n", app.Website)
+		fmt.Printf("Website              : %s\n", app.Website)
 	}
 	if app.SourceCode != "" {
-		fmt.Printf("Source Code      : %s\n", app.SourceCode)
+		fmt.Printf("Source Code          : %s\n", app.SourceCode)
 	}
 	if app.IssueTracker != "" {
-		fmt.Printf("Issue Tracker    : %s\n", app.IssueTracker)
+		fmt.Printf("Issue Tracker        : %s\n", app.IssueTracker)
 	}
 	if app.Changelog != "" {
-		fmt.Printf("Changelog        : %s\n", app.Changelog)
+		fmt.Printf("Changelog            : %s\n", app.Changelog)
 	}
 	if app.Donate != "" {
-		fmt.Printf("Donate           : %s\n", app.Donate)
+		fmt.Printf("Donate               : %s\n", app.Donate)
 	}
 	if app.Bitcoin != "" {
-		fmt.Printf("Bitcoin          : bitcoin:%s\n", app.Bitcoin)
+		fmt.Printf("Bitcoin              : bitcoin:%s\n", app.Bitcoin)
 	}
 	if app.Litecoin != "" {
-		fmt.Printf("Litecoin         : litecoin:%s\n", app.Litecoin)
+		fmt.Printf("Litecoin             : litecoin:%s\n", app.Litecoin)
 	}
 	if app.FlattrID != "" {
-		fmt.Printf("Flattr           : https://flattr.com/thing/%s\n", app.FlattrID)
+		fmt.Printf("Flattr               : https://flattr.com/thing/%s\n", app.FlattrID)
 	}
+	fmt.Printf("F-Droid Repository   : %s\n", app.FdroidRepo)
 	fmt.Println()
 	fmt.Println("Description :")
 	fmt.Println()

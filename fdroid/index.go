@@ -53,6 +53,7 @@ type App struct {
 	FlattrID     string   `json:"flattrID"`
 	SugVersName  string   `json:"suggestedVersionName"`
 	SugVersCode  int      `json:"suggestedVersionCode,string"`
+	FdroidRepo   string   `json:"-"`
 
 	Localized map[string]Localization `json:"localized"`
 

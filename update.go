@@ -187,6 +187,7 @@ func loadIndexes() ([]fdroid.App, error) {
 		}
 		for i := range index.Apps {
 			app := index.Apps[i]
+			app.FdroidRepo = r.URL
 			orig, e := m[app.PackageName]
 			if !e {
 				m[app.PackageName] = &app
