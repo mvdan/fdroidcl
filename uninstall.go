@@ -6,12 +6,17 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 var cmdUninstall = &Command{
 	UsageLine: "uninstall <appid...>",
 	Short:     "Uninstall an app",
 }
+
+var (
+	uninstallUser = cmdUninstall.Fset.String("user", "all", "Uninstall for specified user <USER_ID|current|all>")
+)
 
 func init() {
 	cmdUninstall.Run = runUninstall
@@ -25,6 +30,13 @@ func runUninstall(args []string) error {
 	if err != nil {
 		return err
 	}
+	if *uninstallUser == "current" {
+		uid, err := device.CurrentUserId()
+		if err != nil {
+			return err
+		}
+		*uninstallUser = strconv.Itoa(uid)
+	}
 	inst, err := device.Installed()
 	if err != nil {
 		return err
@@ -33,7 +45,11 @@ func runUninstall(args []string) error {
 		var err error
 		fmt.Printf("Uninstalling %s\n", id)
 		if _, installed := inst[id]; installed {
-			err = device.Uninstall(id)
+			if *uninstallUser == "all" {
+				err = device.Uninstall(id)
+			} else {
+				err = device.UninstallUser(id, *uninstallUser)
+			}
 		} else {
 			err = errors.New("not installed")
 		}

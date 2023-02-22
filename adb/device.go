@@ -223,6 +223,20 @@ func (d *Device) Uninstall(pkg string) error {
 	return errMsg
 }
 
+func (d *Device) UninstallUser(pkg, user string) error {
+	cmd := d.AdbCmd("uninstall", "--user", user, pkg)
+	output, err := cmd.CombinedOutput()
+	line := getResultLine(output)
+	if err == nil && line == "Success" {
+		return nil
+	}
+	errMsg := parseError(getFailureCode(deleteFailureRegex, line))
+	if err != nil {
+		return fmt.Errorf("%v: %v", err, errMsg)
+	}
+	return errMsg
+}
+
 type Package struct {
 	ID                string
 	VersCode          int
