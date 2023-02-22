@@ -221,17 +221,19 @@ func (d *Device) Uninstall(pkg string) error {
 }
 
 type Package struct {
-	ID       string
-	VersCode int
-	VersName string
-	IsSystem bool
+	ID                string
+	VersCode          int
+	VersName          string
+	IsSystem          bool
+	InstalledForUsers []int
 }
 
 var (
-	packageRegex = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
-	verCodeRegex = regexp.MustCompile(`^    versionCode=([0-9]+)`)
-	verNameRegex = regexp.MustCompile(`^    versionName=(.+)`)
-	systemRegex  = regexp.MustCompile(`^    pkgFlags=\[.*\bSYSTEM\b.*\]`)
+	packageRegex        = regexp.MustCompile(`^  Package \[([^\s]+)\]`)
+	verCodeRegex        = regexp.MustCompile(`^    versionCode=([0-9]+)`)
+	verNameRegex        = regexp.MustCompile(`^    versionName=(.+)`)
+	systemRegex         = regexp.MustCompile(`^    pkgFlags=\[.*\bSYSTEM\b.*\]`)
+	installedUsersRegex = regexp.MustCompile(`^    User (\d+): .*installed=true`)
 )
 
 func (d *Device) Installed() (map[string]Package, error) {
@@ -256,6 +258,7 @@ func (d *Device) Installed() (map[string]Package, error) {
 				packages[cur.ID] = cur
 				cur = Package{}
 				cur.IsSystem = false
+				cur.InstalledForUsers = make([]int, 0)
 			}
 			cur.ID = m[1]
 		} else if m := verCodeRegex.FindStringSubmatch(l); m != nil {
@@ -268,10 +271,42 @@ func (d *Device) Installed() (map[string]Package, error) {
 			cur.VersName = m[1]
 		} else if systemRegex.MatchString(l) {
 			cur.IsSystem = true
+		} else if m := installedUsersRegex.FindStringSubmatch(l); m != nil {
+			n, err := strconv.Atoi(m[1])
+			if err != nil {
+				panic(err)
+			}
+			cur.InstalledForUsers = append(cur.InstalledForUsers, n)
 		}
 	}
 	if !first {
 		packages[cur.ID] = cur
 	}
 	return packages, nil
+}
+
+var currentUserIdRegex = regexp.MustCompile(`^ *mUserLru: \[.*\b(\d+)\b\]`)
+
+func (d *Device) CurrentUserId() (int, error) {
+	cmd := d.AdbShell("dumpsys", "activity")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return -1, err
+	}
+	if err := cmd.Start(); err != nil {
+		return -1, err
+	}
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		m := currentUserIdRegex.FindStringSubmatch(scanner.Text())
+		if m == nil {
+			continue
+		}
+		n, err := strconv.Atoi(m[1])
+		if err != nil {
+			panic(err)
+		}
+		return n, nil
+	}
+	return -1, fmt.Errorf("could not get current user id")
 }
