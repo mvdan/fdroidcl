@@ -46,6 +46,15 @@ func runInstall(args []string) error {
 	if *installUpdatesExclude != "" && !*installUpdates {
 		return fmt.Errorf("-e can only be used for upgrading (i.e. -u)")
 	}
+	if *installUser != "" && *installUser != "all" && *installUser != "current" {
+		n, err := strconv.Atoi(*installUser)
+		if err != nil {
+			return fmt.Errorf("-user has to be <USER_ID|current|all>")
+		}
+		if n < 0 {
+			return fmt.Errorf("-user cannot have a negative number as USER_ID")
+		}
+	}
 	device, err := oneDevice()
 	if err != nil {
 		return err

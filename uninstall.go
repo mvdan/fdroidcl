@@ -26,6 +26,15 @@ func runUninstall(args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("no package names given")
 	}
+	if *uninstallUser != "all" && *uninstallUser != "current" {
+		n, err := strconv.Atoi(*uninstallUser)
+		if err != nil {
+			return fmt.Errorf("-user has to be <USER_ID|current|all>")
+		}
+		if n < 0 {
+			return fmt.Errorf("-user cannot have a negative number as USER_ID")
+		}
+	}
 	device, err := oneDevice()
 	if err != nil {
 		return err
