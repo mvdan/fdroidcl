@@ -33,18 +33,18 @@ Unofficial packages are available on: [Debian](https://packages.debian.org/buste
 
 ### Commands
 
-	update                Update the index
-	search [<regexp...>]  Search available apps
-	show <appid...>       Show detailed info about apps
-	install [<appid...>]  Install or upgrade apps
-	uninstall <appid...>  Uninstall an app
-	download <appid...>   Download an app
-	devices               List connected devices
-	list (categories)     List all known values of a kind
-	repo                  Manage repositories
-	clean                 Clean index and/or cache
-	defaults              Reset to the default settings
-	version               Print version information
+	update                   Update the index
+	search [<regexp...>]     Search available apps
+	show <appid...>          Show detailed info about apps
+	install [<appid...>]     Install or upgrade apps
+	uninstall <appid...>     Uninstall an app
+	download <appid...>      Download an app
+	devices                  List connected devices
+	list (categories/users)  List all known values of a kind
+	repo                     Manage repositories
+	clean                    Clean index and/or cache
+	defaults                 Reset to the default settings
+	version                  Print version information
 
 
 An appid is just an app's unique package name. A specific version of an app can
