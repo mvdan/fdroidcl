@@ -167,27 +167,29 @@ var installFailureRegex = regexp.MustCompile(`^Failure \[INSTALL_(.+)\]$`)
 func (d *Device) Install(path string) error {
 	cmd := d.AdbCmd(append([]string{"install", "-r"}, path)...)
 	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
 	line := getResultLine(output)
-	if line == "Success" {
+	if err == nil && line == "Success" {
 		return nil
 	}
-	return parseError(getFailureCode(installFailureRegex, line))
+	errMsg := parseError(getFailureCode(installFailureRegex, line))
+	if err != nil {
+		return fmt.Errorf("%v: %v", err, errMsg)
+	}
+	return errMsg
 }
 
 func (d *Device) InstallUser(path, user string) error {
 	cmd := d.AdbCmd(append([]string{"install", "-r", "--user"}, user, path)...)
 	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
 	line := getResultLine(output)
-	if line == "Success" {
+	if err == nil && line == "Success" {
 		return nil
 	}
-	return parseError(getFailureCode(installFailureRegex, line))
+	errMsg := parseError(getFailureCode(installFailureRegex, line))
+	if err != nil {
+		return fmt.Errorf("%v: %v", err, errMsg)
+	}
+	return errMsg
 }
 
 func getResultLine(output []byte) string {
@@ -210,14 +212,15 @@ var deleteFailureRegex = regexp.MustCompile(`^Failure \[DELETE_(.+)\]$`)
 func (d *Device) Uninstall(pkg string) error {
 	cmd := d.AdbCmd("uninstall", pkg)
 	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
 	line := getResultLine(output)
-	if line == "Success" {
+	if err == nil && line == "Success" {
 		return nil
 	}
-	return parseError(getFailureCode(deleteFailureRegex, line))
+	errMsg := parseError(getFailureCode(deleteFailureRegex, line))
+	if err != nil {
+		return fmt.Errorf("%v: %v", err, errMsg)
+	}
+	return errMsg
 }
 
 type Package struct {
