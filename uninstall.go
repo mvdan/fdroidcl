@@ -53,11 +53,31 @@ func runUninstall(args []string) error {
 	for _, id := range args {
 		var err error
 		fmt.Printf("Uninstalling %s\n", id)
-		if _, installed := inst[id]; installed {
+		app, installed := inst[id]
+		if installed {
+			installedForUser := false
 			if *uninstallUser == "all" {
-				err = device.Uninstall(id)
+				installedForUser = true
 			} else {
-				err = device.UninstallUser(id, *uninstallUser)
+				uid, err := strconv.Atoi(*uninstallUser)
+				if err != nil {
+					return err
+				}
+				for _, appUser := range app.InstalledForUsers {
+					if appUser == uid {
+						installedForUser = true
+						break
+					}
+				}
+			}
+			if installedForUser {
+				if *uninstallUser == "all" {
+					err = device.Uninstall(id)
+				} else {
+					err = device.UninstallUser(id, *uninstallUser)
+				}
+			} else {
+				err = errors.New("not installed for user")
 			}
 		} else {
 			err = errors.New("not installed")
