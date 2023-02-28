@@ -76,7 +76,17 @@ func runInstall(args []string) error {
 		if err != nil {
 			return err
 		}
-		apps = filterAppsUpdates(apps, inst, device)
+		var filterUser *int
+		if *installUser == "all" || *installUser == "" {
+			filterUser = nil
+		} else {
+			n, err := strconv.Atoi(*installUser)
+			if err != nil {
+				return err
+			}
+			filterUser = &n
+		}
+		apps = filterAppsUpdates(apps, inst, device, filterUser)
 		if *installUpdatesExclude != "" {
 			excludeApps := strings.Split(*installUpdatesExclude, ",")
 			installApps := make([]fdroid.App, 0)

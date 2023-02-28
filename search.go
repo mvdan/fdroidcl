@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ var (
 	searchDays      = cmdSearch.Fset.Int("d", 0, "Select apps last updated in the last <n> days; a negative value drops them instead")
 	searchCategory  = cmdSearch.Fset.String("c", "", "Filter apps by category")
 	searchSortBy    = cmdSearch.Fset.String("o", "", "Sort order (added, updated)")
+	searchUser      = cmdSearch.Fset.String("user", "all", "Filter installed apps by user <USER_ID|current|all>")
 )
 
 func init() {
@@ -64,11 +66,32 @@ func runSearch(args []string) error {
 			return err
 		}
 	}
+	var filterUser *int
+	if *searchUser != "all" && *searchUser != "current" {
+		n, err := strconv.Atoi(*searchUser)
+		if err != nil {
+			return fmt.Errorf("-user has to be <USER_ID|current|all>")
+		}
+		if n < 0 {
+			return fmt.Errorf("-user cannot have a negative number as USER_ID")
+		}
+		filterUser = &n
+	} else {
+		if *installUser == "current" {
+			uid, err := device.CurrentUserId()
+			if err != nil {
+				return err
+			}
+			filterUser = &uid
+		} else {
+			filterUser = nil
+		}
+	}
 	if len(apps) > 0 && *searchInstalled {
-		apps = filterAppsInstalled(apps, inst)
+		apps = filterAppsInstalled(apps, inst, filterUser)
 	}
 	if len(apps) > 0 && *searchUpdates {
-		apps = filterAppsUpdates(apps, inst, device)
+		apps = filterAppsUpdates(apps, inst, device, filterUser)
 	}
 	if len(apps) > 0 && *searchDays != 0 {
 		apps = filterAppsLastUpdated(apps, *searchDays)
@@ -155,23 +178,48 @@ func printApp(app fdroid.App, IDLen int, inst *adb.Package, device *adb.Device) 
 	fmt.Printf("    %s\n", app.Summary)
 }
 
-func filterAppsInstalled(apps []fdroid.App, inst map[string]adb.Package) []fdroid.App {
+func filterAppsInstalled(apps []fdroid.App, inst map[string]adb.Package, user *int) []fdroid.App {
 	var result []fdroid.App
 	for _, app := range apps {
-		if p, e := inst[app.PackageName]; !e || p.IsSystem {
+		p, e := inst[app.PackageName]
+		if !e || p.IsSystem {
 			continue
+		}
+		if user != nil {
+			installedForUser := false
+			for _, appUser := range p.InstalledForUsers {
+				if appUser == *user {
+					installedForUser = true
+					break
+				}
+			}
+			if !installedForUser {
+				continue
+			}
 		}
 		result = append(result, app)
 	}
 	return result
 }
 
-func filterAppsUpdates(apps []fdroid.App, inst map[string]adb.Package, device *adb.Device) []fdroid.App {
+func filterAppsUpdates(apps []fdroid.App, inst map[string]adb.Package, device *adb.Device, user *int) []fdroid.App {
 	var result []fdroid.App
 	for _, app := range apps {
 		p, e := inst[app.PackageName]
 		if !e || p.IsSystem {
 			continue
+		}
+		if user != nil {
+			installedForUser := false
+			for _, appUser := range p.InstalledForUsers {
+				if appUser == *user {
+					installedForUser = true
+					break
+				}
+			}
+			if !installedForUser {
+				continue
+			}
 		}
 		suggested := app.SuggestedApk(device)
 		if suggested == nil {
