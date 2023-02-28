@@ -32,7 +32,11 @@ var (
 	installDryRun         = cmdInstall.Fset.Bool("n", false, "Only print the operations that would be done")
 	installUpdatesExclude = cmdInstall.Fset.String("e", "", "Exclude apps from upgrading (comma-separated list)")
 	installSkipError      = cmdInstall.Fset.Bool("s", false, "Skip to the next application if a download or install error occurs")
-	installUser           = cmdInstall.Fset.String("user", "", "Install for specified user <USER_ID|current|all> (default: \"current\" for installing, and upgrading only for users who have the app installed)")
+	installUser           = cmdInstall.Fset.String("user", "", `Install/upgrade for specified user <USER_ID|current|all>
+	default: installs app for the current user; upgrades apps of all users and installs the new version only for the users of the old version
+	USER_ID: installs app for USER_ID; upgrades only apps of USER_ID and installs the new version only for USER_ID
+	current: installs app for the current user; upgrades only apps of the current user and installs the new version only for the current user
+	all: installs app for all users; upgrades apps of all users and installs the new version for all users`)
 )
 
 func init() {
