@@ -336,3 +336,13 @@ func (d *Device) CurrentUserId() (int, error) {
 	}
 	return -1, fmt.Errorf("could not get current user id")
 }
+
+func AllUserIds(installed map[string]Package) map[int]struct{} {
+	uidMap := make(map[int]struct{})
+	for _, pkg := range installed {
+		for _, uid := range pkg.InstalledForUsers {
+			uidMap[uid] = struct{}{}
+		}
+	}
+	return uidMap
+}

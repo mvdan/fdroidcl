@@ -50,6 +50,14 @@ func runInstall(args []string) error {
 	if *installUpdatesExclude != "" && !*installUpdates {
 		return fmt.Errorf("-e can only be used for upgrading (i.e. -u)")
 	}
+	device, err := oneDevice()
+	if err != nil {
+		return err
+	}
+	inst, err := device.Installed()
+	if err != nil {
+		return err
+	}
 	if *installUser != "" && *installUser != "all" && *installUser != "current" {
 		n, err := strconv.Atoi(*installUser)
 		if err != nil {
@@ -58,10 +66,10 @@ func runInstall(args []string) error {
 		if n < 0 {
 			return fmt.Errorf("-user cannot have a negative number as USER_ID")
 		}
-	}
-	device, err := oneDevice()
-	if err != nil {
-		return err
+		allUids := adb.AllUserIds(inst)
+		if _, exists := allUids[n]; !exists {
+			return fmt.Errorf("user %d does not exist", n)
+		}
 	}
 	if *installUser == "current" || (*installUser == "" && !*installUpdates) {
 		uid, err := device.CurrentUserId()
@@ -69,10 +77,6 @@ func runInstall(args []string) error {
 			return err
 		}
 		*installUser = strconv.Itoa(uid)
-	}
-	inst, err := device.Installed()
-	if err != nil {
-		return err
 	}
 
 	if *installUpdates {

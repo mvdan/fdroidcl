@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+
+	"mvdan.cc/fdroidcl/adb"
 )
 
 var cmdUninstall = &Command{
@@ -26,6 +28,14 @@ func runUninstall(args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("no package names given")
 	}
+	device, err := oneDevice()
+	if err != nil {
+		return err
+	}
+	inst, err := device.Installed()
+	if err != nil {
+		return err
+	}
 	if *uninstallUser != "all" && *uninstallUser != "current" {
 		n, err := strconv.Atoi(*uninstallUser)
 		if err != nil {
@@ -34,10 +44,10 @@ func runUninstall(args []string) error {
 		if n < 0 {
 			return fmt.Errorf("-user cannot have a negative number as USER_ID")
 		}
-	}
-	device, err := oneDevice()
-	if err != nil {
-		return err
+		allUids := adb.AllUserIds(inst)
+		if _, exists := allUids[n]; !exists {
+			return fmt.Errorf("user %d does not exist", n)
+		}
 	}
 	if *uninstallUser == "current" {
 		uid, err := device.CurrentUserId()
@@ -45,10 +55,6 @@ func runUninstall(args []string) error {
 			return err
 		}
 		*uninstallUser = strconv.Itoa(uid)
-	}
-	inst, err := device.Installed()
-	if err != nil {
-		return err
 	}
 	for _, id := range args {
 		var err error

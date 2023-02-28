@@ -75,6 +75,10 @@ func runSearch(args []string) error {
 		if n < 0 {
 			return fmt.Errorf("-user cannot have a negative number as USER_ID")
 		}
+		allUids := adb.AllUserIds(inst)
+		if _, exists := allUids[n]; !exists {
+			return fmt.Errorf("user %d does not exist", n)
+		}
 		filterUser = &n
 	} else {
 		if *installUser == "current" {
