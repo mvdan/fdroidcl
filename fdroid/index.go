@@ -34,26 +34,27 @@ type Repo struct {
 
 // App is an Android application
 type App struct {
-	PackageName  string   `json:"packageName"`
-	Name         string   `json:"name"`
-	Summary      string   `json:"summary"`
-	Added        UnixDate `json:"added"`
-	Updated      UnixDate `json:"lastUpdated"`
-	Icon         string   `json:"icon"`
-	Description  string   `json:"description"`
-	License      string   `json:"license"`
-	Categories   []string `json:"categories"`
-	Website      string   `json:"webSite"`
-	SourceCode   string   `json:"sourceCode"`
-	IssueTracker string   `json:"issueTracker"`
-	Changelog    string   `json:"changelog"`
-	Donate       string   `json:"donate"`
-	Bitcoin      string   `json:"bitcoin"`
-	Litecoin     string   `json:"litecoin"`
-	FlattrID     string   `json:"flattrID"`
-	SugVersName  string   `json:"suggestedVersionName"`
-	SugVersCode  int      `json:"suggestedVersionCode,string"`
-	FdroidRepo   string   `json:"-"`
+	PackageName    string   `json:"packageName"`
+	Name           string   `json:"name"`
+	Summary        string   `json:"summary"`
+	Added          UnixDate `json:"added"`
+	Updated        UnixDate `json:"lastUpdated"`
+	Icon           string   `json:"icon"`
+	Description    string   `json:"description"`
+	License        string   `json:"license"`
+	Categories     []string `json:"categories"`
+	Website        string   `json:"webSite"`
+	SourceCode     string   `json:"sourceCode"`
+	IssueTracker   string   `json:"issueTracker"`
+	Changelog      string   `json:"changelog"`
+	Donate         string   `json:"donate"`
+	Bitcoin        string   `json:"bitcoin"`
+	Litecoin       string   `json:"litecoin"`
+	FlattrID       string   `json:"flattrID"`
+	SugVersName    string   `json:"suggestedVersionName"`
+	SugVersCode    int      `json:"suggestedVersionCode,string"`
+	FdroidRepoName string   `json:"-"`
+	FdroidRepoURL  string   `json:"-"`
 
 	Localized map[string]Localization `json:"localized"`
 

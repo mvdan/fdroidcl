@@ -123,7 +123,7 @@ func printAppDetailed(app fdroid.App) {
 	if app.FlattrID != "" {
 		fmt.Printf("Flattr               : https://flattr.com/thing/%s\n", app.FlattrID)
 	}
-	fmt.Printf("F-Droid Repository   : %s\n", app.FdroidRepo)
+	fmt.Printf("F-Droid Repository   : %s (%s)\n", app.FdroidRepoName, app.FdroidRepoURL)
 	fmt.Println()
 	fmt.Println("Description :")
 	fmt.Println()
