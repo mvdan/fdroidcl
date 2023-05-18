@@ -4,7 +4,7 @@
 
 [F-Droid](https://f-droid.org/) desktop client. Requires Go 1.18 or later.
 
-	go get mvdan.cc/fdroidcl
+	go install mvdan.cc/fdroidcl@latest
 
 While the Android client integrates with the system with regular update checks
 and notifications, this is a simple command line client that talks to connected
