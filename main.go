@@ -10,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"mvdan.cc/fdroidcl/basedir"
 )
 
 const cmdName = "fdroidcl"
@@ -36,9 +34,9 @@ func mustCache() string {
 }
 
 func mustData() string {
-	dir := basedir.Data()
-	if dir == "" {
-		fmt.Fprintln(os.Stderr, "Could not determine data dir")
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		panic("TODO: return an error")
 	}
 	return subdir(dir, cmdName)
