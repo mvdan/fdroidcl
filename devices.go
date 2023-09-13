@@ -64,7 +64,7 @@ func maybeOneDevice() (*adb.Device, error) {
 		return nil, fmt.Errorf("ANDROID_SERIAL set, but no device with this serial found")
 	}
 	if len(devices) > 1 {
-		return nil, fmt.Errorf("at most one connected device can be used")
+		return nil, fmt.Errorf("at most one connected device can be used, if ANDROID_SERIAL was not set")
 	}
 	return devices[0], nil
 }
