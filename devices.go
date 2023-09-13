@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"mvdan.cc/fdroidcl/adb"
 )
@@ -50,11 +51,20 @@ func maybeOneDevice() (*adb.Device, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get devices: %v", err)
 	}
-	if len(devices) > 1 {
-		return nil, fmt.Errorf("at most one connected device can be used")
-	}
 	if len(devices) < 1 {
 		return nil, nil
+	}
+	envAndroidSerial := os.Getenv("ANDROID_SERIAL")
+	if len(envAndroidSerial) > 0 {
+		for _, device := range devices {
+			if device.ID == envAndroidSerial {
+				return device, nil
+			}
+		}
+		return nil, fmt.Errorf("ANDROID_SERIAL set, but no device with this serial found")
+	}
+	if len(devices) > 1 {
+		return nil, fmt.Errorf("at most one connected device can be used, if ANDROID_SERIAL was not set")
 	}
 	return devices[0], nil
 }
